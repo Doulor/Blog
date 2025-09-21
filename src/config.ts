@@ -202,7 +202,6 @@ export const navBarConfig: NavBarConfig = {
 			url: "/content/",
 			icon: "material-symbols:person",
 			children: [
-				LinkPreset.Anime,
 				LinkPreset.Diary,
 				{
 					name: "Gallery",
