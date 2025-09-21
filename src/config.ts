@@ -197,6 +197,20 @@ export const navBarConfig: NavBarConfig = {
 				},
 			],
 		},
+	    {
+			name: "个人",
+			url: "/content/",
+			icon: "material-symbols:person",
+			children: [
+				LinkPreset.Anime,
+				LinkPreset.Diary,
+				{
+					name: "Gallery",
+					url: "/albums/",
+					icon: "material-symbols:photo-library",
+				},
+			],
+		},
 		{
 			name: "关于",
 			url: "/content/",
