@@ -42,7 +42,6 @@ export const ja: Translation = {
 	[Key.author]: "作者",
 	[Key.publishedAt]: "公開日",
 	[Key.license]: "ライセンス",
-	[Key.friends]: "友達",
 	[Key.anime]: "アニメ",
 	[Key.diary]: "つぶやき",
 
