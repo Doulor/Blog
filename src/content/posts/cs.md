@@ -2,8 +2,8 @@
 title: 他个人
 published: 2025-09-21
 description: 五
-tags: [1453]
-category: 635
+tags: [gb]
+category: mn
 draft: false
 encrypted: true
 pinned: true
