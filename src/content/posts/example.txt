@@ -1,8 +1,0 @@
----
-title 
-published 2025-09-21
-tags []
-category 
-draft false
----
-
