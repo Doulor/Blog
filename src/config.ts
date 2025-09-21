@@ -122,7 +122,7 @@ export const siteConfig: SiteConfig = {
 		// {
 		//   src: '/favicon/icon.png',    // 图标文件路径
 		//   theme: 'light',              // 可选，指定主题 'light' | 'dark'
-		//   sizes: '32x32',              // 可选，图标大小
+		//   sizes: '64x64',              // 可选，图标大小
 		// }
 	],
 

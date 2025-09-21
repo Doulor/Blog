@@ -13,10 +13,11 @@ draft: false
 Firef.dpdns.org
 ```
 最主要的域名，用于个人主页的跳转与Minecraft服务器的集成ip
+而子域blog.firef.dpdns.org则用于博客的跳转
 ```yaml
 firef.qzz.io
 ```
-此主要域名，用于个人博客的跳转与其他小工具的临时域名
+次主要域名，用于充当其他小工具的临时域名
 
 # 内网穿透域名
 
