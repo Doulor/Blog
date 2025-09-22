@@ -238,8 +238,8 @@ export const profileConfig: ProfileConfig = {
 		},
 		{
 			name: "Gitee",
-			icon: "mdi:git",
-			url: "",
+			icon: "mdi:qq",
+			url: "https://res.abeim.cn/api/qq/?qq=2737855297",
 		},
 		{
 			name: "GitHub",
