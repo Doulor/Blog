@@ -54,7 +54,14 @@ function formatTime(dateString: string): string {
             {diaries.map(diary => (
               <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all" key={diary.slug}>
                 <div class="moment-content">
-                  <!-- 使用excerpt或body内容，并添加安全检查 -->
+                  {/* 新增：日记标题（保持原有设计语言） */}
+                  {diary.data.title && (
+                    <h3 class="moment-title text-base md:text-lg lg:text-xl font-semibold text-90 mb-2 md:mb-3 leading-tight">
+                      {diary.data.title}
+                    </h3>
+                  )}
+                  
+                  {/* 使用excerpt或body内容，并添加安全检查 */}
                   <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">
                     {diary.data.excerpt || diary.body?.slice(0, 200) || ''}
                   </p>
@@ -160,6 +167,13 @@ function formatTime(dateString: string): string {
   .action-btn:hover {
     color: var(--primary);
   }
+
+  /* 新增标题样式（与现有风格统一） */
+  .moment-title {
+    color: var(--text-primary);
+    font-family: inherit;
+    transition: color 0.3s ease;
+  }
   
   /* 响应式设计 */
   @media (max-width: 640px) {
@@ -181,6 +195,11 @@ function formatTime(dateString: string): string {
       flex-direction: column;
       align-items: flex-start;
       gap: 0.5rem;
+    }
+
+    .moment-title {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
     }
   }
   
@@ -209,6 +228,11 @@ function formatTime(dateString: string): string {
       font-size: 1rem;
       line-height: 1.7;
     }
+
+    .moment-title {
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
     
     .moment-footer {
       margin-top: 1rem;
@@ -233,6 +257,11 @@ function formatTime(dateString: string): string {
     .moment-text {
       font-size: 1.1rem;
       line-height: 1.8;
+    }
+
+    .moment-title {
+      font-size: 1.25rem;
+      margin-bottom: 0.875rem;
     }
   }
   
