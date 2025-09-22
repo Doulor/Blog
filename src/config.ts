@@ -199,7 +199,7 @@ export const navBarConfig: NavBarConfig = {
 					name: "Post-editor",
 					url: "https://tool.firef.dpdns.org",
 					external: true,
-					icon: "fa6-brands:editor",
+					icon: "icon-park-outline:editor",
 				},
 			],
 		},
