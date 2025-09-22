@@ -195,6 +195,12 @@ export const navBarConfig: NavBarConfig = {
 					external: true,
 					icon: "fa6-brands:discord",
 				},
+				{
+					name: "Post-editor",
+					url: "https://tool.firef.dpdns.org",
+					external: true,
+					icon: "mdi:file-edit",
+				},
 			],
 		},
 	    {
