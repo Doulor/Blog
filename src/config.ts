@@ -199,7 +199,7 @@ export const navBarConfig: NavBarConfig = {
 					name: "Post-editor",
 					url: "https://tool.firef.dpdns.org",
 					external: true,
-					icon: "mdi:file-document",
+					icon: "fa6-solid:edit",
 				},
 			],
 		},
