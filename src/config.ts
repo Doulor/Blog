@@ -238,7 +238,7 @@ export const profileConfig: ProfileConfig = {
 		},
 		{
 			name: "Gitee",
-			icon: "mdi:qq",
+			icon: "fa6-brands:qq",
 			url: "https://res.abeim.cn/api/qq/?qq=2737855297",
 		},
 		{
