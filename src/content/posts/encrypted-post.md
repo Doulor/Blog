@@ -1,5 +1,5 @@
 ---
-title: Encrypted Post
+title: 加密文档
 published: 2025-09-20
 description: （开发用加密文档）This is the first post of my new Astro blog.
 encrypted: true

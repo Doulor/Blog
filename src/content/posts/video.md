@@ -1,7 +1,7 @@
 ---
-title: Include Video in the Posts
+title: 视频帖子
 published: 2025-09-20
-description: （开发用加密文档）This post demonstrates how to include embedded video in a blog post.
+description: （开发用加密文档）这篇文章演示了如何在博客文章中包含嵌入式视频。
 encrypted: true
 pinned: true
 password: "666999"

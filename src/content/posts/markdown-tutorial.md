@@ -1,10 +1,10 @@
 ---
-title: Markdown Tutorial
+title: Markdown文件使用教程
 published: 2025-01-20
 pinned: true
-description: A simple example of a Markdown blog post.
-tags: [Markdown, Blogging]
-category: Examples
+description: 一个简单的Markdown文件使用示例
+tags: [Markdown]
+category: 示例
 licenseName: "Unlicensed"
 author: emn178
 sourceLink: "https://github.com/emn178/markdown"
