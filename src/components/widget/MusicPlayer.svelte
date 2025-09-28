@@ -70,8 +70,16 @@ const localPlaylist = [
 		id: 1,
 		title: "美好的事情即将发生",
 		artist: "HoWiggin",
-		cover: "assets/music/cover/mhdsqjjfs.jpg",
-		url: "assets/music/url/mhdsqjjfs.mp3",
+		cover: "assets/music/cover/美好的事情即将发生.jpg",
+		url: "assets/music/url/美好的事情即将发生.mp3",
+		duration: 240,
+	},
+    {
+		id: 1,
+		title: "独角",
+		artist: "UnicornPhantom",
+		cover: "assets/music/cover/独角.jpg",
+		url: "assets/music/url/独角.mp3",
 		duration: 240,
 	},
 ];
