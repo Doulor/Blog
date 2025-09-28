@@ -6,7 +6,7 @@ encrypted: true
 pinned: true
 password: "666999"
 tags: [测试, 视频, 加密]
-category: Examples
+category: "示例"
 draft: false
 ---
 

@@ -6,7 +6,7 @@ encrypted: true
 pinned: true
 password: "666999"
 tags: ["测试", "加密"]
-category: "Technology"
+category: "示例"
 ---
 
 
