@@ -84,6 +84,14 @@ const localPlaylist = [
 	},
     {
 		id: 1,
+		title: "Arrietty's Song",
+		artist: "Cécile Corbel",
+		cover: "assets/music/cover/Arrietty'sSong.jpg",
+		url: "assets/music/url/Arrietty'sSong.mp3",
+		duration: 240,
+	},
+    {
+		id: 1,
 		title: "濒日遗地",
 		artist: "Powerful_k",
 		cover: "assets/music/cover/濒日遗地.jpg",
