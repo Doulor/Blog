@@ -3,7 +3,7 @@ title: 域名信息
 published: 2025-09-21
 description: 有关于Doulor所使用的各项域名
 tags: [Domain]
-category: "示例"
+category: "笔记"
 draft: false
 ---
 
