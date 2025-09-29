@@ -3,7 +3,7 @@ title: 加密文档
 published: 2020-09-20
 description: （开发用加密文档）This is the first post of my new Astro blog.
 encrypted: true
-pinned: true
+pinned: false
 password: "666999"
 tags: ["测试", "加密"]
 category: "示例"

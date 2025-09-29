@@ -3,7 +3,7 @@ title: 视频帖子
 published: 2020-09-20
 description: （开发用加密文档）这篇文章演示了如何在博客文章中包含嵌入式视频。
 encrypted: true
-pinned: true
+pinned: false
 password: "666999"
 tags: [测试, 视频, 加密]
 category: "示例"
