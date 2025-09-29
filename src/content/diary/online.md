@@ -1,7 +1,7 @@
 ---
 title: "Online"
 date: 2024-09-28
-images: ["online.jpg"]
+image: ["online.jpg"]
 ---
 I'm like a ghost on the internet.
 Whenever someone thinks of me.
