@@ -179,7 +179,7 @@ export const navBarConfig: NavBarConfig = {
 			children: [
 				{
 					name: "GitHub",
-					url: "https://github.com/DLYQC",
+					url: "https://github.com/Doulor",
 					external: true,
 					icon: "fa6-brands:github",
 				},
@@ -244,7 +244,7 @@ export const profileConfig: ProfileConfig = {
 		{
 			name: "GitHub",
 			icon: "fa6-brands:github",
-			url: "https://github.com/DLYQC",
+			url: "https://github.com/Doulor",
 		},
 		{
 			name: "Discord",
