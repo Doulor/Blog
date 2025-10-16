@@ -134,13 +134,17 @@ export type LicenseConfig = {
 	name: string;
 	url: string;
 };
+// 评论配置
 
-// 评论配置（已替换为Supabase）
 export type CommentConfig = {
 	enable: boolean; // 是否启用评论功能
-	supabase?: {
-		table: string; // 评论表名，默认使用 'comments'
-	};
+	twikoo?: TwikooConfig;
+};
+
+type TwikooConfig = {
+	envId: string;
+	region?: string;
+	lang?: string;
 };
 
 export type LIGHT_DARK_MODE =
