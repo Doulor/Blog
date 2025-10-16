@@ -20,8 +20,8 @@ import { createClient } from "@supabase/supabase-js";
 
 // 服务端初始化Supabase
 const supabaseServerClient = createClient(
-  import.meta.env.VITE_PUBLIC_SUPABASE_URL,
-  import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
 );
 
 export async function getStaticPaths() {
