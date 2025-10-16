@@ -11,8 +11,13 @@ import DisplaySettings from "./widget/DisplaySettings.svelte";
 import DropdownMenu from "./widget/DropdownMenu.astro";
 import NavMenuPanel from "./widget/NavMenuPanel.astro";
 import TranslateButton from "./widget/TranslateButton.svelte";
+// 引入Supabase客户端
+import { supabase } from '../utils/supabase';
 
 const className = Astro.props.class;
+
+// 获取用户会话状态（判断是否登录）
+const { data: { session } } = await supabase.auth.getSession();
 
 // 获取导航栏透明模式配置
 const navbarTransparentMode =
@@ -46,17 +51,37 @@ let links: NavBarLink[] = navBarConfig.links.map(
                 return <DropdownMenu link={l} />;
             })}
         </div>
-        <div class="flex">
-            <!--<SearchPanel client:load>-->
+        <div class="flex items-center gap-1">
+            <!-- 搜索按钮 -->
             <Search client:only="svelte"></Search>
+            <!-- 移动端目录 -->
             <MobileTOC client:only="svelte"></MobileTOC>
+            <!-- 翻译按钮 -->
             <TranslateButton client:only="svelte"></TranslateButton>
+            <!-- 显示设置 -->
             {!siteConfig.themeColor.fixed && (
                     <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
                     </button>
             )}
+            <!-- 管理员登录/欢迎信息 -->
+            {session ? (
+                <span class="hidden md:inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    欢迎, {session.user.email?.split('@')[0]}
+                </span>
+            ) : (
+                <button 
+                    onclick="supabase.auth.signInWithOAuth({ provider: 'github' })"
+                    class="btn-plain scale-animation rounded-lg h-11 px-3 active:scale-90 text-sm"
+                    aria-label="管理员登录"
+                >
+                    <Icon name="fa6-brands:github" class="text-[1rem] mr-1" />
+                    <span class="hidden md:inline">登录</span>
+                </button>
+            )}
+            <!-- 主题切换 -->
             <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+            <!-- 移动端菜单按钮 -->
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
             </button>
@@ -67,6 +92,10 @@ let links: NavBarLink[] = navBarConfig.links.map(
 </div>
 
 <script>
+// 导入Supabase客户端到全局作用域（供登录按钮使用）
+import { supabase } from '../utils/supabase';
+window.supabase = supabase;
+
 function switchTheme() {
     if (localStorage.theme === 'dark') {
         document.documentElement.classList.remove('dark');

@@ -12,7 +12,7 @@ draft: false
 **ElytraFlip**
 
 **核心用途**
-解决手动通过背包穿戴/取下鞘翅的繁琐问题。玩家只需一条指令，即可凭空生成/移除鞘翅（无需背包中预先存放鞘翅），大幅提升游戏操作效率（尤其适合飞行场景中快速切换装备）。
+解决手动通过背包穿戴/取下鞘翅的繁琐问题。玩家只需一条指令，即可凭空生成/移除鞘翅（无需背包中预先存放鞘翅），大幅提升游戏操作效率。您可以在任何适合授予玩家无限制飞行权限的服务器上使用此功能，甚至可以将其添加到您的服务器大厅，让成员在那里自由飞行。
 
 **核心特点**
 - 凭空操作：穿戴时直接在胸甲栏生成并装备鞘翅；取下时直接移除鞘翅（不存入背包，避免占用背包空间）。
@@ -63,7 +63,7 @@ elytra.reload
 **ElytraFlip**
 
 **Core Purpose**
-Eliminates the hassle of manually equipping/removing elytra via inventory. With a single command, it allows players to spawn/remove elytra out of thin air (no need to have elytra in inventory), significantly improving gameplay efficiency (especially for quick gear switching during flight).
+Eliminates the hassle of manually equipping/removing elytra via inventory. With a single command, it allows players to spawn/remove elytra out of thin air (no need to have elytra in inventory), significantly improving gameplay efficiency.You can use this on any server where it's appropriate to grant players unrestricted flight access, You can even add it to your server lobby, allowing members to fly around freely there..
 
 **Key Features**
 - Airborne Operation：Spawns elytra directly into the chestplate slot when equipping; removes elytra entirely (no inventory storage) when unequipping.
