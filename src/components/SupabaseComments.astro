@@ -1,0 +1,394 @@
+---
+export interface Props {
+  postSlug: string;
+}
+
+const { postSlug } = Astro.props;
+---
+
+<!-- 评论区容器 -->
+<div class="max-w-3xl mx-auto px-4 mb-12" data-post-slug={postSlug} id="comments-container">
+  <!-- 引入Font Awesome图标 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- 评论表单 -->
+  <div class="border border-gray-200 rounded-xl p-6 mb-6 bg-white shadow-sm">
+    <form id="comment-form">
+      <div class="mb-4">
+        <label for="nickname" class="block mb-2 text-sm font-medium text-gray-700">昵称 *</label>
+        <input 
+          type="text" 
+          id="nickname" 
+          required 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        >
+      </div>
+      <div class="mb-4">
+        <label for="email" class="block mb-2 text-sm font-medium text-gray-700">邮箱（可选）</label>
+        <input 
+          type="email" 
+          id="email" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        >
+      </div>
+      <div class="mb-6">
+        <label for="content" class="block mb-2 text-sm font-medium text-gray-700">评论内容 *</label>
+        <textarea 
+          id="content" 
+          required 
+          rows="4" 
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        ></textarea>
+      </div>
+      
+      <!-- 提交按钮 + 右侧提示文字 -->
+      <div class="flex items-center gap-4">
+        <button 
+          type="submit" 
+          id="submit-btn"
+          class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow transition-all hover:bg-blue-700 hover:shadow-md active:scale-95"
+        >
+          提交评论
+        </button>
+        <div class="text-sm text-gray-500">
+          Tip:若评论未正常显示请刷新， 提交后若未显示成功请重新提交.
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- 管理员登录区域 -->
+  <div class="mb-6">
+    <button type="button" id="admin-enter" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+      <i class="fas fa-lock mr-1"></i> 管理员登录
+    </button>
+    <div id="admin-login" class="hidden mt-2 p-3 border border-gray-200 rounded-lg bg-white shadow-sm">
+      <input 
+        type="password" 
+        id="admin-password" 
+        placeholder="请输入管理员密码" 
+        class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+      >
+      <button type="button" id="admin-login-btn" class="mt-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 transition">
+        登录
+      </button>
+      <div id="admin-status" class="mt-2 text-xs text-gray-500"></div>
+    </div>
+  </div>
+
+  <!-- 评论列表 -->
+  <div id="comments-list" class="space-y-4 bg-gray-50 p-6 rounded-xl">
+    <!-- 加载状态：直接用inline onclick调用浏览器原生刷新 -->
+    <p onclick="window.location.reload()" class="text-gray-500 cursor-pointer hover:text-blue-600 transition-all hover:underline active:scale-95">
+      <i class="fas fa-sync-alt mr-1"></i> 加载评论中... 点击此处刷新页面
+    </p>
+  </div>
+</div>
+
+<style>
+  /* 评论项基础样式 */
+  .comment-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #fff;
+    transition: all 0.2s ease; /* hover动画过渡 */
+  }
+  
+  .comment-item:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px); /* 轻微上浮增强交互感 */
+  }
+
+  /* 删除按钮样式 */
+  .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;  /* 默认浅灰色 */
+    font-size: 1.2rem;
+    padding: 0.25rem;
+    opacity: 0.6;    /* 降低默认不透明度 */
+    transition: all 0.2s ease; /* 淡入/颜色变化过渡 */
+    margin-left: 1rem; /* 与评论内容保持间距 */
+  }
+  
+  /* 鼠标悬浮删除按钮时，增强显示效果 */
+  .delete-button:hover {
+    color: #ef4444;  /* hover时变红 */
+    opacity: 1;      /* hover时完全显示 */
+    transform: scale(1.1); /* 轻微放大 */
+  }
+
+  /* 提示消息样式 */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    color: white;
+    font-size: 0.875rem;
+    z-index: 1000;
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .toast.error {
+    background-color: #ef4444;
+  }
+  
+  .toast.success {
+    background-color: #10b981;
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+
+  /* 刷新提示统一样式 */
+  .refresh-trigger {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .refresh-trigger:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+  
+  .refresh-trigger:active {
+    transform: scale(0.95);
+  }
+</style>
+
+<script>
+  // 页面加载完成后执行
+  document.addEventListener('DOMContentLoaded', function() {
+    // 管理员状态
+    let isAdmin = false;
+    // 管理员密码（通过环境变量配置）
+    const ADMIN_PASSWORD = import.meta.env.PUBLIC_ADMIN_PASSWORD || 'admin123';
+
+    // 显示提示消息
+    function showToast(message, isError = true) {
+      const toast = document.createElement('div');
+      toast.className = `toast ${isError ? 'error' : 'success'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      // 3秒后自动移除提示
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // 获取DOM元素
+    const adminEnterBtn = document.getElementById('admin-enter');
+    const adminLoginBox = document.getElementById('admin-login');
+    const adminPasswordInput = document.getElementById('admin-password');
+    const adminLoginBtn = document.getElementById('admin-login-btn');
+    const commentsList = document.getElementById('comments-list');
+    const commentForm = document.getElementById('comment-form');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // 管理员登录交互
+    adminEnterBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      adminLoginBox.classList.toggle('hidden');
+      if (!adminLoginBox.classList.contains('hidden')) {
+        adminPasswordInput.focus();
+      }
+    });
+
+    // 管理员登录验证
+    adminLoginBtn.addEventListener('click', () => {
+      const password = adminPasswordInput.value.trim();
+      if (password === ADMIN_PASSWORD) {
+        isAdmin = true;
+        document.getElementById('admin-status').textContent = '✅ 管理员登录成功';
+        document.getElementById('admin-status').style.color = 'green';
+        showToast('管理员登录成功', false);
+        adminPasswordInput.value = '';
+        loadComments(); // 刷新评论列表
+      } else {
+        isAdmin = false;
+        document.getElementById('admin-status').textContent = '❌ 密码错误';
+        document.getElementById('admin-status').style.color = 'red';
+      }
+    });
+
+    // 获取当前文章ID
+    const currentPostId = document.getElementById('comments-container')?.dataset.postSlug || '';
+    if (!currentPostId) {
+      commentsList.innerHTML = `
+        <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+          <i class="fas fa-exclamation-circle mr-1"></i> 未获取到文章信息，点击刷新
+        </p>
+      `;
+      return;
+    }
+
+    // 加载Supabase并初始化评论功能
+    import('@supabase/supabase-js').then(({ createClient }) => {
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+      // 检查Supabase配置
+      if (!supabaseUrl || !supabaseAnonKey) {
+        commentsList.innerHTML = `
+          <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+            <i class="fas fa-exclamation-circle mr-1"></i> 配置缺失，点击刷新
+          </p>
+        `;
+        return;
+      }
+
+      // 创建Supabase客户端
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+      // 加载评论列表
+      async function loadComments() {
+        try {
+          const { data, error } = await supabase
+            .from('comments')
+            .select('*')
+            .eq('post_id', currentPostId)
+            .order('created_at', { ascending: true });
+
+          if (error) throw error;
+
+          // 处理无评论情况
+          if (!data || data.length === 0) {
+            commentsList.innerHTML = '<p class="text-gray-500">暂无评论，快来发表第一条评论吧～</p>';
+            return;
+          }
+
+          // 渲染评论列表
+          const commentsHtml = data.map(comment => `
+            <div class="comment-item">
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span class="font-semibold text-lg">${comment.nickname}</span>
+                <span class="text-gray-500 text-sm">${new Date(comment.created_at).toLocaleString()}</span>
+              </div>
+              <div class="flex items-center">
+                <div class="flex-1 text-gray-800">${comment.content}</div>
+                <button type="button" class="delete-button" data-comment-id="${comment.id}" title="删除评论">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </div>
+          `).join('');
+          
+          commentsList.innerHTML = commentsHtml;
+
+          // 绑定删除按钮事件
+          document.querySelectorAll('.delete-button').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              
+              // 权限验证
+              if (!isAdmin) {
+                showToast('权限不足，无法删除评论');
+                return;
+              }
+
+              // 确认删除
+              if (confirm('确定要删除这条评论吗？')) {
+                try {
+                  const { error } = await supabase
+                    .from('comments')
+                    .delete()
+                    .eq('id', btn.dataset.commentId);
+                  
+                  if (error) throw error;
+                  showToast('评论已成功删除', false);
+                  loadComments(); // 刷新评论列表
+                } catch (err) {
+                  showToast(`删除失败: ${err.message}`);
+                }
+              }
+            });
+          });
+
+        } catch (err) {
+          console.error('加载评论错误:', err);
+          commentsList.innerHTML = `
+            <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+              <i class="fas fa-exclamation-circle mr-1"></i> 加载失败，点击刷新
+            </p>
+          `;
+        }
+      }
+
+      // 首次加载评论
+      loadComments();
+
+      // 评论提交逻辑
+      commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // 获取表单数据
+        const nickname = document.getElementById('nickname').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const content = document.getElementById('content').value.trim();
+
+        // 表单验证
+        if (!nickname || !content) {
+          showToast('请填写昵称和评论内容');
+          return;
+        }
+
+        // 防止重复提交
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 提交中...';
+
+        try {
+          // 提交评论到Supabase
+          const { error } = await supabase
+            .from('comments')
+            .insert([{ 
+              post_id: currentPostId, 
+              nickname, 
+              email, 
+              content, 
+              is_approved: true 
+            }]);
+
+          if (error) throw error;
+
+          // 提交成功处理
+          submitBtn.classList.replace('bg-blue-600', 'bg-green-600');
+          submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 提交成功！';
+          showToast('评论提交成功', false);
+
+          // 重置表单并刷新评论
+          commentForm.reset();
+          loadComments();
+
+          // 恢复按钮状态
+          setTimeout(() => {
+            submitBtn.classList.replace('bg-green-600', 'bg-blue-600');
+            submitBtn.innerHTML = '提交评论';
+            submitBtn.disabled = false;
+          }, 3000);
+        } catch (err) {
+          showToast(`提交失败: ${err.message}`);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '提交评论';
+        }
+      });
+    }).catch(err => {
+      console.error('Supabase初始化错误:', err);
+      commentsList.innerHTML = `
+        <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+          <i class="fas fa-exclamation-circle mr-1"></i> 评论功能异常，点击刷新
+        </p>
+      `;
+    });
+  });
+</script>
