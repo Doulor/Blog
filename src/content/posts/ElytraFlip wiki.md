@@ -7,7 +7,7 @@ category: "wiki"
 draft: false
 ---
 
-#汉语wiki
+# 汉语wiki
 
 **ElytraFlip**
 
@@ -58,7 +58,10 @@ elytra.reload
 消息文本可通过服务器 plugins/ElytraFlip/messages.yml 文件完全自定义。
   
 
-#English Wiki
+
+
+
+# English Wiki
 
 **ElytraFlip**
 
