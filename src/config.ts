@@ -232,14 +232,19 @@ export const profileConfig: ProfileConfig = {
 	bio: "世界很大，不妨到处走走",
 	links: [
 		{
+			name: "Home",
+			icon: "fa6-solid:house",
+			url: "https://firef.dpdns.org",
+		},
+		{
+			name: "QQ",
+			icon: "fa6-brands:qq",
+			url: "https://res.abeim.cn/api/qq/?qq=2737855297",
+		},
+		{
 			name: "Bilibli",
 			icon: "fa6-brands:bilibili",
 			url: "https://space.bilibili.com/1307574205",
-		},
-		{
-			name: "Gitee",
-			icon: "fa6-brands:qq",
-			url: "https://res.abeim.cn/api/qq/?qq=2737855297",
 		},
 		{
 			name: "GitHub",
@@ -282,7 +287,7 @@ export const commentConfig: CommentConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "公告内容", // 公告标题
-	content: "欢迎来到Doulor的Blog，这里用于存放各种小帖子与内容。", // 公告内容
+	content: "欢迎来到我的温暖角落。愿你在此稍作停留，感受一份宁静，带走一缕星光。", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
