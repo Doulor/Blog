@@ -22,7 +22,7 @@ draft: false
 - 轻量无负担：代码简洁，无多余功能，不会占用服务器额外性能。
 
 **适用环境**
-服务器类型：Minecraft Spigot（Paper）服务器（仅支持1.21及以上版本）
+服务器类型：Minecraft Spigot（Paper）服务器（支持1.13-1.21.*版本）
 
 **指令说明**
 
@@ -73,7 +73,7 @@ Eliminates the hassle of manually equipping/removing elytra via inventory. With 
 - Lightweight：Clean code with no redundant features, ensuring no extra server performance load.
 
 **Compatible Environment**
-Server Type：Minecraft spigot(paper) Server (1.21+ only)
+Server Type：Minecraft spigot(paper) Server (1.13-1.21.*)
 
 **Command Usage**
 
