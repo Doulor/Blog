@@ -7,7 +7,7 @@ category: "Minecraft"
 draft: false
 ---
 
-```markdown
+
 # 如何搭建一个简单的Minecraft插件服务器（以Paper为例）
 
 ## 1. 前往服务端官网下载服务器核心
