@@ -31,6 +31,9 @@ export default defineConfig({
 
 	base: "/",
 	trailingSlash: "always",
+	legacy: {
+		collections: true,
+	},
 	contentCollection: {
 		// 相册内容集合配置
 		albums: {
@@ -65,6 +68,43 @@ export default defineConfig({
 							settings: z.string().optional(),
 						})
 					).optional().default([]),
+				})
+		},
+		// 日记集合
+		diary: {
+			schema: ({ z }) =>
+				z.object({
+					title: z.string(),
+					description: z.string().optional(),
+					date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+					tags: z.array(z.string()).optional().default([]),
+					hidden: z.boolean().default(false),
+					images: z.array(z.string()).optional(),
+				})
+		},
+		// 文章集合
+		posts: {
+			schema: ({ z }) =>
+				z.object({
+					title: z.string(),
+					description: z.string().optional(),
+					date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+					tags: z.array(z.string()).optional().default([]),
+					hidden: z.boolean().default(false),
+					published: z.string().optional(),
+					category: z.string().optional(),
+					draft: z.boolean().default(false),
+				})
+		},
+		// spec 集合
+		spec: {
+			schema: ({ z }) =>
+				z.object({
+					title: z.string().optional(),
+					description: z.string().optional(),
+					date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+					tags: z.array(z.string()).optional().default([]),
+					hidden: z.boolean().default(false),
 				})
 		}
 	},
@@ -216,6 +256,7 @@ export default defineConfig({
 					}
 					warn(warning);
 				},
+				external: ["masonry"], // Add masonry to external modules to prevent resolution error
 			},
 		},
 	},
