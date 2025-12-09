@@ -1,144 +1,143 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
-import type { AlbumGroup, Photo } from "../data/1";
+import type { AlbumGroup, Photo } from "../types/album";
 
+// Astro 内容集合 API 需要在构建时使用，所以定义一个异步函数来获取内容
+// 这个函数需要在页面的顶层 await getAlbums() 中使用
 export async function scanAlbums(): Promise<AlbumGroup[]> {
-	const albumsDir = path.join(process.cwd(), "public/images/albums");
+	// 使用 Astro 内容集合 API 导入专辑
+	const { getCollection } = await import("astro:content");
+	const albumEntries = await getCollection("albums");
+
 	const albums: AlbumGroup[] = [];
 
-	// 检查目录是否存在
-	if (!fs.existsSync(albumsDir)) {
-		console.warn("相册目录不存在:", albumsDir);
-		return [];
-	}
+	for (const albumEntry of albumEntries) {
+		const { id, data, body } = albumEntry;
+		const albumId = id.replace(/\.md$/, ""); // 移除 .md 后缀获取相册ID
+		const albumDirName = getAlbumDirNameFromId(albumId);
 
-	// 获取所有子文件夹
-	const albumFolders = fs
-		.readdirSync(albumsDir, { withFileTypes: true })
-		.filter((dirent) => dirent.isDirectory())
-		.map((dirent) => dirent.name);
-
-	// 处理每个相册文件夹
-	for (const folder of albumFolders) {
-		const albumPath = path.join(albumsDir, folder);
-		const album = await processAlbumFolder(albumPath, folder);
-		if (album) {
-			albums.push(album);
+		// 检查是否隐藏相册
+		if (data.hidden === true) {
+			console.log(`相册 ${albumId} 已设置为隐藏，跳过显示`);
+			continue;
 		}
+
+		// 确定封面图片
+		let cover: string;
+		const isExternalMode = data.mode === "external";
+		if (isExternalMode) {
+			if (!data.cover) {
+				console.warn(`相册 ${albumId} 外链模式缺少 cover 字段`);
+				continue;
+			}
+			cover = data.cover;
+		} else {
+			// 本地模式：构建封面路径
+			// 检查是否有 cover.webp，否则检查 cover.jpg
+			const coverWebpExists = await checkCoverImageExists(albumDirName, 'cover.webp');
+			const coverJpgExists = await checkCoverImageExists(albumDirName, 'cover.jpg');
+
+			if (!coverWebpExists && !coverJpgExists) {
+				console.warn(`相册 ${albumDirName} 缺少 cover.webp 或 cover.jpg 文件`);
+				continue;
+			}
+
+			// 优先使用 WebP 格式
+			if (coverWebpExists) {
+				cover = `/images/albums/${albumDirName}/cover.webp`;
+			} else {
+				cover = `/images/albums/${albumDirName}/cover.jpg`;
+			}
+		}
+
+		// 获取相册照片
+		const photos: Photo[] = isExternalMode
+			? processExternalPhotos(data.photos || [], albumDirName)
+			: await scanPhotos(albumDirName);
+
+		albums.push({
+			id: albumId, // 使用内容集合的ID作为相册ID
+			title: data.title || albumId,
+			description: data.description || "",
+			cover,
+			date: data.date || new Date().toISOString().split("T")[0],
+			location: data.location || "",
+			tags: data.tags || [],
+			layout: data.layout || "grid",
+			columns: data.columns || 3,
+			photos,
+			hidden: data.hidden,
+			mode: data.mode,
+		});
 	}
 
 	return albums;
 }
 
-async function processAlbumFolder(
-	folderPath: string,
-	folderName: string,
-): Promise<AlbumGroup | null> {
-	// 检查必要文件
-	const infoPath = path.join(folderPath, "info.json");
-
-	if (!fs.existsSync(infoPath)) {
-		console.warn(`相册 ${folderName} 缺少 info.json 文件`);
-		return null;
-	}
-
-	// 读取相册信息
-	const infoContent = fs.readFileSync(infoPath, "utf-8");
-	let info: Record<string, any>;
-	try {
-		info = JSON.parse(infoContent);
-	} catch (e) {
-		console.error(`相册 ${folderName} 的 info.json 格式错误:`, e);
-		return null;
-	}
-
-	// 检查是否为外链模式
-	const isExternalMode = info.mode === "external";
-	let photos: Photo[] = [];
-	let cover: string;
-
-	if (isExternalMode) {
-		// 外链模式：从 info.json 中获取封面和照片
-		if (!info.cover) {
-			console.warn(`相册 ${folderName} 外链模式缺少 cover 字段`);
-			return null;
-		}
-
-		cover = info.cover;
-		photos = processExternalPhotos(info.photos || [], folderName);
-	} else {
-		// 本地模式：检查本地文件
-		const coverPath = path.join(folderPath, "cover.jpg");
-		if (!fs.existsSync(coverPath)) {
-			console.warn(`相册 ${folderName} 缺少 cover.jpg 文件`);
-			return null;
-		}
-
-		cover = `/images/albums/${folderName}/cover.jpg`;
-		photos = scanPhotos(folderPath, folderName);
-	}
-
-	// 检查是否隐藏相册
-	if (info.hidden === true) {
-		console.log(`相册 ${folderName} 已设置为隐藏，跳过显示`);
-		return null;
-	}
-
-	// 构建相册对象
-	return {
-		id: folderName,
-		title: info.title || folderName,
-		description: info.description || "",
-		cover,
-		date: info.date || new Date().toISOString().split("T")[0],
-		location: info.location || "",
-		tags: info.tags || [],
-		layout: info.layout || "grid",
-		columns: info.columns || 3,
-		photos,
-	};
+// 直接返回相册ID作为目录名（硬性名称匹配）
+function getAlbumDirNameFromId(albumId: string): string {
+	return albumId;
 }
 
-function scanPhotos(folderPath: string, albumId: string): Photo[] {
-	const photos: Photo[] = [];
-	const files = fs.readdirSync(folderPath);
+// 检查封面图片是否存在（支持多种格式）
+async function checkCoverImageExists(albumDirName: string, coverFileName: string = "cover.jpg"): Promise<boolean> {
+	try {
+		const fs = await import("node:fs");
+		const path = await import("node:path");
+		const coverPath = path.join(process.cwd(), "public", "images", "albums", albumDirName, coverFileName);
+		return fs.existsSync(coverPath);
+	} catch (e) {
+		console.error("检查封面图片时出错:", e);
+		return false;
+	}
+}
 
-	// 过滤出图片文件
+// 扫描本地相册照片
+async function scanPhotos(albumId: string): Promise<Photo[]> {
+	const fs = await import("node:fs");
+	const path = await import("node:path");
+
+	const photos: Photo[] = [];
+	const albumPath = path.join(process.cwd(), "public", "images", "albums", albumId);
+
+	if (!fs.existsSync(albumPath)) {
+		console.warn(`相册目录 ${albumPath} 不存在`);
+		return photos;
+	}
+
+	const files = fs.readdirSync(albumPath);
+	const imageExtensions = [
+		".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg",
+		".avif", ".bmp", ".tiff", ".tif"
+	];
+
+	// 过滤出图片文件（排除封面图片，支持多种格式）
 	const imageFiles = files.filter((file) => {
 		const ext = path.extname(file).toLowerCase();
-		return (
-			[
-				".jpg",
-				".jpeg",
-				".png",
-				".gif",
-				".webp",
-				".svg",
-				".avif",
-				".bmp",
-				".tiff",
-				".tif",
-			].includes(ext) && file !== "cover.jpg"
-		);
+		const lowerCaseFile = file.toLowerCase();
+		return imageExtensions.includes(ext) &&
+		       lowerCaseFile !== "cover.jpg" &&
+		       lowerCaseFile !== "cover.webp" &&
+		       lowerCaseFile !== "cover.png" &&
+		       lowerCaseFile !== "cover.jpeg";
 	});
 
 	// 处理每张照片
-	imageFiles.forEach((file, index) => {
-		const filePath = path.join(folderPath, file);
+	for (let i = 0; i < imageFiles.length; i++) {
+		const file = imageFiles[i];
+		const filePath = path.join(albumPath, file);
 		const stats = fs.statSync(filePath);
 
 		// 解析文件名中的标签
 		const { baseName, tags } = parseFileName(file);
 
 		photos.push({
-			id: `${albumId}-photo-${index}`,
+			id: `${albumId}-photo-${i}`,
 			src: `/images/albums/${albumId}/${file}`,
 			alt: baseName,
 			title: baseName,
 			tags: tags,
 			date: stats.mtime.toISOString().split("T")[0],
 		});
-	});
+	}
 
 	return photos;
 }
@@ -150,7 +149,7 @@ function processExternalPhotos(
 	const photos: Photo[] = [];
 
 	externalPhotos.forEach((photo, index) => {
-		if (!photo.src) {
+		if (!photo?.src) {
 			console.warn(`相册 ${albumId} 的第 ${index + 1} 张照片缺少 src 字段`);
 			return;
 		}
@@ -177,8 +176,13 @@ function processExternalPhotos(
 }
 
 function parseFileName(fileName: string): { baseName: string; tags: string[] } {
+	// 手动实现类似 path.basename 和 path.extname 的功能
+	const lastDotIndex = fileName.lastIndexOf('.');
+	const ext = lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex);
+	const baseNameWithExt = lastDotIndex === -1 ? fileName : fileName.substring(0, lastDotIndex);
+
 	// 匹配文件名中的标签，格式为：文件名_标签1_标签2.扩展名
-	const parts = path.basename(fileName, path.extname(fileName)).split("_");
+	const parts = baseNameWithExt.split("_");
 
 	if (parts.length > 1) {
 		// 第一部分作为基本名称，其余部分作为标签
@@ -188,6 +192,5 @@ function parseFileName(fileName: string): { baseName: string; tags: string[] } {
 	}
 
 	// 如果没有标签，返回不带扩展名的文件名
-	const baseName = path.basename(fileName, path.extname(fileName));
-	return { baseName, tags: [] };
+	return { baseName: baseNameWithExt, tags: [] };
 }

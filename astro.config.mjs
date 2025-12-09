@@ -31,6 +31,43 @@ export default defineConfig({
 
 	base: "/",
 	trailingSlash: "always",
+	contentCollection: {
+		// 相册内容集合配置
+		albums: {
+			// 定义相册集合的模式
+			schema: ({ z }) =>
+				z.object({
+					title: z.string(),
+					hidden: z.boolean().optional().default(false),
+					description: z.string().optional().default(""),
+					date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+					location: z.string().optional().default(""),
+					tags: z.array(z.string()).optional().default([]),
+					layout: z.string().optional().default("grid"),
+					columns: z.number().optional().default(3),
+					cover: z.string().optional(),  // 可选，因为有些相册可能是外部链接
+					mode: z.string().optional(),   // 可选，用于区分外部链接模式
+					photos: z.array(
+						z.object({
+							id: z.string().optional(),
+							src: z.string(),
+							thumbnail: z.string().optional(),
+							alt: z.string().optional().default("Photo"),
+							title: z.string().optional(),
+							description: z.string().optional(),
+							tags: z.array(z.string()).optional().default([]),
+							date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+							location: z.string().optional(),
+							width: z.number().optional(),
+							height: z.number().optional(),
+							camera: z.string().optional(),
+							lens: z.string().optional(),
+							settings: z.string().optional(),
+						})
+					).optional().default([]),
+				})
+		}
+	},
 	integrations: [
 		tailwind({
 			nesting: true,
