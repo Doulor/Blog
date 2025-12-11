@@ -4,6 +4,35 @@ import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getCollection } from 'astro:content';
 
+// 检测是否为外部图片链接
+function isExternalUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return /^https?:$/.test(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+// 保留原始时间格式化函数
+function formatTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInMinutes = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60),
+  );
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
+  }
+  if (diffInMinutes < 1440) { // 24小时
+    const hours = Math.floor(diffInMinutes / 60);
+    return `${hours}${i18n(I18nKey.diaryHoursAgo)}`;
+  }
+  const days = Math.floor(diffInMinutes / 1440);
+  return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+}
+
 // 获取实际日记数据并按日期排序
 const diaries = await getCollection('diary')
   .then(items => items.sort((a, b) => new Date(b.data.date) - new Date(a.data.date)));
@@ -53,35 +82,37 @@ function formatTime(dateString: string): string {
           <div class="timeline-list space-y-4">
             {diaries.map(diary => (
               <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all" key={diary.slug}>
-                <div class="moment-content">
-                  {/* 新增：日记标题（保持原有设计语言） */}
-                  {diary.data.title && (
-                    <h3 class="moment-title text-base md:text-lg lg:text-xl font-semibold text-90 mb-2 md:mb-3 leading-tight">
-                      {diary.data.title}
-                    </h3>
-                  )}
-                  
-                  {/* 使用excerpt或body内容，并添加安全检查 */}
-                  <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">
-                    {diary.data.excerpt || diary.body?.slice(0, 200) || ''}
-                  </p>
-                  
-                  {/* 处理图片显示 */}
-                  {diary.data.images && diary.data.images.length > 0 && (
-                    <div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
-                      {diary.data.images.map((image, index) => (
-                        <div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform" key={index}>
-                          <img 
-                            src={`/images/diary/${image}`} 
-                            alt={i18n(I18nKey.diaryImage)}
-                            class="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <a href={`/diary/${diary.slug}/`} class="block">
+                  <div class="moment-content">
+                    {/* 新增：日记标题（保持原有设计语言） */}
+                    {diary.data.title && (
+                      <h3 class="moment-title text-base md:text-lg lg:text-xl font-semibold text-90 mb-2 md:mb-3 leading-tight">
+                        {diary.data.title}
+                      </h3>
+                    )}
+
+                    {/* 使用excerpt或body内容，并添加安全检查 */}
+                    <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">
+                      {diary.data.excerpt || diary.body?.slice(0, 200) + '...' || ''}
+                    </p>
+
+                    {/* 处理图片显示 */}
+                    {diary.data.images && diary.data.images.length > 0 && (
+                      <div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
+                        {diary.data.images.map((image, index) => (
+                          <div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform" key={index}>
+                            <img
+                              src={isExternalUrl(image) ? image : `/images/diary/${image}`}
+                              alt={i18n(I18nKey.diaryImage)}
+                              class="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </a>
                 
                 <hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4" />
                 
