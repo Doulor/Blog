@@ -500,154 +500,8 @@
         document.getElementById('diaryDate').value = getCurrentDate();
         document.getElementById('albumDate').value = getCurrentDate();
 
-        // 生成内容函数
-        function generateMarkdown(type) {
-            let title, date, description, tags = [], category, content;
-            const extraFields = {};
 
-            switch(type) {
-                case 'normal': // 帖子
-                    title = document.getElementById('normalTitle').value;
-                    date = document.getElementById('normalPublished').value || getCurrentDate();
-                    description = document.getElementById('normalDescription').value;
-                    tags = document.getElementById('normalTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
-                    category = document.getElementById('normalCategory').value;
-                    content = document.getElementById('normalContent').value;
-
-                    // 处理额外字段
-                    extraFields.image = document.getElementById('normalUseImage').checked ?
-                        document.getElementById('normalImage').value : undefined;
-                    extraFields.draft = document.getElementById('normalDraft').checked;
-                    extraFields.pinned = document.getElementById('normalPinned').checked;
-                    if(document.getElementById('normalUsePassword').checked) {
-                        extraFields.password = document.getElementById('normalPassword').value;
-                    }
-                    break;
-
-                case 'diary': // 日记
-                    title = document.getElementById('diaryTitle').value;
-                    date = document.getElementById('diaryDate').value || getCurrentDate();
-                    description = document.getElementById('diaryDescription')?.value || "";
-                    tags = (document.getElementById('diaryTags')?.value || "").split(',').map(tag => tag.trim()).filter(tag => tag);
-                    content = document.getElementById('diaryContent').value;
-
-                    // 处理图片
-                    if(document.getElementById('diaryUseImage').checked) {
-                        const imageInputs = document.querySelectorAll('#diaryImagesContainer input[name="diaryImage[]"]');
-                        extraFields.images = Array.from(imageInputs).map(input => input.value).filter(val => val);
-                    }
-                    break;
-
-                case 'album': // 相册
-                    title = document.getElementById('albumTitle').value;
-                    const albumId = document.getElementById('albumId').value;
-                    date = document.getElementById('albumDate').value || getCurrentDate();
-                    description = document.getElementById('albumDescription').value;
-                    const location = document.getElementById('albumLocation').value;
-                    tags = document.getElementById('albumTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
-                    const layout = document.getElementById('albumLayout').value;
-                    const columns = parseInt(document.getElementById('albumColumns').value);
-                    const cover = document.getElementById('albumCover').value;
-                    const hidden = document.getElementById('albumHidden').checked;
-                    const mode = document.querySelector('input[name="albumType"]:checked').value;
-
-                    // 处理相册中的照片
-                    let photos = [];
-                    if(mode === 'external') {
-                        const photoInputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
-                        photos = Array.from(photoInputs).map(input => ({
-                            src: input.value,
-                            alt: "Photo"
-                        })).filter(photo => photo.src);
-                    }
-
-                    // 创建内容
-                    content = `# ${title}\n\n${description || '这是一个相册页面'}`;
-
-                    // 返回相册格式的数据
-                    const albumData = {
-                        title,
-                        id: albumId,
-                        date,
-                        description: description || "",
-                        location: location || "",
-                        tags: tags.length ? tags : [],
-                        layout: layout || "grid",
-                        columns: columns || 3,
-                        cover,
-                        hidden: hidden || false,
-                        mode: mode || "local",
-                        photos
-                    };
-
-                    // 生成相册的Markdown内容
-                    const albumFrontmatter = `---
-title: "${albumData.title}"
-id: "${albumData.id}"
-date: ${albumData.date}
-description: "${albumData.description}"
-location: "${albumData.location}"
-tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]
-layout: "${albumData.layout}"
-columns: ${albumData.columns}
-cover: "${albumData.cover}"
-hidden: ${albumData.hidden}
-mode: "${albumData.mode}"
-${albumData.photos.length > 0 ? `photos:\n${albumData.photos.map(photo => `  - src: "${photo.src}"\n    alt: "${photo.alt}"`).join('\n')}` : ''}
----
-
-${content}`;
-
-                    // 设置文件名
-                    document.getElementById('fileName').value = `${albumData.id}.md`;
-                    document.getElementById('fileDirectory').value = 'src/content/albums';
-                    
-                    document.getElementById('markdownResult').textContent = albumFrontmatter;
-                    return; // 提前返回，因为我们已经设置了结果
-            }
-
-            // 构建Frontmatter
-            let frontmatter = `---\ntitle: "${title}"\ndate: ${date}`;
-            if(description) frontmatter += `\ndescription: "${description}"`;
-            if(category) frontmatter += `\ncategory: "${category}"`;
-            if(tags.length > 0) frontmatter += `\ntags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
-
-            // 添加额外字段
-            Object.entries(extraFields).forEach(([key, value]) => {
-                if(value !== undefined) {
-                    if(typeof value === 'string') {
-                        frontmatter += `\n${key}: "${value}"`;
-                    } else if(typeof value === 'boolean' || typeof value === 'number') {
-                        frontmatter += `\n${key}: ${value}`;
-                    } else if(Array.isArray(value)) {
-                        frontmatter += `\n${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
-                    } else if(typeof value === 'object') {
-                        // 处理复杂对象
-                        frontmatter += `\n${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
-                    }
-                }
-            });
-
-            frontmatter += '\n---\n\n';
-
-            // 最终内容 = Frontmatter + 内容
-            const fullContent = frontmatter + content;
-
-            // 设置文件名
-            const slug = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
-            document.getElementById('fileName').value = type === 'diary' 
-                ? `${date}-${slug}.md` 
-                : `${date}-${slug}.md`;
-                
-            document.getElementById('fileDirectory').value = 
-                type === 'normal' ? 'src/content/posts' : 
-                type === 'diary' ? 'src/content/diary' : 'src/content/albums';
-
-            // 显示在结果区域
-            document.getElementById('markdownResult').textContent = fullContent;
-        }
-
-        // 为提交按钮添加事件监听器
+        // 提交按钮点击事件，用于手动生成（保留原有功能）
         document.getElementById('normalSubmitButton').addEventListener('click', () => generateMarkdown('normal'));
         document.getElementById('diarySubmitButton').addEventListener('click', () => generateMarkdown('diary'));
         document.getElementById('albumSubmitButton').addEventListener('click', () => generateMarkdown('album'));
@@ -796,11 +650,220 @@ ${content}`;
             }
         });
 
+        // 自动预览功能
+        function setupAutoPreview() {
+            // 为所有输入字段添加事件监听
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                if (input.type !== 'checkbox' && input.type !== 'radio') {
+                    input.addEventListener('input', function() {
+                        // 延迟生成预览，避免频繁更新
+                        clearTimeout(window.previewTimeout);
+                        window.previewTimeout = setTimeout(() => {
+                            // 获取当前活动的表单
+                            const activeForm = document.querySelector('.form-content:not(.hidden)');
+                            if (activeForm) {
+                                const formType = activeForm.id.replace('Form', '');
+                                generateMarkdown(formType, true); // 传入true表示自动预览
+                            }
+                        }, 500);
+                    });
+                }
+            });
+
+            // 为复选框添加监听
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const activeForm = document.querySelector('.form-content:not(.hidden)');
+                    if (activeForm) {
+                        const formType = activeForm.id.replace('Form', '');
+                        generateMarkdown(formType, true);
+                    }
+                });
+            });
+
+            // 为单选按钮添加监听
+            const radios = document.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const activeForm = document.querySelector('.form-content:not(.hidden)');
+                    if (activeForm) {
+                        const formType = activeForm.id.replace('Form', '');
+                        generateMarkdown(formType, true);
+                    }
+                });
+            });
+        }
+
+        // 修改生成函数，支持自动预览模式和标题作为文件名
+        function generateMarkdown(type, autoPreview = false) {
+            let title, date, description, tags = [], category, content;
+            const extraFields = {};
+
+            switch(type) {
+                case 'normal': // 帖子
+                    title = document.getElementById('normalTitle').value;
+                    date = document.getElementById('normalPublished').value || getCurrentDate();
+                    description = document.getElementById('normalDescription').value;
+                    tags = document.getElementById('normalTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                    category = document.getElementById('normalCategory').value;
+                    content = document.getElementById('normalContent').value;
+
+                    // 处理额外字段
+                    extraFields.image = document.getElementById('normalUseImage').checked ?
+                        document.getElementById('normalImage').value : undefined;
+                    extraFields.draft = document.getElementById('normalDraft').checked;
+                    extraFields.pinned = document.getElementById('normalPinned').checked;
+                    // 添加published字段（即使它在集合中是可选的，但某些情况下构建系统仍要求它存在）
+                    extraFields.published = date; // 使用当前日期
+                    if(document.getElementById('normalUsePassword').checked) {
+                        extraFields.password = document.getElementById('normalPassword').value;
+                    }
+                    break;
+
+                case 'diary': // 日记
+                    title = document.getElementById('diaryTitle').value;
+                    date = document.getElementById('diaryDate').value || getCurrentDate();
+                    description = document.getElementById('diaryDescription')?.value || "";
+                    tags = (document.getElementById('diaryTags')?.value || "").split(',').map(tag => tag.trim()).filter(tag => tag);
+                    content = document.getElementById('diaryContent').value;
+
+                    // 处理图片
+                    if(document.getElementById('diaryUseImage').checked) {
+                        const imageInputs = document.querySelectorAll('#diaryImagesContainer input[name="diaryImage[]"]');
+                        extraFields.images = Array.from(imageInputs).map(input => input.value).filter(val => val);
+                    }
+                    break;
+
+                case 'album': // 相册
+                    title = document.getElementById('albumTitle').value;
+                    const albumId = document.getElementById('albumId').value;
+                    date = document.getElementById('albumDate').value || getCurrentDate();
+                    description = document.getElementById('albumDescription').value;
+                    const location = document.getElementById('albumLocation').value;
+                    tags = document.getElementById('albumTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                    const layout = document.getElementById('albumLayout').value;
+                    const columns = parseInt(document.getElementById('albumColumns').value);
+                    const cover = document.getElementById('albumCover').value;
+                    const hidden = document.getElementById('albumHidden').checked;
+                    const mode = document.querySelector('input[name="albumType"]:checked').value;
+
+                    // 处理相册中的照片
+                    let photos = [];
+                    if(mode === 'external') {
+                        const photoInputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
+                        photos = Array.from(photoInputs).map(input => ({
+                            src: input.value,
+                            alt: "Photo"
+                        })).filter(photo => photo.src);
+                    }
+
+                    // 创建内容
+                    content = `# ${title}\n\n${description || '这是一个相册页面'}`;
+
+                    // 返回相册格式的数据
+                    const albumData = {
+                        title,
+                        id: albumId,
+                        date,
+                        description: description || "",
+                        location: location || "",
+                        tags: tags.length ? tags : [],
+                        layout: layout || "grid",
+                        columns: columns || 3,
+                        cover,
+                        hidden: hidden || false,
+                        mode: mode || "local",
+                        photos
+                    };
+
+                    // 生成相册的Markdown内容
+                    const albumFrontmatter = `---
+title: "${albumData.title}"
+id: "${albumData.id}"
+date: ${albumData.date}
+description: "${albumData.description}"
+location: "${albumData.location}"
+tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]
+layout: "${albumData.layout}"
+columns: ${albumData.columns}
+cover: "${albumData.cover}"
+hidden: ${albumData.hidden}
+mode: "${albumData.mode}"
+${albumData.photos.length > 0 ? `photos:\n${albumData.photos.map(photo => `  - src: "${photo.src}"\n    alt: "${photo.alt}"`).join('\n')}` : ''}
+---
+
+${content}`;
+
+                    // 设置文件名 - 使用相册ID而不是日期
+                    document.getElementById('fileName').value = `${albumData.id}.md`;
+                    document.getElementById('fileDirectory').value = 'src/content/albums';
+
+                    document.getElementById('markdownResult').textContent = albumFrontmatter;
+                    return; // 提前返回，因为我们已经设置了结果
+            }
+
+            // 构建Frontmatter
+            let frontmatter = `---\ntitle: "${title}"\ndate: ${date}`;
+            if(description) frontmatter += `\ndescription: "${description}"`;
+            if(category) frontmatter += `\ncategory: "${category}"`;
+            if(tags.length > 0) frontmatter += `\ntags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
+
+            // 添加额外字段
+            Object.entries(extraFields).forEach(([key, value]) => {
+                if(value !== undefined) {
+                    if(typeof value === 'string') {
+                        frontmatter += `\n${key}: "${value}"`;
+                    } else if(typeof value === 'boolean' || typeof value === 'number') {
+                        frontmatter += `\n${key}: ${value}`;
+                    } else if(Array.isArray(value)) {
+                        frontmatter += `\n${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
+                    } else if(typeof value === 'object') {
+                        // 处理复杂对象
+                        frontmatter += `\n${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
+                    }
+                }
+            });
+
+            frontmatter += '\n---\n\n';
+
+            // 最终内容 = Frontmatter + 内容
+            const fullContent = frontmatter + content;
+
+            // 设置文件名 - 使用标题作为文件名
+            const slug = title.toLowerCase()
+                             .replace(/[^a-z0-9\s]/g, '')  // 移除非字母数字和空格字符
+                             .replace(/\s+/g, '-');        // 空格替换为短横线
+
+            // 仅在非自动预览模式下更新文件名，避免频繁更新
+            if (!autoPreview || !document.getElementById('fileName').value) {
+                document.getElementById('fileName').value = slug ? `${slug}.md` : `${date}-untitled.md`;
+            }
+
+            document.getElementById('fileDirectory').value =
+                type === 'normal' ? 'src/content/posts' :
+                type === 'diary' ? 'src/content/diary' : 'src/content/albums';
+
+            // 显示在结果区域
+            document.getElementById('markdownResult').textContent = fullContent;
+        }
+
         // 添加清除认证数据功能
         function clearAuthData() {
             localStorage.removeItem('github_access_token');
             console.log('认证数据已清除');
         }
+
+        // 页面加载后设置自动预览
+        document.addEventListener('DOMContentLoaded', function() {
+            setupAutoPreview();
+
+            // 为提交按钮添加事件监听器（保持原有功能）
+            document.getElementById('normalSubmitButton')?.addEventListener('click', () => generateMarkdown('normal'));
+            document.getElementById('diarySubmitButton')?.addEventListener('click', () => generateMarkdown('diary'));
+            document.getElementById('albumSubmitButton')?.addEventListener('click', () => generateMarkdown('album'));
+        });
 
         // 暴露函数给全局作用域
         window.getCurrentDate = getCurrentDate;
