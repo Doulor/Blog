@@ -189,6 +189,7 @@
                 // 延迟以显示进度指示
                 setTimeout(function() {
                     // 跳转到 Worker 的认证端点，它将处理跳转到 GitHub 并在完成后回调到我们的页面
+                    // 使用完整的回调URL，让Worker知道认证完成后的回调位置
                     const callbackUrl = encodeURIComponent(window.location.origin + '/auth-callback.html');
                     window.location.href = `https://eblog.firef.dpdns.org/api/auth?callback=${callbackUrl}`;
                 }, 1000);
