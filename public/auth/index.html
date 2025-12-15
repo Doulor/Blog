@@ -74,21 +74,9 @@
     <script>
         function initiateOAuth() {
             // 重定向到 GitHub OAuth 授权页面
-            // 这里使用您的 Worker 的 OAuth 端点
-            const clientId = 'YOUR_CLIENT_ID_HERE'; // 这应该从环境或配置中获取
-            const redirectUri = 'https://eblog-editor.2737855297.workers.dev/api/callback';
-            const scope = 'repo';
-            
-            // 在实际部署中，您需要将 YOUR_CLIENT_ID_HERE 替换为真实的 Client ID
-            // 或者从服务器端获取
-            const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-            
-            // 为了演示，我们使用一个预定义的 URL - 您需要在 GitHub OAuth App 中设置回调 URL
-            window.location.href = authUrl;
+            // 您需要将 'YOUR_GITHUB_CLIENT_ID' 替换为您的实际 GitHub OAuth App Client ID
+            alert('请在代码中将 YOUR_GITHUB_CLIENT_ID 替换为您的实际 Client ID');
         }
-        
-        // 实际上，您应该直接访问 GitHub OAuth 授权 URL
-        // 例如：https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=repo
     </script>
 </body>
 </html>
