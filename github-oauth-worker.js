@@ -133,7 +133,8 @@ async function handleOAuthCallback(request) {
 
     // 将用户重定向回 CMS 管理界面，带有访问令牌的 URL 参数
     const redirectUrl = `https://blog.firef.dpdns.org/admin/#access_token=${accessToken}`;
-    
+    const editorUrl = `https://blog.firef.dpdns.org/my-editor/`;
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -141,12 +142,12 @@ async function handleOAuthCallback(request) {
         <meta charset="utf-8">
         <title>Authentication Successful</title>
         <style>
-          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f0f8ff; }
+          body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f0f8ff; }
           .container { max-width: 500px; margin: 0 auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
           .success { color: #28a745; font-size: 24px; margin-bottom: 20px; }
           .message { margin: 20px 0; }
-          .redirect-link { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }
-          .token-display { font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 15px 0; word-break: break-all; }
+          .redirect-link { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+          .token-display { font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 15px 0; word-break: break-all; font-size: 0.8em; }
         </style>
       </head>
       <body>
@@ -154,10 +155,13 @@ async function handleOAuthCallback(request) {
           <div class="success">✓ 认证成功！</div>
           <h2>GitHub 账户认证完成</h2>
           <div class="message">
-            <p>正在设置您的会话...</p>
-            <div class="token-display">令牌已获取并存储</div>
+            <p>您的访问令牌已安全存储</p>
+            <div class="token-display">令牌已获取并存储到浏览器</div>
             <p>即将跳转到内容管理界面...</p>
-            <p>如果页面没有自动跳转，请 <a href="${redirectUrl}" class="redirect-link">点击这里</a></p>
+            <div>
+              <a href="${editorUrl}" class="redirect-link">直接进入编辑器</a>
+              <a href="${redirectUrl}" class="redirect-link">进入管理面板</a>
+            </div>
           </div>
         </div>
         <script>
@@ -170,22 +174,22 @@ async function handleOAuthCallback(request) {
             avatar_url: '',
             logins: [Date.now()]
           };
-          
+
           // 存储到 localStorage
           localStorage.setItem('decap-cms-user', JSON.stringify(tokenObj));
           localStorage.setItem('netlify-cms-user', JSON.stringify(tokenObj)); // 兼容性处理
-          
+
           console.log('Token stored:', tokenObj);
-          
+
           // 添加延迟以显示成功消息
           setTimeout(function() {
-            window.location = '${redirectUrl}';
-          }, 3000); // 3秒后跳转
+            window.location = '${editorUrl}'; // 直接跳转到编辑器，避免admin页面的问题
+          }, 2000); // 2秒后跳转
         </script>
       </body>
       </html>
     `;
-    
+
     return new Response(html, {
       headers: { 'Content-Type': 'text/html' }
     });

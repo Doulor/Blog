@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firef 博客内容管理 - 认证系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <i class="fas fa-user-lock text-indigo-600 text-2xl"></i>
+                </div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Firef 博客内容管理
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    通过 GitHub 账户进行认证
+                </p>
+            </div>
+            
+            <div class="mt-8 bg-white py-8 px-4 shadow rounded-lg sm:px-10" id="loginContainer">
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">认证状态</h3>
+                        <div id="statusMessage" class="text-center py-4">
+                            <i class="fas fa-shield-alt text-4xl text-gray-400 mb-2"></i>
+                            <p class="text-gray-600">等待认证...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 bg-blue-50 p-4 rounded-lg">
+                        <p><i class="fas fa-info-circle mr-2"></i>认证后，您可以：</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            <li>创建和编辑博客文章</li>
+                            <li>管理日记内容</li>
+                            <li>配置相册</li>
+                            <li>直接提交内容到 GitHub 仓库</li>
+                        </ul>
+                    </div>
+                    
+                    <div id="loginButtons" class="space-y-4">
+                        <button id="loginButton" 
+                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                            <i class="fab fa-github mr-2"></i>
+                            通过 GitHub 登录
+                        </button>
+                        
+                        <div class="text-center text-sm text-gray-600">
+                            <p>点击登录按钮将跳转到 GitHub 进行安全认证</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="successContainer" class="hidden bg-white py-8 px-4 shadow rounded-lg sm:px-10">
+                <div class="text-center">
+                    <div class="mx-auto h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-check text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">认证成功！</h3>
+                    <p class="mt-2 text-gray-600">您已成功连接到 GitHub 账户</p>
+                    <div class="mt-6">
+                        <button id="goToEditor" 
+                                class="w-full flex justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+                            <i class="fas fa-edit mr-2"></i>
+                            进入内容编辑器
+                        </button>
+                        <button id="goToBlog" 
+                                class="w-full flex justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 mt-3">
+                            <i class="fas fa-home mr-2"></i>
+                            返回博客首页
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查认证状态
+        function checkAuthStatus() {
+            const token = localStorage.getItem('decap-cms-user');
+            const statusMessage = document.getElementById('statusMessage');
+            const loginButtons = document.getElementById('loginButtons');
+            
+            if (token) {
+                // 已认证
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('successContainer').style.display = 'block';
+                
+                try {
+                    const tokenObj = JSON.parse(token);
+                    if (tokenObj.backend_token || tokenObj.access_token) {
+                        statusMessage.innerHTML = `
+                            <div class="text-center">
+                                <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                                <p class="text-green-600 font-medium">已认证</p>
+                                <p class="text-sm text-gray-600 mt-1">令牌已安全存储</p>
+                            </div>
+                        `;
+                    } else {
+                        statusMessage.innerHTML = `
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-2"></i>
+                                <p class="text-yellow-600 font-medium">认证信息不完整</p>
+                                <p class="text-sm text-gray-600 mt-1">请重新认证</p>
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    statusMessage.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-2"></i>
+                            <p class="text-red-600 font-medium">认证数据格式错误</p>
+                            <p class="text-sm text-gray-600 mt-1">请清除数据并重新认证</p>
+                        </div>
+                    `;
+                }
+            } else {
+                // 未认证
+                statusMessage.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-user-clock text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">未认证</p>
+                        <p class="text-sm text-gray-600 mt-1">点击下方按钮进行认证</p>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定事件
+            document.getElementById('loginButton').addEventListener('click', function() {
+                const clientId = prompt('请输入您的 GitHub OAuth App Client ID:');
+                if (clientId && clientId.trim() !== '') {
+                    const redirectUri = 'https://eblog.firef.dpdns.org/api/callback';
+                    const scope = 'repo';
+                    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+                    window.location.href = authUrl;
+                }
+            });
+            
+            document.getElementById('goToEditor').addEventListener('click', function() {
+                window.location.href = '/my-editor/';
+            });
+            
+            document.getElementById('goToBlog').addEventListener('click', function() {
+                window.location.href = '/';
+            });
+            
+            // 检查初始状态
+            checkAuthStatus();
+        });
+        
+        // 监听存储变化
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'decap-cms-user') {
+                checkAuthStatus();
+            }
+        });
+    </script>
+</body>
+</html>

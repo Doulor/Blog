@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>令牌调试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .token-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>令牌调试页面</h1>
+        <p>此页面用于检查认证令牌状态</p>
+        
+        <div>
+            <button onclick="checkTokens()">检查令牌</button>
+            <button onclick="clearTokens()">清除令牌</button>
+            <button onclick="goToAuth()">去认证</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function checkTokens() {
+            const resultDiv = document.getElementById('result');
+            
+            // 检查所有可能的令牌存储位置
+            const tokenStorage = {
+                'decap-cms-user': localStorage.getItem('decap-cms-user'),
+                'netlify-cms-user': localStorage.getItem('netlify-cms-user'),
+                'cms-user': localStorage.getItem('cms-user')
+            };
+            
+            let html = '<h3>令牌存储状态:</h3>';
+            
+            for (const [key, value] of Object.entries(tokenStorage)) {
+                html += `<p><strong>${key}:</strong> `;
+                if (value) {
+                    try {
+                        const parsed = JSON.parse(value);
+                        html += '<span style="color: green;">✓ 已存储</span>';
+                        html += `<div class="token-info">${JSON.stringify(parsed, null, 2)}</div>`;
+                    } catch (e) {
+                        html += '<span style="color: orange;">⚠ 无效JSON</span>';
+                        html += `<div class="token-info">${value}</div>`;
+                    }
+                } else {
+                    html += '<span style="color: red;">✗ 未存储</span>';
+                }
+                html += '</p>';
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        function clearTokens() {
+            localStorage.removeItem('decap-cms-user');
+            localStorage.removeItem('netlify-cms-user');
+            localStorage.removeItem('cms-user');
+            alert('令牌已清除');
+            checkTokens();
+        }
+        
+        function goToAuth() {
+            window.location.href = '/login.html';
+        }
+        
+        // 页面加载时自动检查
+        window.onload = function() {
+            checkTokens();
+        };
+    </script>
+</body>
+</html>

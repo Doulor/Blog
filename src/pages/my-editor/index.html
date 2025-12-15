@@ -718,6 +718,10 @@ ${content}`;
             try {
                 // 使用您的Worker代理来与GitHub API交互
                 const proxyUrl = 'https://eblog.firef.dpdns.org/api/gateway';
+
+                // 验证令牌是否有效
+                console.log('Access token for request:', accessToken.substring(0, 10) + '...');  // 只示令牌前10个字符
+                console.log('Full token object:', tokenObj);
                 
                 // 读取当前文件以获取SHA（如果文件已存在）
                 let sha = null;
