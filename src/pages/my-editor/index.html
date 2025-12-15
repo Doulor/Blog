@@ -715,7 +715,7 @@
                         document.getElementById('normalImage').value : undefined;
                     extraFields.draft = document.getElementById('normalDraft').checked;
                     extraFields.pinned = document.getElementById('normalPinned').checked;
-                    // 添加published字段（即使它在集合中是可选的，但某些情况下构建系统仍要求它存在）
+                    // 确保published字段存在，因为构建系统要求它必须存在
                     extraFields.published = date; // 使用当前日期
                     if(document.getElementById('normalUsePassword').checked) {
                         extraFields.password = document.getElementById('normalPassword').value;
@@ -806,13 +806,25 @@ ${content}`;
 
             // 构建Frontmatter
             let frontmatter = `---\ntitle: "${title}"\ndate: ${date}`;
+
+            // 对于帖子类型，确保同时包含published字段，这对构建是必需的
+            if (type === 'normal' && extraFields.published) {
+                frontmatter += `\npublished: ${extraFields.published}`;
+            }
+
             if(description) frontmatter += `\ndescription: "${description}"`;
             if(category) frontmatter += `\ncategory: "${category}"`;
             if(tags.length > 0) frontmatter += `\ntags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
 
-            // 添加额外字段
+            // 添加额外字段（但避免重复添加published，因为它已经单独添加）
             Object.entries(extraFields).forEach(([key, value]) => {
                 if(value !== undefined) {
+                    // 跳过已显式添加的字段
+                    if (type === 'normal' && key === 'published') {
+                        // published字段已作为特殊字段添加，跳过
+                        return;
+                    }
+
                     if(typeof value === 'string') {
                         frontmatter += `\n${key}: "${value}"`;
                     } else if(typeof value === 'boolean' || typeof value === 'number') {
@@ -831,14 +843,15 @@ ${content}`;
             // 最终内容 = Frontmatter + 内容
             const fullContent = frontmatter + content;
 
-            // 设置文件名 - 使用标题作为文件名
+            // 设置文件名 - 使用日期+标题的方式（这是Astro内容集合的标准格式）
             const slug = title.toLowerCase()
                              .replace(/[^a-z0-9\s]/g, '')  // 移除非字母数字和空格字符
                              .replace(/\s+/g, '-');        // 空格替换为短横线
 
             // 仅在非自动预览模式下更新文件名，避免频繁更新
             if (!autoPreview || !document.getElementById('fileName').value) {
-                document.getElementById('fileName').value = slug ? `${slug}.md` : `${date}-untitled.md`;
+                // 使用日期-标题的格式，这是标准的内容集合文件命名方式
+                document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
             }
 
             document.getElementById('fileDirectory').value =
