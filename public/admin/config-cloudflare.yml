@@ -13,9 +13,8 @@ backend:
   branch: main
   client_id: ${CMS_GITHUB_APP_CLIENT_ID}
   client_secret: ${CMS_GITHUB_APP_CLIENT_SECRET}
-  base_url: https://your-site-name.pages.dev  # 替换为您的 Cloudflare Pages URL
-  auth_endpoint: 'https://github.com/login/oauth/authorize'
-  auth_scope: ['repo', 'read:user', 'user:email']
+  # 注意：GitHub 后端使用标准 GitHub API，不需要设置 base_url
+  # Cloudflare Worker 只处理 OAuth 认证流程
 
 media_folder: "public/assets/images"  # 存放上传的媒体文件
 public_folder: "/assets/images"
