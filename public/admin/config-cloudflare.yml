@@ -76,7 +76,7 @@ collections:
           - { label: "图片路径", name: "src", widget: "string" }
           - { label: "替代文本", name: "alt", widget: "string", required: false }
           - { label: "标题", name: "title", widget: "string", required: false }
-          - { label: "描述", name: "description", widget: "string", required: "string", required: false }
+          - { label: "描述", name: "description", widget: "string", required: false }
           - { label: "标签", name: "tags", widget: "list", required: false }
           - { label: "拍摄日期", name: "date", widget: "datetime", required: false }
           - { label: "拍摄地点", name: "location", widget: "string", required: false }

@@ -11,10 +11,21 @@
 2. 设置以下信息：
    - Application name: 您的博客名称
    - Homepage URL: https://your-project-name.pages.dev (Cloudflare Pages URL)
-   - Authorization callback URL: https://your-project-name.pages.dev/api/catch/github
+   - Authorization callback URL: https://your-worker-name.your-subdomain.workers.dev/api/catch/github  # 使用您的 Cloudflare Worker URL
 3. 记下 Client ID 和生成的 Client Secret
 
-## 第三步：部署到 Cloudflare Pages
+## 第三步：部署 Cloudflare Worker (OAuth 代理)
+
+1. 登录到 Cloudflare Dashboard
+2. 导航到 Workers & Pages
+3. 创建一个新的 Worker
+4. 将 github-oauth-worker.js 文件中的代码复制到 Worker 编辑器中
+5. 设置环境变量：
+   - `GITHUB_CLIENT_ID`: 您的 GitHub OAuth App Client ID
+   - `GITHUB_CLIENT_SECRET`: 您的 GitHub OAuth App Client Secret
+6. 部署 Worker 并记下其 URL（格式为：https://your-worker-name.your-subdomain.workers.dev）
+
+## 第四步：部署到 Cloudflare Pages
 
 1. 访问 https://dash.cloudflare.com/login
 2. 选择您的账户 → Pages → Create a project
@@ -29,13 +40,13 @@
      - `CMS_BRANCH`: `main`
      - `CMS_GITHUB_REPO`: `your-username/your-repository-name`
 
-## 第四步：配置 CMS
+## 第五步：配置 CMS
 
 1. 在 Cloudflare Pages 项目设置中，确保环境变量已正确设置
 2. 部署完成后，访问 https://your-project-name.pages.dev/admin/
 3. 首次访问时，系统会引导您完成 GitHub 认证
 
-## 第五步：使用 CMS
+## 第六步：使用 CMS
 
 1. 访问 `https://your-project-name.pages.dev/admin/`
 2. 使用 GitHub 账户登录
@@ -57,4 +68,9 @@
 
 ### 如果认证失败：
 - 确保 OAuth App 有 'repo' 和 'user:email' 权限
-- 检查授权回调 URL 是否指向正确的 Cloudflare Pages 域名
+- 检查授权回调 URL 是否指向正确的 Cloudflare Worker 域名（而不是 Pages 域名）
+- 确认 Cloudflare Worker 的环境变量已正确设置
+
+### 如果遇到 404 错误：
+- 这通常是因为 GitHub OAuth 回调无法在静态托管环境中正确处理
+- 请确保已按照本指南正确配置了 Cloudflare Worker 作为 OAuth 代理
