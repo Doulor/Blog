@@ -53,13 +53,6 @@
                 gap: 0.5rem;
                 margin-bottom: 0.5rem;
             }
-            .migration-notice {
-                background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-                border-left: 4px solid #3b82f6;
-                padding: 1rem;
-                margin: 1rem 0;
-                border-radius: 0 0.5rem 0.5rem 0;
-            }
         }
     </style>
 </head>
@@ -71,19 +64,6 @@
             </h1>
             <p class="text-neutral text-lg max-w-2xl mx-auto">用于帖子文档与日记文档快速生成，支持为Doulor的博客帖子与日记编辑，新增相册管理功能。</p>
         </header>
-
-        <div class="migration-notice">
-            <div class="flex items-start">
-                <i class="fa fa-rocket text-blue-500 text-xl mt-0.5 mr-3" aria-hidden="true"></i>
-                <div>
-                    <h3 class="font-semibold text-blue-800">想要更便捷的内容管理？</h3>
-                    <p class="text-blue-700 mt-1">
-                        现在可以使用增强版编辑器实现在线编辑并自动推送到 GitHub！
-                        <a href="/my-editor/" class="text-blue-600 hover:underline font-medium">使用增强版编辑器</a>
-                    </p>
-                </div>
-            </div>
-        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white rounded-2xl p-6 card-shadow transform hover:scale-[1.01] transition-smooth">
@@ -184,7 +164,6 @@
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth resize-none"
                             placeholder="请输入文档正文内容..."></textarea>
                     </div>
-                    
                     <div class="pt-4">
                         <button type="submit" class="generate-btn w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-xl transition-smooth flex items-center justify-center" data-type="normal">
                             <i class="fa fa-magic mr-2" aria-hidden="true"></i>生成帖子文档
@@ -213,7 +192,7 @@
                             <label for="diaryUseImage" class="text-sm font-medium text-neutral">添加图片</label>
                         </div>
                         <div id="diaryImageSection" class="hidden pl-7 space-y-3 fade-in">
-                            <label class="block text-sm font-medium text-neutral">图片文件名或外部链接</label>
+                            <label class="block text-sm font-medium text-neutral">图片文件名（含后缀）</label>
                             <div id="diaryImagesContainer" class="space-y-2">
                                 <!-- 图片输入框将动态添加到这里 -->
                             </div>
@@ -229,7 +208,6 @@
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth resize-none"
                             placeholder="今天天气很好..."></textarea>
                     </div>
-                    
                     <div class="pt-2">
                         <button type="submit" class="generate-btn w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-xl transition-smooth flex items-center justify-center" data-type="diary">
                             <i class="fa fa-book mr-2" aria-hidden="true"></i>生成日记文档
@@ -274,7 +252,7 @@
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
                             placeholder="例如：旅行，风景，日本">
                     </div>
-
+                    
                     <!-- 相册选项 -->
                     <div class="space-y-4 pt-2">
                         <!-- 是否隐藏 -->
@@ -302,7 +280,7 @@
                                 </label>
                             </div>
                         </div>
-
+                        
                         <!-- 相册布局 -->
                         <div class="space-y-2">
                             <label for="albumLayout" class="block text-sm font-medium text-neutral">布局方式</label>
@@ -311,7 +289,7 @@
                                 <option value="masonry">瀑布流布局</option>
                             </select>
                         </div>
-
+                        
                         <!-- 列数 -->
                         <div class="space-y-2">
                             <label for="albumColumns" class="block text-sm font-medium text-neutral">列数</label>
@@ -322,7 +300,7 @@
                             </select>
                         </div>
                     </div>
-
+                    
                     <!-- 封面图片 -->
                     <div class="space-y-2 pt-2">
                         <label for="albumCover" class="block text-sm font-medium text-neutral">封面图片 <span class="text-red-500">*</span></label>
@@ -330,7 +308,7 @@
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
                             placeholder="本地相册: 封面图片文件名 (如: cover.jpg); 外部相册: 完整URL (如: https://example.com/image.jpg)">
                     </div>
-
+                    
                     <!-- 图片列表 - 仅在外部相册模式下显示 -->
                     <div id="photosSection" class="space-y-2 pt-4 hidden">
                         <div class="flex justify-between items-center">
@@ -343,7 +321,7 @@
                             <!-- 图片输入框将动态添加到这里 -->
                         </div>
                     </div>
-
+                    
                     <div class="pt-4">
                         <button type="submit" class="generate-btn w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-xl transition-smooth flex items-center justify-center" data-type="album">
                             <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>生成相册配置
@@ -377,19 +355,6 @@ date: 2025-09-29
                         <i class="fa fa-download mr-2" aria-hidden="true"></i>下载Markdown文件
                     </button>
                 </div>
-                
-                <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fa fa-exclamation-triangle text-yellow-400 text-lg" aria-hidden="true"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700">
-                                <strong>当前为手动模式：</strong>生成文件后，您需要手动将文件放入对应的 <code class="bg-white px-1 rounded">src/content/</code> 目录，然后推送到 GitHub。
-                            </p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -401,7 +366,7 @@ date: 2025-09-29
     <script>
         let activeFormType = 'normal';
         let photoCount = 0; // 用于为图片输入框分配唯一ID
-
+        
         // 获取当前日期并格式化为YYYY-MM-DD
         function getCurrentDate() {
             const today = new Date();
@@ -410,15 +375,15 @@ date: 2025-09-29
             const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-
+        
         document.addEventListener('DOMContentLoaded', () => {
             const currentDate = getCurrentDate();
-
+            
             // 设置默认日期为当天
             document.getElementById('normalPublished').value = currentDate;
             document.getElementById('diaryDate').value = currentDate;
             document.getElementById('albumDate').value = currentDate;
-
+            
             // 更新预览中的日期
             document.getElementById('markdownResult').textContent = `---
 title: "请选择选项卡并填写信息"
@@ -436,291 +401,400 @@ date: ${currentDate}
                     const target = btn.getAttribute('data-target');
                     formContents.forEach(form => form.classList.add('hidden'));
                     document.getElementById(target).classList.remove('hidden');
-                    activeFormType = target.replace('Form', '');
+                    activeFormType = target === 'normalForm' ? 'normal' : target === 'diaryForm' ? 'diary' : 'album';
+                    if (activeFormType === 'normal') generateNormalMarkdown();
+                    else if (activeFormType === 'diary') generateDiaryMarkdown();
+                    else generateAlbumMarkdown();
                 });
             });
 
-            // 日记图片功能
-            document.getElementById('addImageBtn').addEventListener('click', () => {
-                const container = document.getElementById('diaryImagesContainer');
-                const newDiv = document.createElement('div');
-                newDiv.className = 'album-image-input';
-                newDiv.innerHTML = `
-                    <input type="text" name="diaryImage[]" 
-                        class="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary/50 outline-none transition-smooth text-sm"
-                        placeholder="输入图片文件名或外部链接">
-                    <button type="button" class="remove-image-btn text-red-500 hover:text-red-700 p-1">
-                        <i class="fa fa-trash" aria-hidden="true"></i>
-                    </button>
-                `;
-                container.appendChild(newDiv);
+            // 帖子图片开关事件监听
+            const normalUseImage = document.getElementById('normalUseImage');
+            const normalImageSection = document.getElementById('normalImageSection');
+            normalUseImage.addEventListener('change', () => {
+                normalUseImage.checked ? normalImageSection.classList.remove('hidden') : normalImageSection.classList.add('hidden');
+                generateNormalMarkdown();
+            });
 
-                // 添加删除事件
-                newDiv.querySelector('.remove-image-btn').addEventListener('click', function() {
-                    this.parentElement.remove();
+            // 帖子密码保护事件监听
+            const normalUsePassword = document.getElementById('normalUsePassword');
+            const normalPasswordSection = document.getElementById('normalPasswordSection');
+            normalUsePassword.addEventListener('change', () => {
+                normalUsePassword.checked ? normalPasswordSection.classList.remove('hidden') : normalPasswordSection.classList.add('hidden');
+                generateNormalMarkdown();
+            });
+
+            // 日记图片开关事件监听
+            const diaryUseImage = document.getElementById('diaryUseImage');
+            const diaryImageSection = document.getElementById('diaryImageSection');
+            diaryUseImage.addEventListener('change', () => {
+                if (diaryUseImage.checked) {
+                    diaryImageSection.classList.remove('hidden');
+                    // 确保至少有一个图片输入框
+                    if (document.querySelectorAll('.diary-image-input').length === 0) {
+                        addDiaryImageInput();
+                    }
+                } else {
+                    diaryImageSection.classList.add('hidden');
+                }
+                generateDiaryMarkdown();
+            });
+
+            // 添加图片按钮事件监听
+            document.getElementById('addImageBtn').addEventListener('click', addDiaryImageInput);
+            
+            // 监听相册类型切换事件（使用自定义按钮）
+            const albumTypeRadios = document.querySelectorAll('input[name="albumType"]');
+
+            // 初始化按钮样式
+            function initAlbumTypeButtons() {
+                const localTypeBtn = document.getElementById('localTypeBtn');
+                const externalTypeBtn = document.getElementById('externalTypeBtn');
+
+                // 设置初始样式
+                albumTypeRadios.forEach(radio => {
+                    if (radio.checked) {
+                        if (radio.value === 'local') {
+                            localTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                            localTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                            externalTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                            externalTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                        } else {
+                            externalTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                            externalTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                            localTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                            localTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                        }
+                    }
                 });
+            }
+
+            // 更新按钮样式和界面
+            function updateAlbumTypeInterface() {
+                const localTypeBtn = document.getElementById('localTypeBtn');
+                const externalTypeBtn = document.getElementById('externalTypeBtn');
+                const isExternal = document.querySelector('input[name="albumType"]:checked').value === 'external';
+                const photosSection = document.getElementById('photosSection');
+                const coverInput = document.getElementById('albumCover');
+
+                // 更新按钮样式
+                if (isExternal) {
+                    externalTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                    externalTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                    localTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                    localTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                } else {
+                    localTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                    localTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                    externalTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                    externalTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                }
+
+                // 更新界面
+                if (isExternal) {
+                    photosSection.classList.remove('hidden');
+                    coverInput.placeholder = "外部相册封面URL (如: https://example.com/cover.jpg)";
+                    // 如果还没有图片输入框，添加一个
+                    if (document.querySelectorAll('#photosContainer > .image-input-container').length === 0) {
+                        addPhotoInput();
+                    }
+                } else {
+                    photosSection.classList.add('hidden');
+                    coverInput.placeholder = "本地相册封面文件名 (如: cover.jpg)";
+                }
+                generateAlbumMarkdown();
+            }
+
+            // 为自定义按钮添加事件监听器
+            document.getElementById('localTypeBtn').addEventListener('click', function() {
+                document.querySelector('input[value="local"]').checked = true;
+                updateAlbumTypeInterface();
             });
 
-            // 相册图片功能
-            document.getElementById('addPhotoBtn').addEventListener('click', () => {
-                const container = document.getElementById('photosContainer');
-                const newDiv = document.createElement('div');
-                newDiv.className = 'album-image-input';
-                newDiv.innerHTML = `
-                    <input type="text" name="photoSrc[]" 
-                        class="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary/50 outline-none transition-smooth text-sm"
-                        placeholder="图片源地址">
-                    <button type="button" class="remove-photo-btn text-red-500 hover:text-red-700 p-1">
-                        <i class="fa fa-trash" aria-hidden="true"></i>
-                    </button>
-                `;
-                container.appendChild(newDiv);
-                
-                // 添加删除事件
-                newDiv.querySelector('.remove-photo-btn').addEventListener('click', function() {
-                    this.parentElement.remove();
-                });
+            document.getElementById('externalTypeBtn').addEventListener('click', function() {
+                document.querySelector('input[value="external"]').checked = true;
+                updateAlbumTypeInterface();
             });
 
-            // 监听日记图片开关
-            document.getElementById('diaryUseImage').addEventListener('change', function() {
-                const section = document.getElementById('diaryImageSection');
-                section.classList.toggle('hidden', !this.checked);
-            });
-
-            // 相册类型切换
-            document.querySelectorAll('input[name="albumType"]').forEach(radio => {
+            // 为隐藏的单选按钮也添加事件监听器
+            albumTypeRadios.forEach(radio => {
                 radio.addEventListener('change', function() {
-                    if (this.value === 'external') {
-                        document.getElementById('photosSection').classList.remove('hidden');
-                    } else {
-                        document.getElementById('photosSection').classList.add('hidden');
+                    if (this.checked) {
+                        updateAlbumTypeInterface();
                     }
                 });
             });
 
-            // 绑定相册类型按钮点击事件
-            document.getElementById('localTypeBtn').addEventListener('click', function() {
-                document.querySelector('input[name="albumType"][value="local"]').checked = true;
-                document.getElementById('photosSection').classList.add('hidden');
+            // 初始化按钮状态
+            initAlbumTypeButtons();
+
+            // 重新初始化状态，但只更新界面，不重复绑定事件
+            updateAlbumTypeInterface();
+
+            // 添加相册图片按钮事件监听
+            document.getElementById('addPhotoBtn').addEventListener('click', addPhotoInput);
+
+            // 输入变化时自动更新预览
+            document.querySelectorAll('#normalForm input, #normalForm textarea').forEach(input => {
+                input.addEventListener('input', generateNormalMarkdown);
             });
-            
-            document.getElementById('externalTypeBtn').addEventListener('click', function() {
-                document.querySelector('input[name="albumType"][value="external"]').checked = true;
-                document.getElementById('photosSection').classList.remove('hidden');
+            document.querySelectorAll('#diaryForm input, #diaryForm textarea').forEach(input => {
+                input.addEventListener('input', generateDiaryMarkdown);
+            });
+            document.querySelectorAll('#albumForm input, #albumForm textarea, #albumForm select, #albumForm [type="radio"]').forEach(input => {
+                input.addEventListener('input', generateAlbumMarkdown);
+                input.addEventListener('change', generateAlbumMarkdown);
             });
 
-            // 监听各个图片开关
-            document.getElementById('normalUseImage').addEventListener('change', function() {
-                const section = document.getElementById('normalImageSection');
-                section.classList.toggle('hidden', !this.checked);
+            // 表单提交处理
+            document.querySelectorAll('#normalForm, #diaryForm, #albumForm').forEach(form => {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const type = form.id === 'normalForm' ? 'normal' : form.id === 'diaryForm' ? 'diary' : 'album';
+                    if (type === 'normal') generateNormalMarkdown();
+                    else if (type === 'diary') generateDiaryMarkdown();
+                    else generateAlbumMarkdown();
+                    const resultContainer = document.getElementById('resultContainer');
+                    resultContainer.classList.add('ring-2', `ring-${type === 'normal' ? 'primary' : type === 'diary' ? 'secondary' : 'purple-500'}/30`);
+                    setTimeout(() => resultContainer.classList.remove('ring-2', `ring-${type === 'normal' ? 'primary' : type === 'diary' ? 'secondary' : 'purple-500'}/30`), 1000);
+                });
             });
 
-            document.getElementById('normalUsePassword').addEventListener('change', function() {
-                const section = document.getElementById('normalPasswordSection');
-                section.classList.toggle('hidden', !this.checked);
-            });
-            
-            // 普通表单提交事件
-            document.getElementById('normalForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                generateMarkdown('normal');
-            });
-            
-            document.getElementById('diaryForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                generateMarkdown('diary');
-            });
-            
-            document.getElementById('albumForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                generateMarkdown('album');
-            });
-            
-            // 复制按钮功能
-            document.getElementById('copyButton').addEventListener('click', function() {
-                const resultText = document.getElementById('markdownResult').textContent;
-                navigator.clipboard.writeText(resultText).then(() => {
+            // 复制功能
+            document.getElementById('copyButton').addEventListener('click', () => {
+                navigator.clipboard.writeText(document.getElementById('markdownResult').textContent).then(() => {
                     const msg = document.getElementById('copyMessage');
                     msg.classList.remove('hidden');
                     setTimeout(() => msg.classList.add('hidden'), 2000);
                 });
             });
-            
-            // 下载按钮功能
-            document.getElementById('downloadButton').addEventListener('click', function() {
-                const resultText = document.getElementById('markdownResult').textContent;
-                const blob = new Blob([resultText], { type: 'text/markdown' });
+
+            // 下载功能
+            document.getElementById('downloadButton').addEventListener('click', () => {
+                const text = document.getElementById('markdownResult').textContent;
+                let title = activeFormType === 'normal'
+                    ? document.getElementById('normalTitle').value || '普通文档'
+                    : activeFormType === 'diary'
+                    ? document.getElementById('diaryTitle').value || '日记文档'
+                    : document.getElementById('albumId').value || document.getElementById('albumTitle').value || '相册配置';
+
+                // 替换Windows/macOS不允许的文件名特殊字符
+                const invalidChars = /[\\/:*?"<>|]/g;
+                const filename = `${title.replace(invalidChars, '-')}.md`;
+
+                // UTF-8编码的Blob
+                const blob = new Blob([text], { type: 'text/markdown; charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = getFileName(activeFormType) + '.md';
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 0);
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             });
+
+
+            generateNormalMarkdown();
         });
 
-        // 生成文件名
-        function getFileName(type) {
-            let title, date;
-            switch(type) {
-                case 'normal':
-                    title = document.getElementById('normalTitle').value || 'untitled';
-                    date = document.getElementById('normalPublished').value || getCurrentDate();
-                    break;
-                case 'diary':
-                    title = document.getElementById('diaryTitle').value || 'diary-entry';
-                    date = document.getElementById('diaryDate').value || getCurrentDate();
-                    break;
-                case 'album':
-                    title = document.getElementById('albumTitle').value || 'album';
-                    date = document.getElementById('albumDate').value || getCurrentDate();
-                    break;
-            }
-            // 清理标题以适合作为文件名
-            title = title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '');
-            return `${date}-${title}`;
-        }
-
-        // 生成Markdown函数
-        function generateMarkdown(type) {
-            let title, date, description, tags, category, content, extraFields = {};
+        // 添加日记图片输入框
+        function addDiaryImageInput() {
+            const container = document.getElementById('diaryImagesContainer');
+            const imageInputDiv = document.createElement('div');
+            imageInputDiv.className = 'flex items-center space-x-2';
             
-            switch(type) {
-                case 'normal': // 帖子
-                    title = document.getElementById('normalTitle').value;
-                    date = document.getElementById('normalPublished').value || getCurrentDate();
-                    description = document.getElementById('normalDescription').value;
-                    tags = document.getElementById('normalTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
-                    category = document.getElementById('normalCategory').value;
-                    content = document.getElementById('normalContent').value;
-                    
-                    // 处理额外字段
-                    extraFields.image = document.getElementById('normalUseImage').checked ? 
-                        document.getElementById('normalImage').value : undefined;
-                    extraFields.draft = document.getElementById('normalDraft').checked;
-                    extraFields.pinned = document.getElementById('normalPinned').checked;
-                    if(document.getElementById('normalUsePassword').checked) {
-                        extraFields.password = document.getElementById('normalPassword').value;
-                    }
-                    break;
-                    
-                case 'diary': // 日记
-                    title = document.getElementById('diaryTitle').value;
-                    date = document.getElementById('diaryDate').value || getCurrentDate();
-                    description = document.getElementById('diaryDescription')?.value || "";
-                    tags = (document.getElementById('diaryTags')?.value || "").split(',').map(tag => tag.trim()).filter(tag => tag);
-                    content = document.getElementById('diaryContent').value;
-                    
-                    // 处理图片
-                    if(document.getElementById('diaryUseImage').checked) {
-                        const imageInputs = document.querySelectorAll('#diaryImagesContainer input[name="diaryImage[]"]');
-                        extraFields.images = Array.from(imageInputs).map(input => input.value).filter(val => val);
-                    }
-                    break;
-                    
-                case 'album': // 相册
-                    title = document.getElementById('albumTitle').value;
-                    const albumId = document.getElementById('albumId').value;
-                    date = document.getElementById('albumDate').value || getCurrentDate();
-                    description = document.getElementById('albumDescription').value;
-                    const location = document.getElementById('albumLocation').value;
-                    tags = document.getElementById('albumTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
-                    const layout = document.getElementById('albumLayout').value;
-                    const columns = parseInt(document.getElementById('albumColumns').value);
-                    const cover = document.getElementById('albumCover').value;
-                    const hidden = document.getElementById('albumHidden').checked;
-                    const mode = document.querySelector('input[name="albumType"]:checked').value;
-                    
-                    // 处理相册中的照片
-                    let photos = [];
-                    if(mode === 'external') {
-                        const photoInputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
-                        photos = Array.from(photoInputs).map(input => ({
-                            src: input.value,
-                            alt: "Photo"
-                        })).filter(photo => photo.src);
-                    }
-                    
-                    // 创建内容
-                    content = `# ${title}\n\n${description || '这是一个相册页面'}`;
-                    
-                    // 返回相册格式的数据
-                    const albumData = {
-                        title,
-                        id: albumId,
-                        date,
-                        description: description || "",
-                        location: location || "",
-                        tags: tags.length ? tags : [],
-                        layout: layout || "grid",
-                        columns: columns || 3,
-                        cover,
-                        hidden: hidden || false,
-                        mode: mode || "local",
-                        photos
-                    };
-                    
-                    // 生成相册的Markdown内容
-                    const albumFrontmatter = `---
-title: "${albumData.title}"
-id: "${albumData.id}"
-date: ${albumData.date}
-description: "${albumData.description}"
-location: "${albumData.location}"
-tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]
-layout: "${albumData.layout}"
-columns: ${albumData.columns}
-cover: "${albumData.cover}"
-hidden: ${albumData.hidden}
-mode: "${albumData.mode}"
-${albumData.photos.length > 0 ? `photos:\n${albumData.photos.map(photo => `  - src: "${photo.src}"\n    alt: "${photo.alt}"`).join('\n')}` : ''}
----
-
-${content}`;
-                    
-                    document.getElementById('markdownResult').textContent = albumFrontmatter;
-                    return; // 提前返回，因为我们已经设置了结果
-            }
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'flex-1 diary-image-input px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth';
+            input.placeholder = '例如：image.jpg';
             
-            // 构建Frontmatter
-            let frontmatter = `---\ntitle: "${title}"\ndate: ${date}`;
-            if(description) frontmatter += `\ndescription: "${description}"`;
-            if(category) frontmatter += `\ncategory: "${category}"`;
-            if(tags.length > 0) frontmatter += `\ntags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
-            
-            // 添加额外字段
-            Object.entries(extraFields).forEach(([key, value]) => {
-                if(value !== undefined) {
-                    if(typeof value === 'string') {
-                        frontmatter += `\n${key}: "${value}"`;
-                    } else if(typeof value === 'boolean' || typeof value === 'number') {
-                        frontmatter += `\n${key}: ${value}`;
-                    } else if(Array.isArray(value)) {
-                        frontmatter += `\n${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
-                    } else if(typeof value === 'object') {
-                        // 处理复杂对象
-                        frontmatter += `\n${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
-                    }
-                }
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'text-red-500 hover:text-red-700 transition-smooth p-2';
+            deleteBtn.innerHTML = '<i class="fa fa-trash" aria-hidden="true"></i>';
+            deleteBtn.addEventListener('click', function() {
+                container.removeChild(imageInputDiv);
+                generateDiaryMarkdown();
             });
             
-            frontmatter += '\n---\n\n';
+            imageInputDiv.appendChild(input);
+            imageInputDiv.appendChild(deleteBtn);
+            container.appendChild(imageInputDiv);
             
-            // 最终内容 = Frontmatter + 内容
-            const fullContent = frontmatter + content;
+            // 监听输入变化
+            input.addEventListener('input', generateDiaryMarkdown);
             
-            // 显示在结果区域
-            document.getElementById('markdownResult').textContent = fullContent;
+            generateDiaryMarkdown();
         }
 
-        // 暴露函数给全局作用域以便外部调用
-        window.getCurrentDate = getCurrentDate;
-        window.generateMarkdown = generateMarkdown;
+        // 添加相册图片输入框
+        function addPhotoInput() {
+            const container = document.getElementById('photosContainer');
+            const photoInputDiv = document.createElement('div');
+            photoInputDiv.className = 'image-input-container relative bg-slate-50 p-3 rounded-lg border border-slate-200 mb-3';
+
+            const srcInput = document.createElement('input');
+            srcInput.type = 'text';
+            srcInput.className = 'w-full px-3 py-2 pr-10 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth';
+            srcInput.placeholder = '外部图片链接 (必需，如: https://example.com/image.jpg)';
+            srcInput.required = true;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'absolute right-3 top-3 text-red-500 hover:text-red-700 transition-smooth p-1.5 rounded-md hover:bg-red-50 cursor-pointer';
+            deleteBtn.innerHTML = '<i class="fa fa-trash" aria-hidden="true"></i>';
+            deleteBtn.title = "删除此图片";
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation(); // 防止事件冒泡
+                container.removeChild(photoInputDiv);
+                generateAlbumMarkdown();
+            });
+
+            // 将所有元素添加到容器
+            photoInputDiv.appendChild(srcInput);
+            photoInputDiv.appendChild(deleteBtn);
+
+            container.appendChild(photoInputDiv);
+
+            // 监听输入变化
+            srcInput.addEventListener('input', generateAlbumMarkdown);
+
+            generateAlbumMarkdown();
+        }
+
+        // 生成帖子Markdown
+        function generateNormalMarkdown() {
+            const title = document.getElementById('normalTitle').value || '未命名文档';
+            const published = document.getElementById('normalPublished').value || getCurrentDate();
+            const useImage = document.getElementById('normalUseImage').checked;
+            const imageName = document.getElementById('normalImage').value || '';
+            const description = document.getElementById('normalDescription').value || '';
+            const tags = document.getElementById('normalTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const category = document.getElementById('normalCategory').value || '';
+            const draft = document.getElementById('normalDraft').checked;
+            const usePassword = document.getElementById('normalUsePassword').checked;
+            const password = document.getElementById('normalPassword').value || '666999';
+            const content = document.getElementById('normalContent').value || '';
+
+            let markdown = '---\n';
+            markdown += `title: "${title}"\n`;
+            markdown += `published: ${published}\n`;
+            // 帖子图片路径格式: image: "/image/posts/xxx"
+            if (useImage && imageName) {
+                markdown += `image: "/image/posts/${imageName}"\n`;
+            }
+            if (description) markdown += `description: "${description}"\n`;
+            markdown += `tags: ${tags.length ? `["${tags.join('", "')}"]` : '[]'}\n`;
+            if (category) markdown += `category: "${category}"\n`;
+            markdown += `draft: ${draft}\n`;
+            if (document.getElementById('normalPinned').checked) markdown += `pinned: true\n`;
+            if (usePassword) {
+                markdown += `encrypted: true\n`;
+                markdown += `password: "${password}"\n`;
+            }
+            markdown += '---\n\n';
+            markdown += content;
+            document.getElementById('markdownResult').textContent = markdown;
+        }
+
+        // 生成日记Markdown
+        function generateDiaryMarkdown() {
+            const title = document.getElementById('diaryTitle').value || '未命名日记';
+            const date = document.getElementById('diaryDate').value || getCurrentDate();
+            const useImage = document.getElementById('diaryUseImage').checked;
+            const content = document.getElementById('diaryContent').value || '今天没有记录内容...';
+            
+            // 获取所有图片输入框的值
+            const imageInputs = document.querySelectorAll('.diary-image-input');
+            const images = Array.from(imageInputs)
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+
+            let markdown = '---\n';
+            markdown += `title: "${title}"\n`;
+            markdown += `date: ${date}\n`;
+            // 日记图片格式: images: ["aaa","bbb","ccc"]
+            if (useImage && images.length > 0) {
+                markdown += `images: ${JSON.stringify(images)}\n`;
+            }
+            markdown += '---\n\n';
+            markdown += content;
+            document.getElementById('markdownResult').textContent = markdown;
+        }
+
+        // 生成相册Markdown
+        function generateAlbumMarkdown() {
+            const title = document.getElementById('albumTitle').value || '未命名相册';
+            const albumId = document.getElementById('albumId').value || 'unnamed-album';
+            const date = document.getElementById('albumDate').value || getCurrentDate();
+            const description = document.getElementById('albumDescription').value || '';
+            const location = document.getElementById('albumLocation').value || '';
+            const tags = document.getElementById('albumTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const hidden = document.getElementById('albumHidden').checked;
+            const layout = document.getElementById('albumLayout').value || 'grid';
+            const columns = parseInt(document.getElementById('albumColumns').value) || 3;
+            const cover = document.getElementById('albumCover').value || '';
+            // 通过隐藏的单选按钮获取当前相册类型
+            const isExternal = document.querySelector('input[name="albumType"]:checked').value === 'external';
+
+            // 获取所有图片输入框的值
+            const photoContainers = document.querySelectorAll('#photosContainer > .image-input-container');
+            const photos = [];
+
+            photoContainers.forEach((container, index) => {
+                const src = container.children[0].value.trim(); // 图片链接
+
+                if (src) { // 只有当src不为空时才添加到相册
+                    const photo = {};
+                    photo.src = src;
+                    photos.push(photo);
+                }
+            });
+
+            let markdown = '---\n';
+            markdown += `title: "${title}"\n`;
+            markdown += `date: ${date}\n`;
+            markdown += `hidden: ${hidden}\n`;
+            if (description) markdown += `description: "${description}"\n`;
+            if (location) markdown += `location: "${location}"\n`;
+            if (tags.length > 0) markdown += `tags: ["${tags.join('", "')}"]\n`;
+            markdown += `layout: "${layout}"\n`;
+            markdown += `columns: ${columns}\n`;
+            if (cover) {
+                // 根据相册类型决定封面路径格式
+                if (isExternal) {
+                    // 外部相册：直接使用提供的URL
+                    markdown += `cover: "${cover}"\n`;
+                } else {
+                    // 本地相册：构建完整路径
+                    markdown += `cover: "/images/albums/${albumId}/${cover}"\n`;
+                }
+            }
+
+            if (isExternal) {
+                markdown += `mode: "external"\n`;
+                // 外部相册无论是否有图片都应该包含 photos 字段
+                markdown += 'photos: [\n';
+                if (photos.length > 0) {
+                    photos.forEach((photo, index) => {
+                        markdown += '  {\n';
+                        markdown += `    src: "${photo.src}"\n`;
+                        markdown += '  }';
+                        if (index < photos.length - 1) {
+                            markdown += ',';
+                        }
+                        markdown += '\n';
+                    });
+                }
+                markdown += ']\n';
+            }
+
+            markdown += '---\n\n';
+            markdown += `${title} 相冊`;
+            
+            document.getElementById('markdownResult').textContent = markdown;
+        }
     </script>
 </body>
 </html>
