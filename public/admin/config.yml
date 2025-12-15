@@ -1,0 +1,75 @@
+backend:
+  name: github
+  repo: Doulor/Blog  # 替换为您的仓库名
+  branch: main
+
+media_folder: "public/assets/images"  # 存放上传的媒体文件
+public_folder: "/assets/images"
+
+collections:
+  - name: "posts"
+    label: "文章"
+    folder: "src/content/posts"
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    create: true
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "日期", name: "date", widget: "datetime" }
+      - { label: "描述", name: "description", widget: "string", required: false }
+      - { label: "标签", name: "tags", widget: "list", required: false }
+      - { label: "分类", name: "category", widget: "string", required: false }
+      - { label: "发布状态", name: "draft", widget: "boolean", required: false, default: false }
+      - { label: "隐藏", name: "hidden", widget: "boolean", required: false, default: false }
+      - { label: "封面图片", name: "image", widget: "string", required: false }
+      - { label: "置顶", name: "pinned", widget: "boolean", required: false, default: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+  - name: "diary"
+    label: "日记"
+    folder: "src/content/diary"
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    create: true
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "日期", name: "date", widget: "datetime" }
+      - { label: "描述", name: "description", widget: "string", required: false }
+      - { label: "标签", name: "tags", widget: "list", required: false }
+      - { label: "隐藏", name: "hidden", widget: "boolean", required: false, default: false }
+      - { label: "图片", name: "images", widget: "list", required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+  - name: "albums"
+    label: "相册"
+    folder: "src/content/albums"
+    slug: "{{slug}}"
+    create: true
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "相册ID", name: "id", widget: "string" }
+      - { label: "创建日期", name: "date", widget: "datetime" }
+      - { label: "相册描述", name: "description", widget: "string", required: false }
+      - { label: "拍摄地点", name: "location", widget: "string", required: false }
+      - { label: "标签", name: "tags", widget: "list", required: false }
+      - { label: "隐藏相册", name: "hidden", widget: "boolean", required: false, default: false }
+      - { label: "布局方式", name: "layout", widget: "select", options: ["grid", "masonry"], default: "grid" }
+      - { label: "列数", name: "columns", widget: "number", default: 3 }
+      - { label: "封面图片", name: "cover", widget: "string" }
+      - { label: "相册类型", name: "mode", widget: "select", required: false, options: ["local", "external"] }
+      - label: "照片"
+        name: "photos"
+        widget: "list"
+        fields:
+          - { label: "图片路径", name: "src", widget: "string" }
+          - { label: "替代文本", name: "alt", widget: "string", required: false }
+          - { label: "标题", name: "title", widget: "string", required: false }
+          - { label: "描述", name: "description", widget: "string", required: false }
+          - { label: "标签", name: "tags", widget: "list", required: false }
+          - { label: "拍摄日期", name: "date", widget: "datetime", required: false }
+          - { label: "拍摄地点", name: "location", widget: "string", required: false }
+          - { label: "相机型号", name: "camera", widget: "string", required: false }
+          - { label: "镜头", name: "lens", widget: "string", required: false }
+          - { label: "拍摄参数", name: "settings", widget: "string", required: false }
+          - { label: "宽度", name: "width", widget: "number", required: false }
+          - { label: "高度", name: "height", widget: "number", required: false }
+        required: false
+      - { label: "正文", name: "body", widget: "markdown", required: false }

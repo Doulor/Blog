@@ -1,0 +1,19 @@
+# Cloudflare Pages 配置文件
+# 此文件用于配置 Cloudflare Pages 的构建和部署设置
+
+[[redirects]]
+from = "/admin/*"
+to = "/admin/index.html"
+status = 200
+
+[[redirects]]
+from = "/api/*"
+to = "/admin/index.html"
+status = 200
+
+# 确保静态管理界面能正确加载
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    Content-Security-Policy = "frame-ancestors 'self' https://cms.cloudflareclient.com"
