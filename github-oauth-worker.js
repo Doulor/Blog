@@ -1,6 +1,6 @@
 /**
- * Cloudflare Worker to handle Decap CMS Proxy for GitHub
- * 
+ * Cloudflare Worker to handle GitHub OAuth for Decap CMS
+ *
  * Environment Variables needed:
  * - GITHUB_CLIENT_ID: Your GitHub OAuth App Client ID
  * - GITHUB_CLIENT_SECRET: Your GitHub OAuth App Client Secret
@@ -10,81 +10,71 @@
 const GITHUB_API_BASE = 'https://api.github.com';
 const GITHUB_AUTH_BASE = 'https://github.com';
 
+// 存储令牌的简单实现（在实际部署中，您应该使用 KV 存储）
+let tempTokenStore = {};
+
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request));
 });
 
 async function handleRequest(request) {
   const url = new URL(request.url);
-  
-  // API Gateway 端点用于处理 CMS 请求
-  if (url.pathname.startsWith('/api/gateway')) {
-    return handleProxyRequest(request);
-  }
-  
+
   // OAuth 回调端点
   if (url.pathname === '/api/callback') {
     return handleOAuthCallback(request);
   }
-  
+
+  // API Gateway 端点用于处理 CMS 请求
+  if (url.pathname.startsWith('/api/gateway')) {
+    return handleProxyRequest(request);
+  }
+
   // 如果是其他请求，返回错误
   return new Response('Not Found', { status: 404 });
 }
 
 async function handleProxyRequest(request) {
   try {
-    // 获取请求路径（去掉 /api/gateway 前缀）
+    // 从 URL 参数或请求头获取令牌
     const originalUrl = new URL(request.url);
+    const token = originalUrl.searchParams.get('token') || request.headers.get('authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      // 如果没有令牌，返回需要认证的响应
+      return new Response(JSON.stringify({
+        error: 'Authentication required',
+        redirect: `${GITHUB_AUTH_BASE}/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${originalUrl.origin}/api/callback&scope=repo`
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 获取请求路径（去掉 /api/gateway 前缀）
     let path = originalUrl.pathname.replace('/api/gateway', '');
-    
-    // 确保路径以 / 开头
     if (!path.startsWith('/')) {
       path = '/' + path;
     }
-    
-    // 检查是否已经有认证信息（从请求头中获取）
-    const authHeader = request.headers.get('authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // 如果没有认证头，重定向到 OAuth 流程
-      const oauthUrl = new URL(`${GITHUB_AUTH_BASE}/login/oauth/authorize`);
-      oauthUrl.searchParams.set('client_id', GITHUB_CLIENT_ID);
-      oauthUrl.searchParams.set('redirect_uri', `${originalUrl.origin}/api/callback`);
-      oauthUrl.searchParams.set('scope', 'repo,user:email');
-      
-      return Response.redirect(oauthUrl.toString());
-    }
-    
+
     // 构建 GitHub API 请求 URL
-    let githubApiUrl = GITHUB_API_BASE + path;
-    
+    const githubApiUrl = GITHUB_API_BASE + path;
+
     // 代理请求到 GitHub API
     const githubRequest = new Request(githubApiUrl, {
       method: request.method,
       headers: {
-        'Authorization': authHeader,
+        'Authorization': `token ${token}`,
         'User-Agent': 'Decap-CMS-Proxy',
         'Accept': 'application/vnd.github.v3+json',
         ...(request.method !== 'GET' ? {'Content-Type': 'application/json'} : {})
       },
       body: request.body
     });
-    
+
     const response = await fetch(githubRequest);
-    
-    // 检查响应是否为认证错误
-    if (response.status === 401) {
-      // 如果认证失败，重定向到 OAuth 流程
-      const oauthUrl = new URL(`${GITHUB_AUTH_BASE}/login/oauth/authorize`);
-      oauthUrl.searchParams.set('client_id', GITHUB_CLIENT_ID);
-      oauthUrl.searchParams.set('redirect_uri', `${originalUrl.origin}/api/callback`);
-      oauthUrl.searchParams.set('scope', 'repo,user:email');
-      
-      return Response.redirect(oauthUrl.toString());
-    }
-    
     return response;
-    
+
   } catch (error) {
     console.error('Proxy error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
@@ -97,9 +87,9 @@ async function handleProxyRequest(request) {
 async function handleOAuthCallback(request) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
-  
+
   if (!code) {
-    return new Response('Authorization code not provided', { 
+    return new Response('Authorization code not provided', {
       status: 400,
       headers: { 'Content-Type': 'text/plain' }
     });
@@ -125,14 +115,15 @@ async function handleOAuthCallback(request) {
     const accessToken = tokenData.access_token;
 
     if (!accessToken) {
-      return new Response('Failed to obtain access token', { 
+      return new Response('Failed to obtain access token', {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // 将用户重定向回 CMS 管理界面，带有访问令牌
-    // 这里我们创建一个 HTML 页面来设置令牌并重定向
+    // 将用户重定向回 CMS 管理界面，带有访问令牌的 URL 参数
+    const redirectUrl = `https://blog.firef.dpdns.org/admin/#access_token=${accessToken}`;
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -148,24 +139,21 @@ async function handleOAuthCallback(request) {
           localStorage.setItem('decap-cms-user', JSON.stringify({
             backend_token: '${accessToken}'
           }));
-          
-          // 清除任何可能的旧认证状态
-          localStorage.removeItem('netlify-cms-user');
-          
+
           // 重定向回 CMS 管理界面
-          window.location = 'https://blog.firef.dpdns.org/admin/';
+          window.location = '${redirectUrl}';
         </script>
       </body>
       </html>
     `;
-    
+
     return new Response(html, {
       headers: { 'Content-Type': 'text/html' }
     });
-    
+
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return new Response('Authentication failed', { 
+    return new Response('Authentication failed', {
       status: 500,
       headers: { 'Content-Type': 'text/plain' }
     });

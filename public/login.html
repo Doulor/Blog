@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>登录到博客管理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .login-container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .github-login {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #24292e;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .github-login:hover {
+            background: #2c394a;
+        }
+        .github-icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>博客内容管理</h1>
+        <p>点击下方按钮使用 GitHub 账户登录</p>
+        <a href="https://github.com/login/oauth/authorize?client_id=GITHUB_CLIENT_ID&redirect_uri=https://eblog-editor.2737855297.workers.dev/api/callback&scope=repo" class="github-login">
+            <span class="github-icon">✓</span>
+            登录到 GitHub
+        </a>
+        <p style="margin-top: 20px;"><small>登录后将跳转到内容管理面板</small></p>
+    </div>
+</body>
+</html>
