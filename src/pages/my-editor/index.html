@@ -678,8 +678,12 @@ ${content}`;
             // 构建完整路径
             const filePath = `${directory}/${fileName}`;
             
-            // 检查认证状态
-            const token = localStorage.getItem('decap-cms-user');
+            // 检查认证状态 - 尝试多种存储键
+            let token = localStorage.getItem('decap-cms-user');
+            if (!token) {
+                token = localStorage.getItem('netlify-cms-user');
+            }
+
             if (!token) {
                 alert('请先通过GitHub认证');
                 // 重定向到admin页面进行认证
@@ -698,9 +702,14 @@ ${content}`;
                 return;
             }
 
-            const accessToken = tokenObj.backend_token || tokenObj.access_token;
+            // 尝试多种可能的令牌键名
+            const accessToken = tokenObj.backend_token ||
+                              tokenObj.access_token ||
+                              tokenObj.token ||
+                              tokenObj.api_token;
 
             if (!accessToken) {
+                console.log('Token object found but no valid token:', tokenObj);
                 alert('认证令牌无效，请重新认证');
                 window.location.href = '/admin/';
                 return;
