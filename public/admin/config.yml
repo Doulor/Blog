@@ -6,7 +6,7 @@ backend:
   client_secret: ${CMS_GITHUB_APP_CLIENT_SECRET}
   base_url: https://blog.firef.dpdns.org
   auth_endpoint: 'https://github.com/login/oauth/authorize'
-  auth_scope: ['repo', 'read:user', 'user:email']
+  auth_scope: 'repo,read:user,user:email'
 
 media_folder: "public/assets/images"  # 存放上传的媒体文件
 public_folder: "/assets/images"
