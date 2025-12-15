@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firef 博客内容管理 - 认证系统</title>
+    <title>GitHub 认证说明 - Firef 博客内容管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -12,94 +12,60 @@
         <div class="max-w-md w-full space-y-8">
             <div class="text-center">
                 <div class="mx-auto h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <i class="fas fa-user-lock text-indigo-600 text-2xl"></i>
+                    <i class="fas fa-key text-indigo-600 text-2xl"></i>
                 </div>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Firef 博客内容管理
+                    GitHub 访问令牌设置
                 </h2>
                 <p class="mt-2 text-center text-sm text-gray-600">
-                    通过 GitHub 账户进行认证
+                    为内容管理器设置访问权限
                 </p>
             </div>
-            
-            <div class="mt-8 bg-white py-8 px-4 shadow rounded-lg sm:px-10" id="loginContainer">
+
+            <div class="mt-8 bg-white py-8 px-4 shadow rounded-lg sm:px-10">
                 <div class="space-y-6">
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">认证状态</h3>
-                        <div id="statusMessage" class="text-center py-4">
-                            <i class="fas fa-shield-alt text-4xl text-gray-400 mb-2"></i>
-                            <p class="text-gray-600">等待认证...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="text-sm text-gray-600 bg-blue-50 p-4 rounded-lg">
-                        <p><i class="fas fa-info-circle mr-2"></i>认证后，您可以：</p>
-                        <ul class="list-disc list-inside mt-2 space-y-1">
-                            <li>创建和编辑博客文章</li>
-                            <li>管理日记内容</li>
-                            <li>配置相册</li>
-                            <li>直接提交内容到 GitHub 仓库</li>
-                        </ul>
-                    </div>
-                    
-                            <div id="loginState" class="space-y-4">
-                        <button id="loginButton"
-                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                            <i class="fab fa-github mr-2"></i>
-                            通过 GitHub 登录
-                        </button>
-
-                        <div class="text-center text-sm text-gray-600">
-                            <p>点击登录按钮将跳转到 GitHub 进行安全认证</p>
-                        </div>
-
-                        <div id="clearAuthSection" class="hidden mt-4">
-                            <button id="clearAuthButton"
-                                class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150">
-                                <i class="fas fa-trash mr-2"></i>
-                                清除认证数据
-                            </button>
-                            <p class="text-xs text-gray-500 mt-2 text-center">如果认证出现问题，请清除数据后重试</p>
-                        </div>
-                    </div>
-
-                    <div id="authProgress" class="hidden space-y-4">
-                        <div class="text-center">
-                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                            <p class="mt-2 text-gray-600">正在跳转到 GitHub 进行认证...</p>
-                        </div>
-
-                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm text-yellow-700">
-                                        如果页面没有跳转，请确保弹出窗口未被阻止，或手动访问 GitHub
-                                    </p>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">如何创建 Personal Access Token</h3>
+                        <div class="text-sm text-gray-600 space-y-4">
+                            <p>1. 访问 GitHub 设置页面：</p>
+                            <a href="https://github.com/settings/tokens" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline break-all">
+                                https://github.com/settings/tokens
+                            </a>
+                            
+                            <p>2. 点击 "Generate new token" 按钮</p>
+                            
+                            <p>3. 选择适当的权限：</p>
+                            <ul class="list-disc list-inside space-y-1 ml-4">
+                                <li><strong>repo</strong> - 完整的仓库权限（用于读写仓库内容）</li>
+                                <li><strong>workflow</strong> - 更新GitHub Actions工作流权限（如果需要）</li>
+                            </ul>
+                            
+                            <p>4. 生成令牌后，复制并保存好，因为之后将无法再次查看</p>
+                            
+                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-yellow-700">
+                                            <strong>安全提示：</strong>Personal Access Token 相当于密码，请妥善保管，
+                                            不要在不安全的环境中保存，不要分享给他人。
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div id="successContainer" class="hidden bg-white py-8 px-4 shadow rounded-lg sm:px-10">
-                <div class="text-center">
-                    <div class="mx-auto h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-check text-green-600 text-2xl"></i>
-                    </div>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">认证成功！</h3>
-                    <p class="mt-2 text-gray-600">您已成功连接到 GitHub 账户</p>
-                    <div class="mt-6">
-                        <button id="goToEditor" 
-                                class="w-full flex justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+
+                    <div class="pt-6">
+                        <button id="goToEditor"
+                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                             <i class="fas fa-edit mr-2"></i>
                             进入内容编辑器
                         </button>
-                        <button id="goToBlog" 
-                                class="w-full flex justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 mt-3">
+                        <button id="goToBlog"
+                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 mt-3">
                             <i class="fas fa-home mr-2"></i>
                             返回博客首页
                         </button>
@@ -110,197 +76,14 @@
     </div>
 
     <script>
-        // 检查认证状态
-        function checkAuthStatus() {
-            // 尝试从多个位置获取认证令牌
-            const token = localStorage.getItem('github-auth-token') ||
-                         localStorage.getItem('decap-cms-user') ||
-                         localStorage.getItem('netlify-cms-user');
-
-            const statusMessage = document.getElementById('statusMessage');
-
-            if (token) {
-                // 已认证
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('successContainer').style.display = 'block';
-
-                try {
-                    const tokenObj = JSON.parse(token);
-                    if (tokenObj.backend_token || tokenObj.access_token || tokenObj.token || tokenObj.api_token) {
-                        statusMessage.innerHTML = `
-                            <div class="text-center">
-                                <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
-                                <p class="text-green-600 font-medium">已认证</p>
-                                <p class="text-sm text-gray-600 mt-1">令牌已安全存储</p>
-                                <p class="text-xs text-gray-500 mt-2">用户: ${tokenObj.login || '已认证用户'}</p>
-                            </div>
-                        `;
-                    } else {
-                        statusMessage.innerHTML = `
-                            <div class="text-center">
-                                <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-2"></i>
-                                <p class="text-yellow-600 font-medium">认证信息不完整</p>
-                                <p class="text-sm text-gray-600 mt-1">令牌缺少必要的字段，请重新认证</p>
-                            </div>
-                        `;
-                    }
-                } catch (e) {
-                    console.error('认证数据解析错误:', e);
-                    statusMessage.innerHTML = `
-                        <div class="text-center">
-                            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-2"></i>
-                            <p class="text-red-600 font-medium">认证数据格式错误</p>
-                            <p class="text-sm text-gray-600 mt-1">请清除数据并重新认证</p>
-                        </div>
-                    `;
-                }
-            } else {
-                // 未认证
-                document.getElementById('successContainer').style.display = 'none';
-                document.getElementById('loginContainer').style.display = 'block';
-
-                statusMessage.innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-user-clock text-4xl text-gray-400 mb-2"></i>
-                        <p class="text-gray-600">未认证</p>
-                        <p class="text-sm text-gray-600 mt-1">点击下方按钮进行认证</p>
-                    </div>
-                `;
-            }
-
-            // 根据认证状态显示/隐藏清除认证按钮
-            const clearAuthSection = document.getElementById('clearAuthSection');
-            if (localStorage.getItem('github-auth-token') ||
-                localStorage.getItem('decap-cms-user') ||
-                localStorage.getItem('netlify-cms-user')) {
-                clearAuthSection.style.display = 'block';
-            } else {
-                clearAuthSection.style.display = 'none';
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            // 页面加载时检查并清理任何可能的错误认证数据
-            const token = localStorage.getItem('github-auth-token') ||
-                         localStorage.getItem('decap-cms-user') ||
-                         localStorage.getItem('netlify-cms-user');
-
-            if (token) {
-                try {
-                    const tokenObj = JSON.parse(token);
-                    // 如果令牌对象没有有效的令牌字段，清除数据
-                    const hasValidToken = tokenObj.backend_token ||
-                                        tokenObj.access_token ||
-                                        tokenObj.token ||
-                                        tokenObj.api_token;
-
-                    if (!hasValidToken) {
-                        localStorage.removeItem('github-auth-token');
-                        localStorage.removeItem('decap-cms-user');
-                        localStorage.removeItem('netlify-cms-user');
-                        console.log('在认证页面清理了无效的认证数据');
-                    }
-                } catch (e) {
-                    // 如果无法解析令牌数据，清除所有认证数据
-                    localStorage.removeItem('github-auth-token');
-                    localStorage.removeItem('decap-cms-user');
-                    localStorage.removeItem('netlify-cms-user');
-                    console.log('在认证页面清理了格式错误的认证数据');
-                }
-            }
-
-            // 绑定事件
-            document.getElementById('loginButton').addEventListener('click', function() {
-                // 显示进度指示器
-                document.getElementById('loginState').style.display = 'none';
-                document.getElementById('authProgress').style.display = 'block';
-
-                // 立即尝试跳转，而不是延迟
-                // 使用完整的回调URL，让Worker知道认证完成后的回调位置
-                const callbackUrl = encodeURIComponent(window.location.origin + '/auth-callback.html');
-
-                // 首先测试Worker是否可达（先使用workers.dev域名测试）
-                fetch('https://eblog-editor.2737855297.workers.dev/api/test')
-                    .then(response => {
-                        if (response.ok) {
-                            // Worker可达，执行跳转
-                            window.location.href = `https://eblog-editor.2737855297.workers.dev/api/auth?callback=${callbackUrl}`;
-                        } else {
-                            throw new Error(`Worker响应错误: ${response.status}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Worker不可达或出现错误:', error);
-                        // 如果workers.dev域不可用，再尝试自定义域
-                        fetch('https://eblog.firef.dpdns.org/api/test')
-                            .then(response => {
-                                if (response.ok) {
-                                    // 自定义域Worker可达，执行跳转
-                                    window.location.href = `https://eblog.firef.dpdns.org/api/auth?callback=${callbackUrl}`;
-                                } else {
-                                    // 即使自定义域不可用，也尝试workers.dev域（以防测试端点有问题）
-                                    window.location.href = `https://eblog-editor.2737855297.workers.dev/api/auth?callback=${callbackUrl}`;
-                                }
-                            })
-                            .catch(customDomainError => {
-                                console.error('自定义域Worker不可达，使用workers.dev域:', customDomainError);
-                                // 使用workers.dev域作为备选
-                                window.location.href = `https://eblog-editor.2737855297.workers.dev/api/auth?callback=${callbackUrl}`;
-                            });
-                    });
-            });
-
             document.getElementById('goToEditor').addEventListener('click', function() {
-                // 在重定向前再次检查认证状态
-                setTimeout(() => {
-                    window.location.href = '/my-editor/';
-                }, 100);
+                window.location.href = '/my-editor/';
             });
 
             document.getElementById('goToBlog').addEventListener('click', function() {
                 window.location.href = '/';
             });
-
-            document.getElementById('clearAuthButton').addEventListener('click', function() {
-                if (confirm('确定要清除所有认证数据吗？这将使您需要重新登录。')) {
-                    localStorage.removeItem('github-auth-token');
-                    localStorage.removeItem('decap-cms-user');
-                    localStorage.removeItem('netlify-cms-user');
-                    alert('认证数据已清除，请重新进行认证。');
-                    checkAuthStatus(); // 重新检查状态
-                }
-            });
-
-            // 检查初始状态
-            checkAuthStatus();
-        });
-
-        // 监听存储变化
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'decap-cms-user') {
-                checkAuthStatus();
-            }
-        });
-
-        // 页面可见性变化时也检查认证状态
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                setTimeout(checkAuthStatus, 500); // 稍微延后以确保令牌已存储
-            }
-        });
-
-        // 定期检查认证状态
-        setInterval(checkAuthStatus, 5000); // 每5秒自动检查一次
-
-        // 在窗口焦点变化时检查
-        window.addEventListener('focus', checkAuthStatus);
-
-        // 监听来自其他窗口的消息（例如auth-callback页面）
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.type === 'GITHUB_AUTH_COMPLETE') {
-                console.log('收到认证完成消息:', event.data);
-                setTimeout(checkAuthStatus, 1000); // 给一点时间让令牌存储完成
-            }
         });
     </script>
 </body>
