@@ -686,8 +686,8 @@ ${content}`;
 
             if (!token) {
                 alert('请先通过GitHub认证');
-                // 重定向到admin页面进行认证
-                window.location.href = '/admin/';
+                // 重定向到新的认证页面
+                window.location.href = '/auth.html';
                 return;
             }
 
@@ -698,7 +698,7 @@ ${content}`;
             } catch (e) {
                 console.error('无法解析令牌:', e);
                 alert('认证令牌格式错误，请重新认证');
-                window.location.href = '/admin/';
+                window.location.href = '/auth.html';
                 return;
             }
 
@@ -711,7 +711,31 @@ ${content}`;
             if (!accessToken) {
                 console.log('Token object found but no valid token:', tokenObj);
                 alert('认证令牌无效，请重新认证');
-                window.location.href = '/admin/';
+                window.location.href = '/auth.html';
+                return;
+            }
+
+            // 在提交前验证令牌是否有效
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error('Token validation failed:', response.status, response.statusText);
+                    alert('认证令牌无效或已过期，请重新认证');
+                    window.location.href = '/auth.html';
+                    return;
+                }
+
+                const userData = await response.json();
+                console.log('Token validated for user:', userData.login);
+            } catch (validationError) {
+                console.error('Token validation error:', validationError);
+                alert('认证令牌验证失败，请重新认证');
+                window.location.href = '/auth.html';
                 return;
             }
             

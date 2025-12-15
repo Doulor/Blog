@@ -165,21 +165,21 @@ async function handleOAuthCallback(request) {
           </div>
         </div>
         <script>
-          // 将令牌存储在本地存储中，使用多种格式以确保兼容性
+          // 将令牌存储在本地存储中，使用正确的 Decap CMS 格式
           const tokenObj = {
             backend_token: '${accessToken}',
-            access_token: '${accessToken}',
-            token: '${accessToken}',
             name: 'GitHub User',
+            login: 'github-user',
             avatar_url: '',
-            logins: [Date.now()]
+            exp: Date.now() + (60 * 60 * 1000) // 1小时后过期
           };
 
           // 存储到 localStorage
           localStorage.setItem('decap-cms-user', JSON.stringify(tokenObj));
           localStorage.setItem('netlify-cms-user', JSON.stringify(tokenObj)); // 兼容性处理
 
-          console.log('Token stored:', tokenObj);
+          console.log('Token stored for user:', tokenObj.name);
+          console.log('Access token (first 10 chars):', '${accessToken}'.substring(0, 10));
 
           // 添加延迟以显示成功消息
           setTimeout(function() {

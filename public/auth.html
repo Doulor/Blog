@@ -42,15 +42,35 @@
                         </ul>
                     </div>
                     
-                    <div id="loginButtons" class="space-y-4">
-                        <button id="loginButton" 
+                            <div id="loginState" class="space-y-4">
+                        <button id="loginButton"
                                 class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                             <i class="fab fa-github mr-2"></i>
                             通过 GitHub 登录
                         </button>
-                        
+
                         <div class="text-center text-sm text-gray-600">
                             <p>点击登录按钮将跳转到 GitHub 进行安全认证</p>
+                        </div>
+                    </div>
+
+                    <div id="authProgress" class="hidden space-y-4">
+                        <div class="text-center">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            <p class="mt-2 text-gray-600">正在跳转到 GitHub 进行认证...</p>
+                        </div>
+
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-yellow-700">
+                                        如果页面没有跳转，请确保弹出窗口未被阻止，或手动访问 GitHub
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,33 +155,59 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 绑定事件
             document.getElementById('loginButton').addEventListener('click', function() {
-                const clientId = prompt('请输入您的 GitHub OAuth App Client ID:');
-                if (clientId && clientId.trim() !== '') {
-                    const redirectUri = 'https://eblog.firef.dpdns.org/api/callback';
-                    const scope = 'repo';
-                    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-                    window.location.href = authUrl;
-                }
+                // 显示进度指示器
+                document.getElementById('loginState').style.display = 'none';
+                document.getElementById('authProgress').style.display = 'block';
+
+                // 延迟以显示进度指示
+                setTimeout(function() {
+                    const clientId = prompt('请输入您的 GitHub OAuth App Client ID:');
+                    if (clientId && clientId.trim() !== '') {
+                        const redirectUri = 'https://eblog.firef.dpdns.org/api/callback';
+                        const scope = 'repo';
+                        const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+
+                        // 跳转到 GitHub
+                        window.location.href = authUrl;
+                    } else {
+                        // 如果用户取消或输入无效，恢复按钮显示
+                        document.getElementById('loginState').style.display = 'block';
+                        document.getElementById('authProgress').style.display = 'none';
+                    }
+                }, 1000);
             });
-            
+
             document.getElementById('goToEditor').addEventListener('click', function() {
                 window.location.href = '/my-editor/';
             });
-            
+
             document.getElementById('goToBlog').addEventListener('click', function() {
                 window.location.href = '/';
             });
-            
+
             // 检查初始状态
             checkAuthStatus();
         });
-        
+
         // 监听存储变化
         window.addEventListener('storage', function(e) {
             if (e.key === 'decap-cms-user') {
                 checkAuthStatus();
             }
         });
+
+        // 页面可见性变化时也检查认证状态
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                setTimeout(checkAuthStatus, 500); // 稍微延后以确保令牌已存储
+            }
+        });
+
+        // 定期检查认证状态
+        setInterval(checkAuthStatus, 5000); // 每5秒自动检查一次
+
+        // 在窗口焦点变化时检查
+        window.addEventListener('focus', checkAuthStatus);
     </script>
 </body>
 </html>
