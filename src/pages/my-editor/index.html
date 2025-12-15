@@ -748,8 +748,12 @@ ${content}`;
             }
             
             try {
-                // 使用您的Worker代理来与GitHub API交互（通过自定义域）
-                const proxyUrl = 'https://eblog.firef.dpdns.org/api/github';
+                // 尝试使用可用的Worker代理来与GitHub API交互
+                // 优先使用自定义域，如果不可用则使用workers.dev域
+                let proxyUrl = 'https://eblog.firef.dpdns.org/api/github';
+
+                // 注意：在Worker部署和路由配置完成之前，您可能需要临时使用workers.dev域名
+                // const proxyUrl = 'https://eblog-editor.2737855297.workers.dev/api/github';
 
                 // 验证令牌是否有效
                 console.log('Access token for request:', accessToken.substring(0, 10) + '...');  // 只示令牌前10个字符

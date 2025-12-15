@@ -219,22 +219,35 @@
                 // 使用完整的回调URL，让Worker知道认证完成后的回调位置
                 const callbackUrl = encodeURIComponent(window.location.origin + '/auth-callback.html');
 
-                // 首先测试Worker是否可达
-                fetch('https://eblog.firef.dpdns.org/api/test')
+                // 首先测试Worker是否可达（先使用workers.dev域名测试）
+                fetch('https://eblog-editor.2737855297.workers.dev/api/test')
                     .then(response => {
                         if (response.ok) {
-                            // Worker可达，执行跳转
-                            window.location.href = `https://eblog.firef.dpdns.org/api/auth?callback=${callbackUrl}`;
+                            // Worker可达，执行跳转到自定义域（如果已配置）或workers.dev域
+                            window.location.href = `https://eblog-editor.2737855297.workers.dev/api/auth?callback=${callbackUrl}`;
                         } else {
                             throw new Error(`Worker响应错误: ${response.status}`);
                         }
                     })
                     .catch(error => {
                         console.error('Worker不可达或出现错误:', error);
-                        // 恢复按钮显示并显示错误
-                        document.getElementById('loginState').style.display = 'block';
-                        document.getElementById('authProgress').style.display = 'none';
-                        alert('认证服务暂时不可用，请稍后再试或联系管理员');
+                        // 再尝试使用自定义域
+                        fetch('https://eblog.firef.dpdns.org/api/test')
+                            .then(response => {
+                                if (response.ok) {
+                                    // 自定义域Worker可达，执行跳转
+                                    window.location.href = `https://eblog.firef.dpdns.org/api/auth?callback=${callbackUrl}`;
+                                } else {
+                                    throw new Error(`自定义域Worker响应错误: ${response.status}`);
+                                }
+                            })
+                            .catch(customDomainError => {
+                                console.error('自定义域Worker也不可达:', customDomainError);
+                                // 恢复按钮显示并显示错误
+                                document.getElementById('loginState').style.display = 'block';
+                                document.getElementById('authProgress').style.display = 'none';
+                                alert('认证服务暂时不可用，请确保Worker已正确部署和配置');
+                            });
                     });
             });
 
