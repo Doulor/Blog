@@ -34,28 +34,46 @@
         .btn:hover {
             background: #4338CA;
         }
+        .github-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #24292e;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .github-btn:hover {
+            background: #2c394a;
+        }
     </style>
 </head>
 <body>
     <div class="info-container">
         <h1>博客内容管理系统</h1>
         <p>欢迎使用博客内容管理系统！</p>
-        
-        <h3>使用说明</h3>
-        <p>我们已为您提供两个内容管理选项：</p>
-        
+
+        <h3>需要认证</h3>
+        <p>使用前需要通过 GitHub 进行认证</p>
+
         <div>
-            <a href="/my-editor/" class="btn">使用自定义编辑器</a>
-            <p>功能完整的编辑器，具有您熟悉的界面和直接的 GitHub 集成</p>
+            <a href="/login.html" class="github-btn">
+                <span>✓</span> 通过 GitHub 认证
+            </a>
         </div>
-        
-        <div style="margin-top: 30px;">
+
+        <h3 style="margin-top: 30px;">内容编辑器</h3>
+        <p>认证后可以使用以下编辑器</p>
+
+        <div>
+            <a href="/my-editor/" class="btn">使用增强编辑器</a>
+            <p>集成 UI 和 GitHub 提交功能</p>
+        </div>
+
+        <div style="margin-top: 20px;">
             <a href="/content/" class="btn">使用原始编辑器</a>
-            <p>原始编辑器，用于创建帖子、日记和相册</p>
-        </div>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p><small>注意：基于 Decap CMS 的管理面板正在优化中，推荐使用以上编辑器。</small></p>
+            <p>原始功能编辑器</p>
         </div>
     </div>
 </body>

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>登录到博客管理</title>
+    <title>GitHub 认证</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,7 +19,6 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
         }
         .github-login {
             display: inline-block;
@@ -31,6 +30,8 @@
             font-size: 16px;
             cursor: pointer;
             transition: background 0.3s;
+            border: none;
+            margin: 10px;
         }
         .github-login:hover {
             background: #2c394a;
@@ -52,22 +53,42 @@
 </head>
 <body>
     <div class="login-container">
-        <h1>博客内容管理</h1>
+        <h1>GitHub 认证</h1>
         <p>请使用 GitHub 账户进行认证以访问内容管理功能</p>
-
-        <a href="https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID_HERE&redirect_uri=https://eblog-editor.2737855297.workers.dev/api/callback&scope=repo" class="github-login">
+        
+        <button class="github-login" onclick="initiateOAuth()">
             <span>✓</span>
             使用 GitHub 登录
-        </a>
-
+        </button>
+        
         <div style="margin-top: 30px;">
             <a href="/" class="btn">返回首页</a>
             <a href="/my-editor/" class="btn">使用编辑器</a>
         </div>
-
+        
         <p style="margin-top: 30px; font-size: 14px; color: #666;">
-            <strong>注意：</strong> 在使用前，请将 URL 中的 <code>YOUR_CLIENT_ID_HERE</code> 替换为您的 GitHub OAuth App Client ID
+            认证后，令牌将安全地存储在您的浏览器中，用于访问 GitHub 仓库。
         </p>
     </div>
+
+    <script>
+        function initiateOAuth() {
+            // 重定向到 GitHub OAuth 授权页面
+            // 这里使用您的 Worker 的 OAuth 端点
+            const clientId = 'YOUR_CLIENT_ID_HERE'; // 这应该从环境或配置中获取
+            const redirectUri = 'https://eblog-editor.2737855297.workers.dev/api/callback';
+            const scope = 'repo';
+            
+            // 在实际部署中，您需要将 YOUR_CLIENT_ID_HERE 替换为真实的 Client ID
+            // 或者从服务器端获取
+            const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+            
+            // 为了演示，我们使用一个预定义的 URL - 您需要在 GitHub OAuth App 中设置回调 URL
+            window.location.href = authUrl;
+        }
+        
+        // 实际上，您应该直接访问 GitHub OAuth 授权 URL
+        // 例如：https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=repo
+    </script>
 </body>
 </html>
