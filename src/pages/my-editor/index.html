@@ -53,10 +53,21 @@
                 gap: 0.5rem;
                 margin-bottom: 0.5rem;
             }
+
+            /* 页面过渡效果 */
+            .page-container {
+                opacity: 1;
+                transition: opacity 0.3s ease-in-out;
+            }
+
+            .page-container.fade-out {
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen font-sans text-dark">
+    <div class="page-container">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <header class="text-center mb-10">
             <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-primary mb-2 tracking-tight">
@@ -844,15 +855,15 @@ ${content}`;
             const fullContent = frontmatter + content;
 
             // 设置文件名 - 使用日期+标题的方式（这是Astro内容集合的标准格式）
-            const slug = title.toLowerCase()
-                             .replace(/[^a-z0-9\s]/g, '')  // 移除非字母数字和空格字符
-                             .replace(/\s+/g, '-');        // 空格替换为短横线
+            // 支持中文字符的处理
+            let slug = title.toLowerCase()
+                            .replace(/[^\w\s\u4e00-\u9fff]/g, '')  // 允许字母、数字、空格和中文字符
+                            .replace(/\s+/g, '-');                // 空格替换为短横线
 
-            // 仅在非自动预览模式下更新文件名，避免频繁更新
-            if (!autoPreview || !document.getElementById('fileName').value) {
-                // 使用日期-标题的格式，这是标准的内容集合文件命名方式
-                document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
-            }
+            // 无论是否有有效slug，都更新文件名（这样它会实时更新）
+            // 使用日期-标题的格式，这是标准的内容集合文件命名方式
+            document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
+        }
 
             document.getElementById('fileDirectory').value =
                 type === 'normal' ? 'src/content/posts' :
@@ -878,10 +889,28 @@ ${content}`;
             document.getElementById('albumSubmitButton')?.addEventListener('click', () => generateMarkdown('album'));
         });
 
+        // 页面加载完成后显示内容，避免闪烁
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.page-container');
+            if (container) {
+                container.style.opacity = '1';
+                container.classList.remove('fade-out');
+            }
+        });
+
+        // 处理页面跳转的平滑过渡（如果从编辑器跳转到其他页面）
+        window.addEventListener('beforeunload', function() {
+            const container = document.querySelector('.page-container');
+            if (container) {
+                container.classList.add('fade-out');
+            }
+        });
+
         // 暴露函数给全局作用域
         window.getCurrentDate = getCurrentDate;
         window.generateMarkdown = generateMarkdown;
         window.clearAuthData = clearAuthData;
     </script>
+    </div> <!-- page-container -->
 </body>
 </html>
