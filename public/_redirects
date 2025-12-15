@@ -1,0 +1,26 @@
+# 用于 Cloudflare Pages 的重定向配置
+# 解决 OAuth 认证流程中的路由问题
+
+# CMS 认证路由
+[[redirects]]
+  from = "/auth/*"
+  to = "/admin/"
+  status = 200
+  
+# CMS API 路由
+[[redirects]]
+  from = "/api/*"
+  to = "/admin/"
+  status = 200
+
+# CMS admin 路由
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+  
+# 捕获所有到 admin 的请求
+[[redirects]]
+  from = "/admin/"
+  to = "/admin/index.html"
+  status = 200
