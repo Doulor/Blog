@@ -16,88 +16,20 @@
       padding: 40px;
       color: #666;
     }
-    .debug-info {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 12px;
-    }
   </style>
 </head>
 <body>
   <div id="nc-root">
     <div class="loading">Loading Content Management System...</div>
-    <div class="debug-info" id="debug-info">
-      <div>Manual Init: <span id="manual-init">checking...</span></div>
-      <div>Netlify Identity: <span id="netlify-identity">checking...</span></div>
-      <div>CMS Object: <span id="cms-object">checking...</span></div>
-      <div>Config Status: <span id="config-status">checking...</span></div>
-    </div>
   </div>
-
-  <!-- 防止自动初始化 Netlify Identity -->
+  <!-- 防止 Netlify Identity 自动初始化 -->
   <script>
-    // 设置手动初始化模式
-    window.CMS_MANUAL_INIT = true;
-    document.getElementById('manual-init').textContent = 'true';
-
-    // 确保没有定义 netlifyIdentity 全局变量
-    window.netlifyIdentity = undefined;
-    if (window.netlifyIdentity) {
-      delete window.netlifyIdentity;
-    }
-    document.getElementById('netlify-identity').textContent = 'undefined';
+    // 防止自动检测和连接到 Netlify Identity
+    window.netlifyIdentity = null;
+    delete window.netlifyIdentity;
+    window.NETLIFY_BYPASS = true;
   </script>
-
   <!-- Include the script that builds the page and powers Decap CMS -->
-  <script>
-    // 动态加载 CMS 脚本并处理回调
-    function loadCmsScript() {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/decap-cms@^3.1.0/dist/decap-cms.js';
-
-      script.onload = function() {
-        document.getElementById('cms-object').textContent = 'loaded';
-        console.log("CMS script loaded successfully");
-
-        // 检查 CMS 对象是否存在
-        if (typeof window.CMS !== 'undefined') {
-          console.log("CMS object is available");
-          document.getElementById('config-status').textContent = 'available';
-
-          // 手动初始化 CMS
-          try {
-            console.log("Attempting to initialize CMS...");
-            window.CMS.init();
-            console.log("CMS initialized successfully");
-            document.getElementById('config-status').textContent = 'initialized';
-          } catch (e) {
-            console.error("Error initializing CMS:", e);
-            document.getElementById('config-status').textContent = 'error: ' + e.message;
-          }
-        } else {
-          document.getElementById('config-status').textContent = 'not found';
-          console.error("CMS object is not available");
-        }
-      };
-
-      script.onerror = function() {
-        console.error("Failed to load CMS script");
-        document.getElementById('cms-object').textContent = 'failed to load';
-        document.getElementById('config-status').textContent = 'script failed to load';
-      };
-
-      document.head.appendChild(script);
-    }
-
-    // 确保在 DOM 加载后加载 CMS
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadCmsScript);
-    } else {
-      loadCmsScript();
-    }
-  </script>
+  <script src="https://unpkg.com/decap-cms@^3.1.0/dist/cms.js"></script>
 </body>
 </html>
