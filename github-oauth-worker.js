@@ -130,18 +130,34 @@ async function handleOAuthCallback(request) {
       <head>
         <meta charset="utf-8">
         <title>Authentication Successful</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f0f8ff; }
+          .container { max-width: 500px; margin: 0 auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+          .success { color: #28a745; font-size: 24px; margin-bottom: 20px; }
+          .message { margin: 20px 0; }
+          .redirect-link { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+        </style>
       </head>
       <body>
-        <h1>Authentication Successful</h1>
-        <p>Setting up your session and redirecting...</p>
+        <div class="container">
+          <div class="success">✓ 认证成功！</div>
+          <h2>GitHub 账户认证完成</h2>
+          <div class="message">
+            <p>您的访问令牌已安全存储</p>
+            <p>即将跳转到内容管理界面...</p>
+            <p>如果页面没有自动跳转，请 <a href="${redirectUrl}" class="redirect-link">点击这里</a></p>
+          </div>
+        </div>
         <script>
           // 将令牌存储在本地存储中，模拟 Decap CMS 存储格式
           localStorage.setItem('decap-cms-user', JSON.stringify({
             backend_token: '${accessToken}'
           }));
 
-          // 重定向回 CMS 管理界面
-          window.location = '${redirectUrl}';
+          // 添加延迟以显示成功消息
+          setTimeout(function() {
+            window.location = '${redirectUrl}';
+          }, 3000); // 3秒后跳转
         </script>
       </body>
       </html>
