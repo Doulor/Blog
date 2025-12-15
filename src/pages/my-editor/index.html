@@ -686,11 +686,20 @@ ${content}`;
                 window.location.href = '/admin/';
                 return;
             }
-            
+
             // 从存储中获取访问令牌
-            const tokenObj = JSON.parse(token);
-            const accessToken = tokenObj.backend_token;
-            
+            let tokenObj;
+            try {
+                tokenObj = JSON.parse(token);
+            } catch (e) {
+                console.error('无法解析令牌:', e);
+                alert('认证令牌格式错误，请重新认证');
+                window.location.href = '/admin/';
+                return;
+            }
+
+            const accessToken = tokenObj.backend_token || tokenObj.access_token;
+
             if (!accessToken) {
                 alert('认证令牌无效，请重新认证');
                 window.location.href = '/admin/';
