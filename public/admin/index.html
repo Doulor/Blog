@@ -26,10 +26,19 @@
   <script>
     // 防止自动检测和连接到 Netlify Identity
     window.netlifyIdentity = null;
-    delete window.netlifyIdentity;
-    window.NETLIFY_BYPASS = true;
+    if (window.netlifyIdentity) {
+      delete window.netlifyIdentity;
+    }
+    // 设置手动初始化模式
+    window.CMS_MANUAL_INIT = true;
   </script>
   <!-- Include the script that builds the page and powers Decap CMS -->
-  <script src="https://unpkg.com/decap-cms@^3.1.0/dist/cms.js"></script>
+  <script src="https://unpkg.com/decap-cms@^3.1.0/dist/decap-cms.js"></script>
+  <script>
+    // 手动初始化 CMS
+    if (window.CMS) {
+      CMS.init();
+    }
+  </script>
 </body>
 </html>
