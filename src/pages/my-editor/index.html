@@ -863,11 +863,20 @@ ${content}`;
             // 无论是否有有效slug，都更新文件名（这样它会实时更新）
             // 使用日期-标题的格式，这是标准的内容集合文件命名方式
             document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
-        }
 
             document.getElementById('fileDirectory').value =
                 type === 'normal' ? 'src/content/posts' :
                 type === 'diary' ? 'src/content/diary' : 'src/content/albums';
+
+            // 设置文件名 - 使用日期+标题的方式（这是Astro内容集合的标准格式）
+            // 支持中文字符的处理
+            let slug = title.toLowerCase()
+                            .replace(/[^\w\s\u4e00-\u9fff]/g, '')  // 允许字母、数字、空格和中文字符
+                            .replace(/\s+/g, '-');                // 空格替换为短横线
+
+            // 无论是否有有效slug，都更新文件名（这样它会实时更新）
+            // 使用日期-标题的格式，这是标准的内容集合文件命名方式
+            document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
 
             // 显示在结果区域
             document.getElementById('markdownResult').textContent = fullContent;
