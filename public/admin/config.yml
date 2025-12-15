@@ -1,16 +1,8 @@
 backend:
-  name: github
-  repo: ${CMS_GITHUB_REPO}
-  branch: ${CMS_BRANCH}
-  client_id: ${CMS_GITHUB_APP_CLIENT_ID}
-  client_secret: ${CMS_GITHUB_APP_CLIENT_SECRET}
-  # 明确指定使用 GitHub API，避免任何自动检测
-  base_url: https://api.github.com
-  site_domain: 'blog.firef.dpdns.org'
-  # 重要：确保不使用 Netlify Identity 服务
-  # 请确保已正确设置 Cloudflare Worker 作为 OAuth 代理
+  name: proxy
+  proxy_url: https://eblog-editor.2737855297.workers.dev/api/gateway
 
-media_folder: "public/assets/images"  # 存放上传的媒体文件
+media_folder: "public/assets/images"
 public_folder: "/assets/images"
 
 collections:
