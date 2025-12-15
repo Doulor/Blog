@@ -44,62 +44,60 @@
     document.getElementById('manual-init').textContent = 'true';
 
     // 确保没有定义 netlifyIdentity 全局变量
-    window.netlifyIdentity = null;
-    delete window.netlifyIdentity;
+    window.netlifyIdentity = undefined;
+    if (window.netlifyIdentity) {
+      delete window.netlifyIdentity;
+    }
     document.getElementById('netlify-identity').textContent = 'undefined';
-
-    // 拦截并修改可能的配置请求
-    // 防止自动连接到 Netlify 服务
-    window.NETLIFY_BYPASS = true;
   </script>
 
   <!-- Include the script that builds the page and powers Decap CMS -->
-  <script
-    src="https://unpkg.com/decap-cms@^3.1.0/dist/decap-cms.js"
-    onload="onCmsLoad()"
-    onerror="onCmsError()">
-  </script>
-
-  <!-- 自定义 CMS 初始化 -->
   <script>
-    function onCmsLoad() {
-      document.getElementById('cms-object').textContent = 'loaded';
-      console.log("CMS loaded successfully");
+    // 动态加载 CMS 脚本并处理回调
+    function loadCmsScript() {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/decap-cms@^3.1.0/dist/decap-cms.js';
 
-      // 检查 CMS 对象是否存在
-      if (typeof window.CMS !== 'undefined') {
-        console.log("CMS object is available");
-        document.getElementById('config-status').textContent = 'available';
+      script.onload = function() {
+        document.getElementById('cms-object').textContent = 'loaded';
+        console.log("CMS script loaded successfully");
 
-        // 手动初始化 CMS
-        try {
-          // 初始化 CMS，配置应该从 config.yml 自动加载
-          console.log("Attempting to initialize CMS...");
-          window.CMS.init();
-          console.log("CMS initialized successfully");
-          document.getElementById('config-status').textContent = 'initialized';
-        } catch (e) {
-          console.error("Error initializing CMS:", e);
-          document.getElementById('config-status').textContent = 'error: ' + e.message;
+        // 检查 CMS 对象是否存在
+        if (typeof window.CMS !== 'undefined') {
+          console.log("CMS object is available");
+          document.getElementById('config-status').textContent = 'available';
+
+          // 手动初始化 CMS
+          try {
+            console.log("Attempting to initialize CMS...");
+            window.CMS.init();
+            console.log("CMS initialized successfully");
+            document.getElementById('config-status').textContent = 'initialized';
+          } catch (e) {
+            console.error("Error initializing CMS:", e);
+            document.getElementById('config-status').textContent = 'error: ' + e.message;
+          }
+        } else {
+          document.getElementById('config-status').textContent = 'not found';
+          console.error("CMS object is not available");
         }
-      } else {
-        document.getElementById('config-status').textContent = 'not found';
-        console.error("CMS object is not available");
-      }
+      };
+
+      script.onerror = function() {
+        console.error("Failed to load CMS script");
+        document.getElementById('cms-object').textContent = 'failed to load';
+        document.getElementById('config-status').textContent = 'script failed to load';
+      };
+
+      document.head.appendChild(script);
     }
 
-    function onCmsError() {
-      console.error("Failed to load CMS script");
-      document.getElementById('cms-object').textContent = 'failed to load';
-      document.getElementById('config-status').textContent = 'script failed to load';
+    // 确保在 DOM 加载后加载 CMS
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadCmsScript);
+    } else {
+      loadCmsScript();
     }
-
-    // 监听配置加载错误
-    window.addEventListener('error', function(e) {
-      if (e.filename && e.filename.includes('cms.js')) {
-        console.error('CMS Error:', e.error);
-      }
-    });
   </script>
 </body>
 </html>
