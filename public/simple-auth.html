@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firef 博客 - GitHub 认证</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <i class="fas fa-user-lock text-indigo-600 text-2xl"></i>
+                </div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Firef 博客内容管理
+                </h2>
+            </div>
+            
+            <div class="mt-8 bg-white py-8 px-4 shadow rounded-lg sm:px-10">
+                <div id="authSection" class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 text-center mb-6">认证状态</h3>
+                        <div id="statusContainer" class="text-center py-6">
+                            <i class="fas fa-question-circle text-5xl text-gray-400 mb-4"></i>
+                            <p id="statusText" class="text-gray-600">正在检查认证状态...</p>
+                        </div>
+                    </div>
+                    
+                    <div id="actionButtons" class="space-y-4">
+                        <!-- 会根据状态显示的按钮 -->
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg mt-6">
+                        <h4 class="font-medium mb-2"><i class="fas fa-info-circle mr-2"></i>说明</h4>
+                        <ul class="list-disc list-inside space-y-1 mt-2">
+                            <li>认证用于连接您的 GitHub 账户</li>
+                            <li>授权后可管理博客内容</li>
+                            <li>令牌仅本地存储，不会上传</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="progressSection" class="hidden text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
+                    <p class="text-gray-600">正在处理...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GitHub OAuth 配置 - 这里是硬编码的配置，用于构造认证 URL
+        const GITHUB_CLIENT_ID = 'YOUR_REAL_CLIENT_ID_HERE'; // 这是占位符，实际使用时会被替换
+        const REDIRECT_URI = 'https://eblog.firef.dpdns.org/api/callback';
+        const AUTH_SCOPE = 'repo';
+        const GITHUB_AUTH_URL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${AUTH_SCOPE}`;
+        
+        // 状态检查函数
+        function checkAuthStatus() {
+            const token = localStorage.getItem('decap-cms-user');
+            const statusContainer = document.getElementById('statusContainer');
+            const statusText = document.getElementById('statusText');
+            const actionButtons = document.getElementById('actionButtons');
+            
+            if (token) {
+                try {
+                    const tokenObj = JSON.parse(token);
+                    if (tokenObj.backend_token || tokenObj.access_token) {
+                        // 已认证
+                        statusContainer.innerHTML = `
+                            <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                            <p class="text-green-600 font-medium text-lg">认证成功</p>
+                            <p class="text-sm text-gray-600 mt-2">令牌已安全存储</p>
+                        `;
+                        
+                        actionButtons.innerHTML = `
+                            <button id="manageContentBtn" class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none">
+                                <i class="fas fa-edit mr-2"></i>
+                                管理内容
+                            </button>
+                            <button id="reauthBtn" class="w-full flex justify-center items-center px-4 py-3 mt-3 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                重新认证
+                            </button>
+                            <button id="clearTokenBtn" class="w-full flex justify-center items-center px-4 py-3 mt-3 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none">
+                                <i class="fas fa-trash-alt mr-2"></i>
+                                清除认证
+                            </button>
+                        `;
+                        
+                        document.getElementById('manageContentBtn').onclick = () => window.location.href = '/my-editor/';
+                        document.getElementById('reauthBtn').onclick = startAuthProcess;
+                        document.getElementById('clearTokenBtn').onclick = clearTokenAndShowAuth;
+                    } else {
+                        // 令牌格式不正确
+                        statusContainer.innerHTML = `
+                            <i class="fas fa-exclamation-triangle text-5xl text-yellow-500 mb-4"></i>
+                            <p class="text-yellow-600 font-medium text-lg">认证信息异常</p>
+                            <p class="text-sm text-gray-600 mt-2">请重新认证</p>
+                        `;
+                        
+                        actionButtons.innerHTML = `
+                            <button id="reauthSimpleBtn" class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
+                                <i class="fab fa-github mr-2"></i>
+                                重新认证
+                            </button>
+                        `;
+                        
+                        document.getElementById('reauthSimpleBtn').onclick = startAuthProcess;
+                    }
+                } catch (e) {
+                    // 令牌格式错误
+                    statusContainer.innerHTML = `
+                        <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+                        <p class="text-red-600 font-medium text-lg">认证数据损坏</p>
+                        <p class="text-sm text-gray-600 mt-2">请重新认证</p>
+                    `;
+                    
+                    actionButtons.innerHTML = `
+                        <button id="reauthErrorBtn" class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
+                            <i class="fab fa-github mr-2"></i>
+                            重新认证
+                        </button>
+                    `;
+                    
+                    document.getElementById('reauthErrorBtn').onclick = startAuthProcess;
+                }
+            } else {
+                // 未认证
+                statusContainer.innerHTML = `
+                    <i class="fas fa-user-clock text-5xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 font-medium text-lg">尚未认证</p>
+                    <p class="text-sm text-gray-600 mt-2">需要通过 GitHub 账户认证</p>
+                `;
+                
+                actionButtons.innerHTML = `
+                    <button id="startAuthBtn" class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
+                        <i class="fab fa-github mr-2"></i>
+                        开始 GitHub 认证
+                    </button>
+                `;
+                
+                document.getElementById('startAuthBtn').onclick = startAuthProcess;
+            }
+        }
+        
+        // 开始认证流程
+        function startAuthProcess() {
+            // 显示进度
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+            
+            // 检查是否有真实配置
+            if (GITHUB_CLIENT_ID === 'YOUR_REAL_CLIENT_ID_HERE' || GITHUB_CLIENT_ID.startsWith('YOUR_')) {
+                // 如果是占位符，则要求用户输入
+                setTimeout(() => {
+                    const clientId = prompt('请在开发者工具控制台查看正确的配置方法。\n\n' +
+                        '注意：需要在 Cloudflare Worker 中设置 GITHUB_CLIENT_ID 环境变量。\n\n' +
+                        '请输入您的 GitHub OAuth App Client ID:');
+                    
+                    if (clientId && clientId.trim() !== '') {
+                        const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${REDIRECT_URI}&scope=${AUTH_SCOPE}`;
+                        window.location.href = authUrl;
+                    } else {
+                        // 取消操作，恢复按钮
+                        document.getElementById('authSection').style.display = 'block';
+                        document.getElementById('progressSection').style.display = 'none';
+                    }
+                }, 1000);
+            } else {
+                // 使用预设的配置
+                window.location.href = GITHUB_AUTH_URL;
+            }
+        }
+        
+        // 清除令牌并重新显示认证页面
+        function clearTokenAndShowAuth() {
+            localStorage.removeItem('decap-cms-user');
+            localStorage.removeItem('netlify-cms-user');
+            checkAuthStatus();
+        }
+        
+        // 页面加载时检查状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+        });
+        
+        // 页面可见性变化时重新检查
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                setTimeout(checkAuthStatus, 500);
+            }
+        });
+    </script>
+</body>
+</html>
