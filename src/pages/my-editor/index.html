@@ -679,10 +679,9 @@ ${content}`;
             const filePath = `${directory}/${fileName}`;
             
             // 检查认证状态 - 尝试多种存储键
-            let token = localStorage.getItem('decap-cms-user');
-            if (!token) {
-                token = localStorage.getItem('netlify-cms-user');
-            }
+            let token = localStorage.getItem('github-auth-token') ||
+                       localStorage.getItem('decap-cms-user') ||
+                       localStorage.getItem('netlify-cms-user');
 
             if (!token) {
                 alert('请先通过GitHub认证');
@@ -719,15 +718,24 @@ ${content}`;
             try {
                 const response = await fetch('https://api.github.com/user', {
                     headers: {
-                        'Authorization': `token ${accessToken}`
+                        'Authorization': `Bearer ${accessToken}`  // GitHub API也支持Bearer格式
                     }
                 });
 
                 if (!response.ok) {
-                    console.error('Token validation failed:', response.status, response.statusText);
-                    alert('认证令牌无效或已过期，请重新认证');
-                    window.location.href = '/auth.html';
-                    return;
+                    // 尝试使用token格式（旧格式）
+                    const tokenResponse = await fetch('https://api.github.com/user', {
+                        headers: {
+                            'Authorization': `token ${accessToken}`
+                        }
+                    });
+
+                    if (!tokenResponse.ok) {
+                        console.error('Token validation failed:', response.status, response.statusText);
+                        alert('认证令牌无效或已过期，请重新认证');
+                        window.location.href = '/auth.html';
+                        return;
+                    }
                 }
 
                 const userData = await response.json();
@@ -791,17 +799,40 @@ ${content}`;
                     alert('文件已成功提交到GitHub仓库！');
                     // 可能需要清空表单或提供其他反馈
                 } else {
-                    alert('提交失败: ' + JSON.stringify(resultData));
+                    console.error('提交失败:', resultData);
+                    if (resultData.message && resultData.message.includes('Bad credentials')) {
+                        alert('认证令牌已过期或无效，请重新认证');
+                        // 清除无效的认证数据
+                        localStorage.removeItem('github-auth-token');
+                        localStorage.removeItem('decap-cms-user');
+                        localStorage.removeItem('netlify-cms-user');
+                        window.location.href = '/auth.html';
+                    } else {
+                        alert('提交失败: ' + (resultData.message || JSON.stringify(resultData)));
+                    }
                 }
             } catch (error) {
                 console.error('提交错误:', error);
-                alert('提交过程中发生错误: ' + error.message);
+                if (error.message.includes('fetch') || error.message.includes('network')) {
+                    alert('网络连接错误，请检查网络连接后重试');
+                } else {
+                    alert('提交过程中发生错误: ' + error.message);
+                }
             }
         });
+
+        // 添加清除认证数据功能
+        function clearAuthData() {
+            localStorage.removeItem('github-auth-token');
+            localStorage.removeItem('decap-cms-user');
+            localStorage.removeItem('netlify-cms-user');
+            console.log('认证数据已清除');
+        }
 
         // 暴露函数给全局作用域
         window.getCurrentDate = getCurrentDate;
         window.generateMarkdown = generateMarkdown;
+        window.clearAuthData = clearAuthData;
     </script>
 </body>
 </html>

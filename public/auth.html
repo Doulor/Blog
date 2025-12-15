@@ -52,6 +52,15 @@
                         <div class="text-center text-sm text-gray-600">
                             <p>点击登录按钮将跳转到 GitHub 进行安全认证</p>
                         </div>
+
+                        <div id="clearAuthSection" class="hidden mt-4">
+                            <button id="clearAuthButton"
+                                class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150">
+                                <i class="fas fa-trash mr-2"></i>
+                                清除认证数据
+                            </button>
+                            <p class="text-xs text-gray-500 mt-2 text-center">如果认证出现问题，请清除数据后重试</p>
+                        </div>
                     </div>
 
                     <div id="authProgress" class="hidden space-y-4">
@@ -103,23 +112,27 @@
     <script>
         // 检查认证状态
         function checkAuthStatus() {
-            const token = localStorage.getItem('decap-cms-user');
+            // 尝试从多个位置获取认证令牌
+            const token = localStorage.getItem('github-auth-token') ||
+                         localStorage.getItem('decap-cms-user') ||
+                         localStorage.getItem('netlify-cms-user');
+
             const statusMessage = document.getElementById('statusMessage');
-            const loginButtons = document.getElementById('loginButtons');
-            
+
             if (token) {
                 // 已认证
                 document.getElementById('loginContainer').style.display = 'none';
                 document.getElementById('successContainer').style.display = 'block';
-                
+
                 try {
                     const tokenObj = JSON.parse(token);
-                    if (tokenObj.backend_token || tokenObj.access_token) {
+                    if (tokenObj.backend_token || tokenObj.access_token || tokenObj.token || tokenObj.api_token) {
                         statusMessage.innerHTML = `
                             <div class="text-center">
                                 <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
                                 <p class="text-green-600 font-medium">已认证</p>
                                 <p class="text-sm text-gray-600 mt-1">令牌已安全存储</p>
+                                <p class="text-xs text-gray-500 mt-2">用户: ${tokenObj.login || '已认证用户'}</p>
                             </div>
                         `;
                     } else {
@@ -127,11 +140,12 @@
                             <div class="text-center">
                                 <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-2"></i>
                                 <p class="text-yellow-600 font-medium">认证信息不完整</p>
-                                <p class="text-sm text-gray-600 mt-1">请重新认证</p>
+                                <p class="text-sm text-gray-600 mt-1">令牌缺少必要的字段，请重新认证</p>
                             </div>
                         `;
                     }
                 } catch (e) {
+                    console.error('认证数据解析错误:', e);
                     statusMessage.innerHTML = `
                         <div class="text-center">
                             <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-2"></i>
@@ -142,6 +156,9 @@
                 }
             } else {
                 // 未认证
+                document.getElementById('successContainer').style.display = 'none';
+                document.getElementById('loginContainer').style.display = 'block';
+
                 statusMessage.innerHTML = `
                     <div class="text-center">
                         <i class="fas fa-user-clock text-4xl text-gray-400 mb-2"></i>
@@ -149,6 +166,16 @@
                         <p class="text-sm text-gray-600 mt-1">点击下方按钮进行认证</p>
                     </div>
                 `;
+            }
+
+            // 根据认证状态显示/隐藏清除认证按钮
+            const clearAuthSection = document.getElementById('clearAuthSection');
+            if (localStorage.getItem('github-auth-token') ||
+                localStorage.getItem('decap-cms-user') ||
+                localStorage.getItem('netlify-cms-user')) {
+                clearAuthSection.style.display = 'block';
+            } else {
+                clearAuthSection.style.display = 'none';
             }
         }
 
@@ -161,17 +188,31 @@
 
                 // 延迟以显示进度指示
                 setTimeout(function() {
-                    // 直接跳转到 Worker 的认证端点，它将处理跳转到 GitHub
-                    window.location.href = 'https://eblog.firef.dpdns.org/api/auth';
+                    // 跳转到 Worker 的认证端点，它将处理跳转到 GitHub 并在完成后回调到我们的页面
+                    const callbackUrl = encodeURIComponent(window.location.origin + '/auth-callback.html');
+                    window.location.href = `https://eblog.firef.dpdns.org/api/auth?callback=${callbackUrl}`;
                 }, 1000);
             });
 
             document.getElementById('goToEditor').addEventListener('click', function() {
-                window.location.href = '/my-editor/';
+                // 在重定向前再次检查认证状态
+                setTimeout(() => {
+                    window.location.href = '/my-editor/';
+                }, 100);
             });
 
             document.getElementById('goToBlog').addEventListener('click', function() {
                 window.location.href = '/';
+            });
+
+            document.getElementById('clearAuthButton').addEventListener('click', function() {
+                if (confirm('确定要清除所有认证数据吗？这将使您需要重新登录。')) {
+                    localStorage.removeItem('github-auth-token');
+                    localStorage.removeItem('decap-cms-user');
+                    localStorage.removeItem('netlify-cms-user');
+                    alert('认证数据已清除，请重新进行认证。');
+                    checkAuthStatus(); // 重新检查状态
+                }
             });
 
             // 检查初始状态
@@ -197,6 +238,14 @@
 
         // 在窗口焦点变化时检查
         window.addEventListener('focus', checkAuthStatus);
+
+        // 监听来自其他窗口的消息（例如auth-callback页面）
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'GITHUB_AUTH_COMPLETE') {
+                console.log('收到认证完成消息:', event.data);
+                setTimeout(checkAuthStatus, 1000); // 给一点时间让令牌存储完成
+            }
+        });
     </script>
 </body>
 </html>
