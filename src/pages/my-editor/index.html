@@ -512,6 +512,8 @@
                     extraFields.published = date;
                     if(document.getElementById('normalUsePassword').checked) {
                         extraFields.password = document.getElementById('normalPassword').value;
+                        // 当有密码时，同时添加加密标志
+                        extraFields.encrypted = true;
                     }
                     break;
 
