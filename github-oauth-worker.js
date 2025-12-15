@@ -5,7 +5,9 @@ export default {
     // 从环境变量获取配置
     const CLIENT_ID = env.GITHUB_CLIENT_ID;
     const CLIENT_SECRET = env.GITHUB_CLIENT_SECRET;
-    const REDIRECT_URI = env.GITHUB_REDIRECT_URI || `${new URL(request.url).origin}/callback`;
+    // 使用环境变量中的自定义回调URL，如果未设置则使用请求的来源URL
+    const REDIRECT_URI = env.GITHUB_REDIRECT_URI ||
+                         (env.CUSTOM_DOMAIN ? `${env.CUSTOM_DOMAIN}/callback` : `${new URL(request.url).origin}/callback`);
 
     if (!CLIENT_ID || !CLIENT_SECRET) {
       return new Response('Missing GitHub OAuth credentials. Please configure GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables.', {
