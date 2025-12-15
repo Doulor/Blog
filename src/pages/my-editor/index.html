@@ -597,21 +597,27 @@ ${content}`;
                     return; // 提前返回，因为我们已经设置了结果
             }
 
-            // 构建Frontmatter，确保包含构建所需的字段
-            let frontmatter = `---\ntitle: "${title}"\ndate: ${date}`;
-            
-            // 对于帖子类型，确保同时包含published字段
+            // 构建Frontmatter，只包含published字段（完全按照您的要求）
+            let frontmatter = `---\ntitle: "${title}"`;
+
+            // 对于帖子类型，只包含published字段（完全按照您的要求）
             if (type === 'normal') {
                 frontmatter += `\npublished: ${date}`;
             }
-            
+            // 相册和日记类型不需要published字段
+
             if(description) frontmatter += `\ndescription: "${description}"`;
             if(category) frontmatter += `\ncategory: "${category}"`;
             if(tags.length > 0) frontmatter += `\ntags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
 
-            // 添加额外字段
+            // 添加额外字段（避免重复添加已有的字段）
             Object.entries(extraFields).forEach(([key, value]) => {
                 if(value !== undefined) {
+                    // 跳过已显式添加的字段，避免重复
+                    if (type === 'normal' && key === 'published') {
+                        return; // published字段已添加，跳过
+                    }
+
                     if(typeof value === 'string') {
                         frontmatter += `\n${key}: "${value}"`;
                     } else if(typeof value === 'boolean' || typeof value === 'number') {
