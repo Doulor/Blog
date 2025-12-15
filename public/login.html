@@ -74,7 +74,7 @@
         function startOAuthFlow() {
             const clientId = prompt('请输入您的 GitHub OAuth App Client ID:');
             if (clientId) {
-                const redirectUri = 'https://eblog-editor.2737855297.workers.dev/api/callback';
+                const redirectUri = 'https://eblog.firef.dpdns.org/api/callback';
                 const scope = 'repo';
                 const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
                 window.location.href = authUrl;

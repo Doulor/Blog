@@ -6,45 +6,46 @@
  * - GITHUB_CLIENT_SECRET: Your GitHub OAuth App Client Secret
  */
 
-// 配置常量
-const GITHUB_API_BASE = 'https://api.github.com';
-const GITHUB_AUTH_BASE = 'https://github.com';
-
-// 存储令牌的简单实现（在实际部署中，您应该使用 KV 存储）
-let tempTokenStore = {};
-
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request));
 });
 
 async function handleRequest(request) {
-  const url = new URL(request.url);
+  try {
+    const url = new URL(request.url);
 
-  // OAuth 回调端点
-  if (url.pathname === '/api/callback') {
-    return handleOAuthCallback(request);
+    // OAuth 回调端点
+    if (url.pathname === '/api/callback') {
+      return handleOAuthCallback(request);
+    }
+
+    // API Gateway 端点用于处理 CMS 请求
+    if (url.pathname.startsWith('/api/gateway')) {
+      return handleProxyRequest(request);
+    }
+
+    // 如果是其他请求，返回错误
+    return new Response('Not Found', { status: 404 });
+  } catch (error) {
+    console.error('Request handler error:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
-
-  // API Gateway 端点用于处理 CMS 请求
-  if (url.pathname.startsWith('/api/gateway')) {
-    return handleProxyRequest(request);
-  }
-
-  // 如果是其他请求，返回错误
-  return new Response('Not Found', { status: 404 });
 }
 
 async function handleProxyRequest(request) {
   try {
     // 从 URL 参数或请求头获取令牌
     const originalUrl = new URL(request.url);
-    const token = originalUrl.searchParams.get('token') || request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = originalUrl.searchParams.get('token') ||
+                  request.headers.get('authorization')?.replace('Bearer ', '') ||
+                  (request.headers.get('authorization')?.startsWith('token ') ?
+                   request.headers.get('authorization').substring(6) : null);
 
     if (!token) {
       // 如果没有令牌，返回需要认证的响应
       return new Response(JSON.stringify({
         error: 'Authentication required',
-        redirect: `${GITHUB_AUTH_BASE}/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${originalUrl.origin}/api/callback&scope=repo`
+        message: 'Please authenticate with GitHub first'
       }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
@@ -58,7 +59,7 @@ async function handleProxyRequest(request) {
     }
 
     // 构建 GitHub API 请求 URL
-    const githubApiUrl = GITHUB_API_BASE + path;
+    const githubApiUrl = 'https://api.github.com' + path;
 
     // 代理请求到 GitHub API
     const githubRequest = new Request(githubApiUrl, {
@@ -85,17 +86,17 @@ async function handleProxyRequest(request) {
 }
 
 async function handleOAuthCallback(request) {
-  const url = new URL(request.url);
-  const code = url.searchParams.get('code');
-
-  if (!code) {
-    return new Response('Authorization code not provided', {
-      status: 400,
-      headers: { 'Content-Type': 'text/plain' }
-    });
-  }
-
   try {
+    const url = new URL(request.url);
+    const code = url.searchParams.get('code');
+
+    if (!code) {
+      return new Response('Authorization code not provided', {
+        status: 400,
+        headers: { 'Content-Type': 'text/plain' }
+      });
+    }
+
     // 使用授权码交换访问令牌
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -111,10 +112,19 @@ async function handleOAuthCallback(request) {
       })
     });
 
+    if (!tokenResponse.ok) {
+      console.error('Token response not OK:', tokenResponse.status, await tokenResponse.text());
+      return new Response('Failed to obtain access token', {
+        status: 400,
+        headers: { 'Content-Type': 'text/plain' }
+      });
+    }
+
     const tokenData = await tokenResponse.json();
     const accessToken = tokenData.access_token;
 
     if (!accessToken) {
+      console.error('No access token in response:', tokenData);
       return new Response('Failed to obtain access token', {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -169,7 +179,7 @@ async function handleOAuthCallback(request) {
 
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return new Response('Authentication failed', {
+    return new Response('Authentication failed: ' + error.message, {
       status: 500,
       headers: { 'Content-Type': 'text/plain' }
     });

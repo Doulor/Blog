@@ -1,6 +1,6 @@
 backend:
   name: proxy
-  proxy_url: https://eblog-editor.2737855297.workers.dev/api/gateway
+  proxy_url: https://eblog.firef.dpdns.org/api/gateway
 
 media_folder: "public/assets/images"
 public_folder: "/assets/images"
