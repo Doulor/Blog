@@ -22,7 +22,45 @@
   <div id="nc-root">
     <div class="loading">Loading Content Management System...</div>
   </div>
+  
+  <!-- 防止自动初始化 Netlify Identity -->
+  <script>
+    // 设置手动初始化模式
+    window.CMS_MANUAL_INIT = true;
+    
+    // 确保没有定义 netlifyIdentity 全局变量
+    window.netlifyIdentity = undefined;
+  </script>
+  
   <!-- Include the script that builds the page and powers Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.1.0/dist/cms.js"></script>
+  
+  <!-- 自定义 CMS 初始化 -->
+  <script>
+    // 在 CMS 加载后进行手动初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 延迟初始化 CMS 确保配置正确加载
+      setTimeout(function() {
+        if (typeof CMS !== 'undefined') {
+          console.log("Initializing Decap CMS with GitHub backend...");
+        }
+      }, 100);
+    });
+    
+    // 当 CMS 准备好时确保使用正确的后端配置
+    if (window.CMS) {
+      window.CMS.init();
+    } else {
+      document.addEventListener('DOMContentLoaded', function() {
+        // 等待 CMS 加载完毕
+        const cmsCheck = setInterval(function() {
+          if (window.CMS) {
+            clearInterval(cmsCheck);
+            window.CMS.init();
+          }
+        }, 100);
+      });
+    }
+  </script>
 </body>
 </html>

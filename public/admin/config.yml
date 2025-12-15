@@ -2,9 +2,13 @@ backend:
   name: github
   repo: ${CMS_GITHUB_REPO}
   branch: ${CMS_BRANCH}
-  # 注意：在 Cloudflare Pages 上，我们使用 Cloudflare Worker 作为 OAuth 代理
-  # 请确保已在 Worker 中配置了 GITHUB_CLIENT_ID 和 GITHUB_CLIENT_SECRET
-  # GitHub OAuth App 的回调 URL 应设置为 Worker 的 URL
+  client_id: ${CMS_GITHUB_APP_CLIENT_ID}
+  client_secret: ${CMS_GITHUB_APP_CLIENT_SECRET}
+  # 明确指定使用 GitHub API，避免任何自动检测
+  base_url: https://api.github.com
+  site_domain: 'blog.firef.dpdns.org'
+  # 重要：确保不使用 Netlify Identity 服务
+  # 请确保已正确设置 Cloudflare Worker 作为 OAuth 代理
 
 media_folder: "public/assets/images"  # 存放上传的媒体文件
 public_folder: "/assets/images"
