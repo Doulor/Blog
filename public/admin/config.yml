@@ -1,12 +1,9 @@
 backend:
-  name: github
-  repo: ${CMS_GITHUB_REPO}
-  branch: ${CMS_BRANCH}
-  client_id: ${CMS_GITHUB_APP_CLIENT_ID}
-  client_secret: ${CMS_GITHUB_APP_CLIENT_SECRET}
-  # 使用 GitHub 标准认证端点
-  auth_endpoint: 'https://github.com/login/oauth/authorize'
-  site_domain: 'blog.firef.dpdns.org'
+  name: proxy
+  proxy_url: https://eblog-editor.2737855297.workers.dev/api/gateway
+  # 使用 Cloudflare Worker 作为 API 代理
+  # Worker 将处理 GitHub API 请求和 OAuth 认证流程
+  # 请确保 Worker 已正确部署并设置了环境变量
 
 media_folder: "public/assets/images"  # 存放上传的媒体文件
 public_folder: "/assets/images"
