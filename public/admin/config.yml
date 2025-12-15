@@ -1,7 +1,6 @@
 backend:
-  name: github
-  repo: Doulor/Blog
-  branch: main
+  name: proxy
+  proxy_url: https://eblog-editor.2737855297.workers.dev/api/gateway
 
 media_folder: "public/assets/images"
 public_folder: "/assets/images"
