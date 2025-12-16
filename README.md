@@ -1,6 +1,6 @@
-# 🌸 Mizuki  
-![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen) 
-![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue) 
+# 🌸 Mizuki - Personal Blog
+![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen)
+![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue)
 ![Astro](https://img.shields.io/badge/Astro-5.12.8-orange)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -20,10 +20,10 @@
   <tr>
 </table>
 
-
 A modern, feature-rich static blog template built with [Astro](https://astro.build), featuring advanced functionality and beautiful design.
+This is a personal customization of the original Mizuki template for my own blog.
 
-[**🖥️ Live Demo**](https://mizuki.mysqil.com/)
+[**🖥️ Live Demo**](https://firef.dpdns.org/)
 [**📝 Documentation**](https://docs.mizuki.mysqil.com/)
 
 🌏 README Languages
@@ -292,20 +292,40 @@ Contributions are welcome! Feel free to submit issues and pull requests.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is a customization of the original [Mizuki](https://github.com/matsuzaka-yuki/Mizuki) project created by [matsuzaka-yuki](https://github.com/matsuzaka-yuki), which is licensed under the MIT License.
+The original license and copyright information is preserved in the [LICENSE](LICENSE) file.
+
+The original Mizuki project is built upon the [Fuwari](https://github.com/saicaca/fuwari) template by [saicaca](https://github.com/saicaca), which is also licensed under the MIT License.
+
+This customized version maintains the same MIT License as the original project.
 
 ## 🙏 Acknowledgements
 
-- Based on the original [Fuwari](https://github.com/saicaca/fuwari) template
-- Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
-- Inspired by [Yukina](https://github.com/WhitePaper233/yukina) - a beautiful and elegant blog template
-- Translation functionality powered by [translate](https://gitee.com/mail_osc/translate) - AI i18n automatic HTML translation solution
-- Icons from [Iconify](https://iconify.design/)
+This blog is built on the excellent work of others:
+
+- **Original Template**: Based on the original [Fuwari](https://github.com/saicaca/fuwari) template
+- **Framework**: Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
+- **Design Inspiration**: Inspired by [Yukina](https://github.com/WhitePaper233/yukina) - a beautiful and elegant blog template
+- **Translation**: Translation functionality powered by [translate](https://gitee.com/mail_osc/translate) - AI i18n automatic HTML translation solution
+- **Icons**: Icons from [Iconify](https://iconify.design/)
+
+### Original Project Information
+
+- **Original Creator**: [matsuzaka-yuki](https://github.com/matsuzaka-yuki)
+- **Original Project**: [Mizuki](https://github.com/matsuzaka-yuki/Mizuki)
+- **License**: This project is distributed under the MIT License (see original project for full license details)
 
 ### Special Thanks
 
 - **[Yukina](https://github.com/WhitePaper233/yukina)** - Thanks for providing design inspiration and creativity that helped shape this project. Yukina is an elegant blog template that demonstrates excellent design principles and user experience.
 - **[translate](https://gitee.com/mail_osc/translate)** - Thanks for providing an innovative AI-driven i18n solution that enables automatic HTML translation with just two lines of JavaScript code. This open-source tool makes multilingual support extremely simple and efficient.
+
+### My Customizations
+
+This personal blog is a customized version of the original Mizuki template, featuring:
+- Personal content and customization
+- Modified configuration to suit personal needs
+- Additional features and enhancements as needed
 
 ---
 
