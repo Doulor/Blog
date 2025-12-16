@@ -1,5 +1,5 @@
 ---\ntitle: "."\ndate: "2025-12-16"\ndescription: "."\ntags: ["."]\npublished: "2025-12-16"\ncategory: "."\ndraft: false\npinned: false\n---\n---
-title: "Minecraft server setup"
+title: "Minecraft server setup."
 published: 2025-11-10
 description: "å¦ä½æ­å»ºä¸ä¸ªç®åçMinecraftæå¡å¨"
 tags: ["wiki"]
