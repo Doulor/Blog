@@ -3,6 +3,7 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getCollection } from 'astro:content';
+import { siteConfig } from '../config';
 
 // 检测是否为外部图片链接
 function isExternalUrl(url: string): boolean {
@@ -54,6 +55,27 @@ function formatTime(dateString: string): string {
   }
   const days = Math.floor(diffInMinutes / 1440);
   return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+}
+
+// 新增：绝对时间格式化函数
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const lang = siteConfig.lang || "zh-CN"; // 使用站点配置的语言或默认中文
+  // 将配置语言映射为可用的locale标识符
+  const localeMap: Record<string, string> = {
+    "zh_CN": "zh-CN",
+    "zh_TW": "zh-TW",
+    "en": "en-US",
+    "ja": "ja-JP"
+  };
+  const locale = localeMap[lang] || lang;
+
+  return date.toLocaleDateString(locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short'
+  });
 }
 ---
 
@@ -117,11 +139,12 @@ function formatTime(dateString: string): string {
                 <hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4" />
                 
                 <div class="moment-footer flex justify-between items-center">
-                  <div class="moment-time flex items-center gap-1.5 text-75 text-xs md:text-sm lg:text-base">
-                    <i class="time-icon text-xs md:text-sm">🕐</i>
-                    <time datetime={diary.data.date}>
-                      {formatTime(diary.data.date)}
+                  <div class="moment-time flex items-center gap-2 text-75 text-xs md:text-sm lg:text-base">
+                    <i class="time-icon text-xs md:text-sm">📅</i>
+                    <time datetime={diary.data.date} class="absolute-date">
+                      {formatDate(diary.data.date)}
                     </time>
+                    <span class="relative-date text-xs md:text-sm lg:text-base">| {formatTime(diary.data.date)}</span>
                   </div>
                 </div>
               </div>
