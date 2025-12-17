@@ -1,396 +1,663 @@
 ---
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import Layout from "@layouts/Layout.astro";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
 ---
 
-<Layout title="Firef CMS - 内容创建器" description="快速创建博客内容，支持帖子、日记和相册">
-<div class="max-w-6xl mx-auto px-4 py-8">
-  <header class="text-center mb-12 cursor-default">
-    <h1 class="text-4xl font-bold mb-3 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
-      <i class="fa fa-file-text-o mr-3" aria-hidden="true"></i>Firef CMS - 内容创建器
-    </h1>
-    <p class="text-gray-600 text-lg max-w-2xl mx-auto">快速创建博客内容，支持帖子、日记和相册</p>
-  </header>
+<MainGridLayout title="内容创建器" description="创建新的博客文章、日记和相册">
+  <div class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
+        内容创建器
+      </h1>
+      <p class="text-neutral-600 dark:text-neutral-400">
+        快速创建博客内容，支持帖子、日记和相册
+      </p>
+    </header>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <div class="bg-white rounded-2xl p-6 card-shadow transform hover:scale-[1.01] transition-all duration-300">
-      <div class="flex border-b border-gray-200 mb-6 pb-1">
-        <button id="normalTab" class="tab-btn py-3 px-6 text-left transition-all duration-200 tab-active" data-target="normalForm">
-          <i class="fa fa-file-text mr-2 text-indigo-600" aria-hidden="true"></i>帖子文档
-        </button>
-        <button id="diaryTab" class="tab-btn py-3 px-6 text-left text-gray-500 transition-all duration-200" data-target="diaryForm">
-          <i class="fa fa-book mr-2 text-green-600" aria-hidden="true"></i>日记文档
-        </button>
-        <button id="albumTab" class="tab-btn py-3 px-6 text-left text-gray-500 transition-all duration-200" data-target="albumForm">
-          <i class="fa fa-picture-o mr-2 text-blue-600" aria-hidden="true"></i>相册配置
+    <!-- 认证状态 -->
+    <div class="mb-8 p-4 rounded-xl bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 border border-green-200 dark:border-green-800">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-medium text-lg">GitHub认证状态</h3>
+          <p id="create-auth-status" class="text-sm text-gray-600 dark:text-gray-400">未认证</p>
+        </div>
+        <button id="create-auth-btn" class="btn-card h-12 px-4 rounded-lg">
+          <span id="create-auth-btn-text">登录</span>
         </button>
       </div>
+      
+      <!-- 消息区域 -->
+      <div id="message-area" class="mt-4 hidden">
+        <div id="info-message" class="p-4 rounded-lg bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-200 dark:border-blue-800"></div>
+        <div id="error-message" class="p-4 rounded-lg bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200 border border-red-200 dark:border-red-800 mt-2 hidden"></div>
+      </div>
+      
+      <!-- GitHub Token 输入模态框 -->
+      <div id="create-auth-modal" class="fixed inset-0 bg-black bg-opacity-0 flex items-start justify-center z-50 hidden transition-opacity duration-500">
+        <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 w-full max-w-md shadow-2xl mt-16 transform translate-y-0 opacity-0 transition-all duration-500 scale-95">
+          <h3 class="text-lg font-semibold mb-4 text-neutral-900 dark:text-neutral-100">GitHub Personal Access Token</h3>
+          <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+            请输入您的GitHub Personal Access Token。该Token仅在本地存储，用于访问您的仓库。
+          </p>
+          <div class="mb-4">
+            <input 
+              type="password" 
+              id="create-token-input" 
+              placeholder="输入您的Personal Access Token" 
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            >
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button id="cancel-create-auth-btn" class="btn-card h-10 px-4 rounded-lg bg-gray-500 hover:bg-gray-600 text-white">
+              取消
+            </button>
+            <button id="confirm-create-auth-btn" class="btn-card h-10 px-4 rounded-lg bg-green-600 hover:bg-green-700 text-white">
+              确认
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <!-- 帖子表单 -->
-      <form id="normalForm" class="form-content space-y-5">
-        <div class="space-y-2">
-          <label for="normalTitle" class="block text-sm font-medium text-gray-700">标题 <span class="text-red-500">*</span></label>
-          <input type="text" id="normalTitle" name="normalTitle" required
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：我的中文帖子">
-        </div>
-        <div class="space-y-2">
-          <label for="normalPublished" class="block text-sm font-medium text-gray-700">发布日期</label>
-          <input type="date" id="normalPublished" name="normalPublished"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-        </div>
-        <div class="space-y-2">
-          <label for="normalDescription" class="block text-sm font-medium text-gray-700">描述</label>
-          <textarea id="normalDescription" name="normalDescription" rows="2"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
-            placeholder="添加文档描述信息"></textarea>
-        </div>
-        <div class="space-y-2">
-          <label for="normalTags" class="block text-sm font-medium text-gray-700">标签 (用逗号分隔)</label>
-          <input type="text" id="normalTags" name="normalTags"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：诗歌，测试">
-        </div>
-        <div class="space-y-2">
-          <label for="normalCategory" class="block text-sm font-medium text-gray-700">分类</label>
-          <input type="text" id="normalCategory" name="normalCategory"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：创作">
-        </div>
+    <!-- 选项卡导航 -->
+    <div class="border-b border-neutral-200 dark:border-neutral-700 mb-6">
+      <nav class="flex space-x-8">
+        <button class="tab-btn py-3 px-1 text-left transition-smooth tab-active text-[var(--primary)] font-medium relative" data-target="normalForm">
+          <i class="fa fa-file-text mr-2" aria-hidden="true"></i>帖子文档
+        </button>
+        <button class="tab-btn py-3 px-1 text-left text-neutral-500 dark:text-neutral-400 transition-smooth relative" data-target="diaryForm">
+          <i class="fa fa-book mr-2" aria-hidden="true"></i>日记文档
+        </button>
+        <button class="tab-btn py-3 px-1 text-left text-neutral-500 dark:text-neutral-400 transition-smooth relative" data-target="albumForm">
+          <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>相册配置
+        </button>
+      </nav>
+    </div>
 
-        <div class="space-y-4 pt-2">
-          <div>
-            <div class="flex items-center space-x-3 mb-3">
-              <input type="checkbox" id="normalUseImage" name="normalUseImage"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-              <label for="normalUseImage" class="text-sm font-medium text-gray-700">添加封面图片</label>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="lg:col-span-1">
+        <!-- 帖子表单 -->
+        <form id="normalForm" class="form-content space-y-5">
+          <div class="space-y-2">
+            <label for="normalTitle" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">标题 <span class="text-red-500">*</span></label>
+            <input type="text" id="normalTitle" name="normalTitle" required
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="例如：我的中文帖子">
+          </div>
+          <div class="space-y-2">
+            <label for="normalPublished" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">发布日期</label>
+            <input type="date" id="normalPublished" name="normalPublished"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+          </div>
+          <div class="space-y-2">
+            <label for="normalDescription" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">描述</label>
+            <textarea id="normalDescription" name="normalDescription" rows="2"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
+              placeholder="添加文档描述信息"></textarea>
+          </div>
+          <div class="space-y-2">
+            <label for="normalTags" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">标签 (用逗号分隔)</label>
+            <input type="text" id="normalTags" name="normalTags"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="例如：诗歌，测试">
+          </div>
+          <div class="space-y-2">
+            <label for="normalCategory" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">分类</label>
+            <input type="text" id="normalCategory" name="normalCategory"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="例如：创作">
+          </div>
+
+          <div class="space-y-4 pt-2">
+            <div>
+              <div class="flex items-center space-x-3 mb-3 pt-1">
+                <input type="checkbox" id="normalUseImage" name="normalUseImage"
+                  class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+                <label for="normalUseImage" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加封面图片</label>
+              </div>
+              <div id="normalImageSection" class="hidden pl-7 space-y-2 fade-in">
+                <label for="normalImage" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">图片文件名（含后缀）</label>
+                <div class="image-input-container">
+                  <input type="text" id="normalImage" name="normalImage"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="例如：online.jpg">
+                </div>
+              </div>
             </div>
-            <div id="normalImageSection" class="hidden pl-7 space-y-2">
-              <label for="normalImage" class="block text-sm font-medium text-gray-700">图片路径</label>
-              <input type="text" id="normalImage" name="normalImage"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-                placeholder="例如：/image/posts/online.jpg">
+
+            <div class="flex items-center space-x-3 pt-1">
+              <input type="checkbox" id="normalPinned" name="normalPinned"
+                class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+              <label for="normalPinned" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">置顶帖子</label>
             </div>
           </div>
 
-          <div class="flex items-center space-x-3">
-            <input type="checkbox" id="normalDraft" name="normalDraft"
-              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-            <label for="normalDraft" class="text-sm font-medium text-gray-700">设为草稿</label>
+          <div class="space-y-2 pt-3">
+            <label for="normalContent" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">正文内容</label>
+            <textarea id="normalContent" name="normalContent" rows="6"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
+              placeholder="请输入文档正文内容..."></textarea>
           </div>
+        </form>
 
-          <div>
-            <div class="flex items-center space-x-3 mb-3">
-              <input type="checkbox" id="normalUsePassword" name="normalUsePassword"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-              <label for="normalUsePassword" class="text-sm font-medium text-gray-700">设置密码保护</label>
+        <!-- 日记表单 -->
+        <form id="diaryForm" class="form-content space-y-5 hidden">
+          <div class="space-y-2">
+            <label for="diaryTitle" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">日记标题 <span class="text-red-500">*</span></label>
+            <input type="text" id="diaryTitle" name="diaryTitle" required
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="例如：我的中文日记">
+          </div>
+          <div class="space-y-2">
+            <label for="diaryDate" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">日记日期</label>
+            <input type="date" id="diaryDate" name="diaryDate"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+          </div>
+          <div class="pt-2">
+            <div class="flex items-center space-x-3 mb-3 pt-1">
+              <input type="checkbox" id="diaryUseImage" name="diaryUseImage"
+                class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+              <label for="diaryUseImage" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加图片</label>
             </div>
-            <div id="normalPasswordSection" class="hidden pl-7 space-y-2">
-              <label for="normalPassword" class="block text-sm font-medium text-gray-700">密码</label>
-              <input type="text" id="normalPassword" name="normalPassword" value="666999"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+            <div id="diaryImageSection" class="hidden pl-7 space-y-3 fade-in">
+              <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">图片文件名或外部链接</label>
+              <div id="diaryImagesContainer" class="space-y-2">
+              </div>
+              <button type="button" id="addImageBtn" class="text-sm bg-[var(--secondary)]/20 hover:bg-[var(--secondary)] text-[var(--secondary)] hover:text-white px-4 py-2 rounded-lg transition-smooth flex items-center border border-[var(--secondary)]/30 hover:border-[var(--secondary)]">
+                <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+              </button>
+            </div>
+          </div>
+          <div class="space-y-2 pt-2">
+            <label for="diaryContent" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">日记内容</label>
+            <textarea id="diaryContent" name="diaryContent" rows="8"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
+              placeholder="今天天气很好..."></textarea>
+          </div>
+        </form>
+
+        <!-- 相册表单 -->
+        <form id="albumForm" class="form-content space-y-5 hidden">
+          <div class="space-y-2">
+            <label for="albumTitle" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">相册标题 <span class="text-red-500">*</span></label>
+            <input type="text" id="albumTitle" name="albumTitle" required
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="例如：我的旅行相册">
+          </div>
+          <div class="space-y-2">
+            <label for="albumDate" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">创建日期</label>
+            <input type="date" id="albumDate" name="albumDate"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+          </div>
+          <div class="space-y-2">
+            <label for="albumDescription" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">相册描述</label>
+            <textarea id="albumDescription" name="albumDescription" rows="2"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
+              placeholder="描述这个相册的内容..."></textarea>
+          </div>
+          <div class="space-y-2">
+            <label for="albumLocation" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">拍摄地点</label>
+            <input type="text" id="albumLocation" name="albumLocation"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="例如：日本，东京">
+          </div>
+          <div class="space-y-2">
+            <label for="albumTags" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">标签 (用逗号分隔)</label>
+            <input type="text" id="albumTags" name="albumTags"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="例如：旅行，风景，日本">
+          </div>
+
+          <div class="space-y-4 pt-2">
+            <div class="flex items-center space-x-3 pt-1">
+              <input type="checkbox" id="albumHidden" name="albumHidden"
+                class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+              <label for="albumHidden" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">隐藏相册</label>
             </div>
           </div>
 
-          <div class="flex items-center space-x-3">
-            <input type="checkbox" id="normalPinned" name="normalPinned"
-              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-            <label for="normalPinned" class="text-sm font-medium text-gray-700">置顶帖子</label>
-          </div>
-        </div>
-
-        <div class="space-y-2 pt-3">
-          <label for="normalContent" class="block text-sm font-medium text-gray-700">正文内容</label>
-          <textarea id="normalContent" name="normalContent" rows="6"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
-            placeholder="请输入文档正文内容..."></textarea>
-        </div>
-
-        <div class="pt-4">
-          <button type="button" id="normalSubmitButton" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center">
-            <i class="fa fa-magic mr-2" aria-hidden="true"></i>生成帖子文档
-          </button>
-        </div>
-      </form>
-
-      <!-- 日记表单 -->
-      <form id="diaryForm" class="form-content space-y-5 hidden">
-        <div class="space-y-2">
-          <label for="diaryTitle" class="block text-sm font-medium text-gray-700">日记标题 <span class="text-red-500">*</span></label>
-          <input type="text" id="diaryTitle" name="diaryTitle" required
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：我的中文日记">
-        </div>
-        <div class="space-y-2">
-          <label for="diaryDate" class="block text-sm font-medium text-gray-700">日记日期</label>
-          <input type="date" id="diaryDate" name="diaryDate"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-        </div>
-        <div class="pt-2">
-          <div class="flex items-center space-x-3 mb-3">
-            <input type="checkbox" id="diaryUseImage" name="diaryUseImage"
-              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-            <label for="diaryUseImage" class="text-sm font-medium text-gray-700">添加图片</label>
-          </div>
-          <div id="diaryImageSection" class="hidden pl-7 space-y-3">
-            <label class="block text-sm font-medium text-gray-700">图片文件名或外部链接</label>
-            <div id="diaryImagesContainer" class="space-y-2">
+          <div class="pt-3">
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">相册类型</label>
+            <div class="grid grid-cols-2 gap-4">
+              <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
+                <input type="radio" name="albumType" value="local" checked
+                  class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
+                <div>
+                  <div class="font-medium text-neutral-700 dark:text-neutral-300">本地相册</div>
+                  <div class="text-xs text-neutral-500 dark:text-neutral-400">上传图片到本地图库</div>
+                </div>
+              </label>
+              <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
+                <input type="radio" name="albumType" value="external"
+                  class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
+                <div>
+                  <div class="font-medium text-neutral-700 dark:text-neutral-300">外部相册</div>
+                  <div class="text-xs text-neutral-500 dark:text-neutral-400">使用外部图片链接</div>
+                </div>
+              </label>
             </div>
-            <button type="button" id="addImageBtn" class="text-sm text-green-600 hover:text-green-700 transition-all flex items-center">
+          </div>
+
+          <div id="externalAlbumSection" class="hidden space-y-3 pt-4">
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">相册图片 <small class="text-neutral-500 dark:text-neutral-400">(外部链接)</small></label>
+            <div id="photosContainer" class="space-y-2">
+            </div>
+            <button type="button" id="addPhotoBtn" class="text-sm bg-[var(--accent)]/20 hover:bg-[var(--accent)] text-[var(--accent)] hover:text-white px-4 py-2 rounded-lg transition-smooth flex items-center border border-[var(--accent)]/30 hover:border-[var(--accent)]">
               <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
             </button>
           </div>
-        </div>
-        <div class="space-y-2 pt-2">
-          <label for="diaryContent" class="block text-sm font-medium text-gray-700">日记内容</label>
-          <textarea id="diaryContent" name="diaryContent" rows="8"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
-            placeholder="今天天气很好..."></textarea>
-        </div>
-
-        <div class="pt-2">
-          <button type="button" id="diarySubmitButton" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center">
-            <i class="fa fa-book mr-2" aria-hidden="true"></i>生成日记文档
-          </button>
-        </div>
-      </form>
-
-      <!-- 相册表单 -->
-      <form id="albumForm" class="form-content space-y-5 hidden">
-        <div class="space-y-2">
-          <label for="albumTitle" class="block text-sm font-medium text-gray-700">相册标题 <span class="text-red-500">*</span></label>
-          <input type="text" id="albumTitle" name="albumTitle" required
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：我的旅行相册">
-        </div>
-        <div class="space-y-2">
-          <label for="albumId" class="block text-sm font-medium text-gray-700">相册ID <span class="text-red-500">*</span></label>
-          <input type="text" id="albumId" name="albumId" required
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：my-travel-album (小写，用短横杠连接)">
-        </div>
-        <div class="space-y-2">
-          <label for="albumDate" class="block text-sm font-medium text-gray-700">创建日期</label>
-          <input type="date" id="albumDate" name="albumDate"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-        </div>
-        <div class="space-y-2">
-          <label for="albumDescription" class="block text-sm font-medium text-gray-700">相册描述</label>
-          <textarea id="albumDescription" name="albumDescription" rows="2"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
-            placeholder="描述这个相册的内容..."></textarea>
-        </div>
-        <div class="space-y-2">
-          <label for="albumLocation" class="block text-sm font-medium text-gray-700">拍摄地点</label>
-          <input type="text" id="albumLocation" name="albumLocation"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：日本，东京">
-        </div>
-        <div class="space-y-2">
-          <label for="albumTags" class="block text-sm font-medium text-gray-700">标签 (用逗号分隔)</label>
-          <input type="text" id="albumTags" name="albumTags"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            placeholder="例如：旅行，风景，日本">
-        </div>
-
-        <div class="space-y-4 pt-2">
-          <div class="flex items-center space-x-3">
-            <input type="checkbox" id="albumHidden" name="albumHidden"
-              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-            <label for="albumHidden" class="text-sm font-medium text-gray-700">隐藏相册</label>
-          </div>
-        </div>
-
-        <div class="pt-3">
-          <label class="block text-sm font-medium text-gray-700 mb-3">相册类型</label>
-          <div class="grid grid-cols-2 gap-4">
-            <label class="flex items-center space-x-3 p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-all">
-              <input type="radio" name="albumType" value="local" checked
-                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-              <div>
-                <div class="font-medium text-gray-700">本地相册</div>
-                <div class="text-xs text-gray-500">上传图片到本地图库</div>
-              </div>
-            </label>
-            <label class="flex items-center space-x-3 p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-all">
-              <input type="radio" name="albumType" value="external"
-                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-              <div>
-                <div class="font-medium text-gray-700">外部相册</div>
-                <div class="text-xs text-gray-500">使用外部图片链接</div>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div class="pt-3 space-y-4">
-          <div class="space-y-2">
-            <label for="albumLayout" class="block text-sm font-medium text-gray-700">布局方式</label>
-            <select id="albumLayout" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-              <option value="grid">网格布局</option>
-              <option value="masonry">瀑布流布局</option>
-            </select>
-          </div>
-          <div class="space-y-2">
-            <label for="albumColumns" class="block text-sm font-medium text-gray-700">列数</label>
-            <input type="number" id="albumColumns" min="1" max="6" value="3"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-          </div>
-          <div class="space-y-2">
-            <label for="albumCover" class="block text-sm font-medium text-gray-700">封面图片</label>
-            <input type="text" id="albumCover" placeholder="相册封面图片路径"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-          </div>
-        </div>
-
-        <div id="externalAlbumSection" class="hidden space-y-3 pt-4">
-          <label class="block text-sm font-medium text-gray-700">相册图片 <small class="text-gray-500">(外部链接)</small></label>
-          <div id="photosContainer" class="space-y-2">
-          </div>
-          <button type="button" id="addPhotoBtn" class="text-sm text-blue-600 hover:text-blue-700 transition-all flex items-center">
-            <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
-          </button>
-        </div>
-
-        <div class="pt-4">
-          <button type="button" id="albumSubmitButton" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center">
-            <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>生成相册文档
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- 结果和控制面板 -->
-    <div class="bg-white rounded-2xl p-6 card-shadow">
-      <div class="border-b border-gray-200 pb-4 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 flex items-center">
-          <i class="fa fa-code mr-2 text-indigo-600" aria-hidden="true"></i>生成结果
-        </h2>
-        <p class="text-sm text-gray-600 mt-1">生成的Frontmatter文档格式，可直接用于博客</p>
+        </form>
       </div>
 
-      <div class="space-y-4">
-        <div>
-          <label for="fileName" class="block text-sm font-medium text-gray-700 mb-2">文件名</label>
-          <input type="text" id="fileName" placeholder="例如：2025-01-01-my-post.md"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-          <p class="text-xs text-gray-500 mt-1">请包含正确的文件扩展名(.md)和日期前缀</p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">文件路径</label>
-          <div class="flex space-x-2">
-            <select id="fileDirectory" class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
-              <option value="src/content/posts">文章 (src/content/posts)</option>
-              <option value="src/content/diary">日记 (src/content/diary)</option>
-              <option value="src/content/albums">相册 (src/content/albums)</option>
-            </select>
+      <!-- 结果和控制面板 -->
+      <div class="lg:col-span-1">
+        <div class="card-base p-5">
+          <div class="border-b border-neutral-200 dark:border-neutral-700 pb-4 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100 flex items-center">
+              <i class="fa fa-code mr-2" aria-hidden="true"></i>生成结果
+            </h2>
+            <p class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">生成的Frontmatter文档格式，可直接用于博客</p>
           </div>
-        </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2 flex justify-between items-center">
-            <span>生成的内容</span>
-            <button id="copyButton" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg transition-all flex items-center">
-              <i class="fa fa-copy mr-1" aria-hidden="true"></i>复制
-            </button>
-          </label>
-          <pre id="markdownResult" class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm font-mono whitespace-pre-wrap overflow-x-auto max-h-96 overflow-y-auto"></pre>
-        </div>
+          <div class="space-y-4">
+            <div>
+              <label for="fileName" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">文件名</label>
+              <input type="text" id="fileName" placeholder="例如：2025-01-01-my-post.md"
+                class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+              <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">请包含正确的文件扩展名(.md)和日期前缀</p>
+            </div>
 
-        <div class="pt-4">
-          <button id="saveToGithub" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center">
-            <i class="fa fa-github mr-2" aria-hidden="true"></i>提交到 GitHub 仓库
-          </button>
-          <p class="text-xs text-gray-500 mt-2 text-center">需要先完成 GitHub 认证</p>
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">文件路径</label>
+              <div class="flex space-x-2">
+                <select id="fileDirectory" class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                  <option value="src/content/posts">文章 (src/content/posts)</option>
+                  <option value="src/content/diary">日记 (src/content/diary)</option>
+                  <option value="src/content/albums">相册 (src/content/albums)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 flex justify-between items-center">
+                <span>生成的内容</span>
+                <button id="copyButton" class="text-sm bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-200 px-3 py-1 rounded transition-smooth flex items-center">
+                  <i class="fa fa-copy mr-1" aria-hidden="true"></i>复制
+                </button>
+              </label>
+              <pre id="markdownResult" class="bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded p-4 text-sm font-mono whitespace-pre-wrap overflow-x-auto max-h-96 overflow-y-auto"></pre>
+            </div>
+
+            <div class="pt-4">
+              <button id="saveToGithub" class="w-full btn-card h-12 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white border-2 border-green-600 hover:border-green-800 transition-all duration-200 hover:shadow-[0_4px_12px_rgba(16,185,129,0.2)]">
+                <i class="fa fa-github mr-2" aria-hidden="true"></i>提交到 GitHub 仓库
+              </button>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 text-center">需要先完成 GitHub 认证</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</MainGridLayout>
 
 <script>
+  // 管理认证状态
+  let githubToken = localStorage.getItem('github_access_token') || null;
+
+  // 更新认证状态显示
+  function updateCreateAuthStatus() {
+    const authStatus = document.getElementById('create-auth-status');
+    const authBtnText = document.getElementById('create-auth-btn-text');
+
+    if (githubToken) {
+      authStatus.textContent = '已认证';
+      authBtnText.textContent = '退出';
+    } else {
+      authStatus.textContent = '未认证';
+      authBtnText.textContent = '登录';
+    }
+  }
+
+  // 显示消息
+  function showMessage(message, type = 'info') {
+    const messageArea = document.getElementById('message-area');
+    const infoMessage = document.getElementById('info-message');
+    const errorMessage = document.getElementById('error-message');
+
+    messageArea.classList.remove('hidden');
+
+    if (type === 'info') {
+      infoMessage.textContent = message;
+      infoMessage.classList.remove('hidden');
+      errorMessage.classList.add('hidden');
+    } else if (type === 'error') {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove('hidden');
+      infoMessage.classList.add('hidden');
+    }
+
+    // 3秒后自动隐藏消息
+    setTimeout(() => {
+      messageArea.classList.add('hidden');
+    }, 3000);
+  }
+
+  // 初始化选项卡
+  function initTabs() {
+    // 确保第一个选项卡有激活状态和指示线
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('tab-active', 'text-[var(--primary)]', 'font-medium');
+      btn.classList.add('text-neutral-500', 'dark:text-neutral-400');
+      // 移除任何现有的指示线
+      const existingIndicators = btn.getElementsByClassName('tab-indicator');
+      // Convert HTMLCollection to array to safely remove elements
+      Array.from(existingIndicators).forEach(indicator => indicator.remove());
+    });
+
+    // 为第一个标签添加激活状态和指示线
+    const firstTab = document.querySelector('.tab-btn[data-target="normalForm"]');
+    if (firstTab) {
+      firstTab.classList.add('tab-active', 'text-[var(--primary)]', 'font-medium');
+      firstTab.classList.remove('text-neutral-500', 'dark:text-neutral-400');
+
+      const indicator = document.createElement('div');
+      indicator.className = 'tab-indicator absolute bottom-0 left-0 w-full h-0.5 bg-[var(--primary)]';
+      firstTab.appendChild(indicator);
+    }
+  }
+
+  // 切换选项卡
+  function switchTab(activeButton) {
+    // 移除所有活动状态和指示线
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('tab-active', 'text-[var(--primary)]', 'font-medium');
+      btn.classList.add('text-neutral-500', 'dark:text-neutral-400');
+      // 移除所有指示线
+      const existingIndicators = btn.getElementsByClassName('tab-indicator');
+      // Convert HTMLCollection to array to safely remove elements
+      Array.from(existingIndicators).forEach(indicator => indicator.remove());
+    });
+
+    // 对当前按钮添加活动状态和指示线
+    activeButton.classList.add('tab-active', 'text-[var(--primary)]', 'font-medium');
+    activeButton.classList.remove('text-neutral-500', 'dark:text-neutral-400');
+
+    const indicator = document.createElement('div');
+    indicator.className = 'tab-indicator absolute bottom-0 left-0 w-full h-0.5 bg-[var(--primary)]';
+    activeButton.appendChild(indicator);
+  }
+
   // 选项卡切换功能
   document.querySelectorAll('.tab-btn').forEach(button => {
-    button.addEventListener('click', function() {
-      // 移除所有活动状态
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.add('text-gray-500');
-        btn.classList.remove('tab-active');
-      });
+    button.addEventListener('click', () => {
+      // 切换激活状态
+      switchTab(button);
 
-      // 添加活动状态到当前按钮
-      this.classList.add('tab-active');
-      this.classList.remove('text-gray-500');
+      // 获取目标表单
+      const target = button.getAttribute('data-target');
+      const targetForm = document.getElementById(target);
 
-      // 隐藏所有内容区域
-      document.querySelectorAll('.form-content').forEach(form => {
-        form.classList.add('hidden');
-      });
+      // 获取当前显示的表单
+      const currentForm = document.querySelector('.form-content:not(.hidden):not(.fade-out)');
 
-      // 显示目标表单
-      const target = this.getAttribute('data-target');
-      document.getElementById(target).classList.remove('hidden');
+      // 如果有当前表单正在显示，则先淡出
+      if (currentForm && currentForm !== targetForm) {
+        currentForm.classList.add('fade-out');
+        setTimeout(() => {
+          currentForm.classList.add('hidden');
+          currentForm.classList.remove('fade-out');
+
+          // 然后淡入目标表单
+          targetForm.classList.remove('hidden');
+          setTimeout(() => {
+            targetForm.classList.add('fade-in');
+
+            // 隐藏完成后生成Markdown
+            setTimeout(() => {
+              const formType = target.replace('Form', '');
+              generateMarkdown(formType);
+            }, 300);
+          }, 1);
+        }, 300);
+      } else {
+        // 如果没有当前表单（首次加载）或点击的是当前表单，直接显示目标表单
+        document.querySelectorAll('.form-content').forEach(form => {
+          if (form !== targetForm) {
+            form.classList.add('hidden');
+          }
+        });
+        targetForm.classList.remove('hidden');
+        targetForm.classList.add('fade-in');
+
+        const formType = target.replace('Form', '');
+        generateMarkdown(formType);
+
+        // 添加完成后移除fade-in类，以防止重复动画
+        setTimeout(() => {
+          if (targetForm.classList.contains('fade-in')) {
+            targetForm.classList.remove('fade-in');
+          }
+        }, 300);
+      }
     });
   });
 
-  // 图片开关功能
+  // 页面加载后初始化选项卡
+  document.addEventListener('DOMContentLoaded', initTabs);
+
+  // 为复选框添加监听
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+    });
+  });
+
+  // 处理帖子封面图片显示/隐藏
   document.getElementById('normalUseImage').addEventListener('change', function() {
     const section = document.getElementById('normalImageSection');
     if(this.checked) {
       section.classList.remove('hidden');
+      setTimeout(() => {
+        section.classList.add('fade-in');
+      }, 1);
     } else {
-      section.classList.add('hidden');
+      section.classList.add('fade-out');
+      setTimeout(() => {
+        section.classList.add('hidden');
+        section.classList.remove('fade-out');
+      }, 300);
     }
   });
 
-  document.getElementById('normalUsePassword').addEventListener('change', function() {
-    const section = document.getElementById('normalPasswordSection');
-    if(this.checked) {
-      section.classList.remove('hidden');
-    } else {
-      section.classList.add('hidden');
-    }
-  });
-
-  // 日记图片功能
-  document.getElementById('diaryUseImage').addEventListener('change', function() {
-    const section = document.getElementById('diaryImageSection');
-    if(this.checked) {
-      section.classList.remove('hidden');
-    } else {
-      section.classList.add('hidden');
-    }
-  });
-
-  document.getElementById('addImageBtn').addEventListener('click', function() {
+  // 添加日记图片输入框的函数
+  function addDiaryImageInput() {
     const container = document.getElementById('diaryImagesContainer');
     const inputDiv = document.createElement('div');
-    inputDiv.className = 'flex items-center space-x-2 mt-2';
+    inputDiv.className = 'diary-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
     inputDiv.innerHTML = `
-      <input type="text" name="diaryImage[]" placeholder="图片文件名或外部链接"
-        class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none transition-all">
-      <button type="button" class="remove-image bg-red-100 hover:bg-red-200 text-red-600 px-2 py-2 rounded-lg transition-all">
-        <i class="fa fa-times" aria-hidden="true"></i>
-      </button>
+        <input type="text" name="diaryImage[]" placeholder="图片文件名或外部链接"
+            class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+        <button type="button" class="remove-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
+            <span class="text-xl font-bold">🗑</span>
+        </button>
     `;
     container.appendChild(inputDiv);
 
+    // 添加输入事件监听器来实时更新内容
+    const inputField = inputDiv.querySelector('input');
+    inputField.addEventListener('input', function() {
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+    });
+
     // 添加删除功能
     inputDiv.querySelector('.remove-image').addEventListener('click', function() {
-      this.parentElement.remove();
+      const item = this.parentElement;
+      item.classList.add('fade-out');
+      setTimeout(() => {
+        item.remove();
+        // 删除后更新生成的内容
+        const activeForm = document.querySelector('.form-content:not(.hidden)');
+        if (activeForm) {
+          const formType = activeForm.id.replace('Form', '');
+          generateMarkdown(formType);
+        }
+      }, 300);
+    });
+  }
+
+  // 处理日记图片显示/隐藏，并自动添加一个图片输入框
+  document.getElementById('diaryUseImage').addEventListener('change', function() {
+    const section = document.getElementById('diaryImageSection');
+    const container = document.getElementById('diaryImagesContainer');
+
+    if(this.checked) {
+      section.classList.remove('hidden');
+      setTimeout(() => {
+        section.classList.add('fade-in');
+
+        // 如果没有图片输入框，则添加一个
+        if (container.children.length === 0) {
+          addDiaryImageInput();
+        }
+      }, 1);
+    } else {
+      section.classList.add('fade-out');
+      setTimeout(() => {
+        section.classList.add('hidden');
+        section.classList.remove('fade-out');
+        // 清空所有图片输入框
+        container.innerHTML = '';
+      }, 300);
+    }
+  });
+
+  // 处理日记添加图片功能
+  document.getElementById('addImageBtn').addEventListener('click', function() {
+    const container = document.getElementById('diaryImagesContainer');
+    const inputDiv = document.createElement('div');
+    inputDiv.className = 'diary-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
+    inputDiv.innerHTML = `
+        <input type="text" name="diaryImage[]" placeholder="图片文件名或外部链接"
+            class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+        <button type="button" class="remove-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
+            <span class="text-xl font-bold">🗑</span>
+        </button>
+    `;
+    container.appendChild(inputDiv);
+
+    // 添加输入事件监听器来实时更新内容
+    const inputField = inputDiv.querySelector('input');
+    inputField.addEventListener('input', function() {
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+    });
+
+    // 添加删除功能
+    inputDiv.querySelector('.remove-image').addEventListener('click', function() {
+      const item = this.parentElement;
+      item.classList.add('fade-out');
+      setTimeout(() => {
+        item.remove();
+        // 删除后更新生成的内容
+        const activeForm = document.querySelector('.form-content:not(.hidden)');
+        if (activeForm) {
+          const formType = activeForm.id.replace('Form', '');
+          generateMarkdown(formType);
+        }
+      }, 300);
     });
   });
+
+  // 为单选按钮添加监听
+  const radios = document.querySelectorAll('input[type="radio"]');
+  radios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+    });
+  });
+
+  // 添加相册图片输入框的函数
+  function addAlbumImageInput() {
+    const container = document.getElementById('photosContainer');
+    const inputDiv = document.createElement('div');
+    inputDiv.className = 'album-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
+    inputDiv.innerHTML = `
+        <input type="text" name="photoSrc[]" placeholder="图片链接"
+            class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+        <button type="button" class="remove-photo bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
+            <span class="text-xl font-bold">🗑</span>
+        </button>
+    `;
+    container.appendChild(inputDiv);
+
+    // 添加输入事件监听器来实时更新内容
+    const inputField = inputDiv.querySelector('input');
+    inputField.addEventListener('input', function() {
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+    });
+
+    // 添加删除功能
+    inputDiv.querySelector('.remove-photo').addEventListener('click', function() {
+      const item = this.parentElement;
+      item.classList.add('fade-out');
+      setTimeout(() => {
+        item.remove();
+        // 删除后更新生成的内容
+        const activeForm = document.querySelector('.form-content:not(.hidden)');
+        if (activeForm) {
+          const formType = activeForm.id.replace('Form', '');
+          generateMarkdown(formType);
+        }
+      }, 300);
+    });
+  }
 
   // 相册类型切换
   document.querySelectorAll('input[name="albumType"]').forEach(radio => {
     radio.addEventListener('change', function() {
       const section = document.getElementById('externalAlbumSection');
+      const container = document.getElementById('photosContainer');
+
       if(this.value === 'external') {
         section.classList.remove('hidden');
+        setTimeout(() => {
+          section.classList.add('fade-in');
+
+          // 如果没有图片输入框，则添加一个
+          if (container.children.length === 0) {
+            addAlbumImageInput();
+          }
+        }, 1);
       } else {
-        section.classList.add('hidden');
+        section.classList.add('fade-out');
+        setTimeout(() => {
+          section.classList.add('hidden');
+          section.classList.remove('fade-out');
+          // 清空所有图片输入框
+          container.innerHTML = '';
+        }, 300);
       }
     });
   });
@@ -399,22 +666,43 @@ import Layout from "@layouts/Layout.astro";
   document.getElementById('addPhotoBtn').addEventListener('click', function() {
     const container = document.getElementById('photosContainer');
     const inputDiv = document.createElement('div');
-    inputDiv.className = 'flex items-center space-x-2 mt-2';
+    inputDiv.className = 'album-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
     inputDiv.innerHTML = `
-      <input type="text" name="photoSrc[]" placeholder="图片链接"
-        class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none transition-all">
-      <button type="button" class="remove-photo bg-red-100 hover:bg-red-200 text-red-600 px-2 py-2 rounded-lg transition-all">
-        <i class="fa fa-times" aria-hidden="true"></i>
-      </button>
+        <input type="text" name="photoSrc[]" placeholder="图片链接"
+            class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+        <button type="button" class="remove-photo bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
+            <span class="text-xl font-bold">🗑</span>
+        </button>
     `;
     container.appendChild(inputDiv);
 
+    // 添加输入事件监听器来实时更新内容
+    const inputField = inputDiv.querySelector('input');
+    inputField.addEventListener('input', function() {
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+    });
+
     // 添加删除功能
     inputDiv.querySelector('.remove-photo').addEventListener('click', function() {
-      this.parentElement.remove();
+      const item = this.parentElement;
+      item.classList.add('fade-out');
+      setTimeout(() => {
+        item.remove();
+        // 删除后更新生成的内容
+        const activeForm = document.querySelector('.form-content:not(.hidden)');
+        if (activeForm) {
+          const formType = activeForm.id.replace('Form', '');
+          generateMarkdown(formType);
+        }
+      }, 300);
     });
   });
 
+  // 获取当前日期函数
   function getCurrentDate() {
     const now = new Date();
     const year = now.getFullYear();
@@ -442,23 +730,18 @@ import Layout from "@layouts/Layout.astro";
         category = document.getElementById('normalCategory').value;
         content = document.getElementById('normalContent').value;
 
-        // 处理额外字段
-        if(document.getElementById('normalUseImage').checked) {
+        // 处理额外字段，确保published字段存在以通过构建验证
+        extraFields.draft = document.getElementById('normalDraft')?.checked;
+        extraFields.pinned = document.getElementById('normalPinned')?.checked;
+        // 如果勾选了使用封面图片，则添加图片字段
+        if (document.getElementById('normalUseImage')?.checked) {
           const imageValue = document.getElementById('normalImage').value;
-          if(imageValue) {
+          if (imageValue) {
             extraFields.image = imageValue;
           }
         }
-        extraFields.draft = document.getElementById('normalDraft').checked;
-        extraFields.pinned = document.getElementById('normalPinned').checked;
-        extraFields.published = date; // 添加published字段以确保构建成功
-        if(document.getElementById('normalUsePassword').checked) {
-          const passwordValue = document.getElementById('normalPassword').value;
-          if(passwordValue) {
-            extraFields.password = passwordValue;
-            extraFields.encrypted = true; // 同时添加加密标志
-          }
-        }
+        // 添加published字段以确保构建成功
+        extraFields.published = date;
         break;
 
       case 'diary': // 日记
@@ -472,7 +755,7 @@ import Layout from "@layouts/Layout.astro";
         extraFields.date = date;
 
         // 处理图片
-        if(document.getElementById('diaryUseImage').checked) {
+        if(document.getElementById('diaryUseImage')?.checked) {
           const imageInputs = document.querySelectorAll('#diaryImagesContainer input[name="diaryImage[]"]');
           extraFields.images = Array.from(imageInputs).map(input => input.value).filter(val => val);
         }
@@ -480,113 +763,125 @@ import Layout from "@layouts/Layout.astro";
 
       case 'album': // 相册
         title = document.getElementById('albumTitle').value;
-        const albumId = document.getElementById('albumId').value;
         date = document.getElementById('albumDate').value || getCurrentDate();
         description = document.getElementById('albumDescription').value;
         const location = document.getElementById('albumLocation').value;
         tags = document.getElementById('albumTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
-        const layout = document.getElementById('albumLayout').value;
-        const columns = parseInt(document.getElementById('albumColumns').value);
-        const cover = document.getElementById('albumCover').value;
         const hidden = document.getElementById('albumHidden').checked;
-        const mode = document.querySelector('input[name="albumType"]:checked').value;
-
-        // 处理相册中的照片
-        let photos = [];
-        if(mode === 'external') {
-          const photoInputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
-          photos = Array.from(photoInputs).map(input => ({
-            src: input.value,
-            alt: "Photo"
-          })).filter(photo => photo.src);
-        }
 
         // 创建内容
         content = `# ${title}\n\n${description || '这是一个相册页面'}`;
 
-        // 返回相册格式的数据
+        // 处理相册模式
+        const albumType = document.querySelector('input[name="albumType"]:checked').value;
         const albumData = {
           title,
-          id: albumId,
           date,
           description: description || "",
           location: location || "",
           tags: tags.length ? tags : [],
-          layout: layout || "grid",
-          columns: columns || 3,
-          cover,
           hidden: hidden || false,
-          mode: mode || "local",
-          photos
+          mode: albumType,
+          photos: []
         };
+
+        // 如果是外部相册，获取图片链接
+        if (albumType === 'external') {
+          const photoInputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
+          albumData.photos = Array.from(photoInputs).map(input => input.value).filter(val => val);
+        }
 
         // 生成相册的Markdown内容
         let albumFrontmatter = `---
 title: "${albumData.title}"
-id: "${albumData.id}"
-date: ${albumData.date}
+hidden: ${albumData.hidden}
 description: "${albumData.description}"
+date: "${albumData.date}"
 location: "${albumData.location}"
-tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]
-layout: "${albumData.layout}"
-columns: ${albumData.columns}
-cover: "${albumData.cover}"
-hidden: ${albumData.hidden}`;
+tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]`;
 
-        if (albumData.mode !== "local") {
-          albumFrontmatter += `\nmode: "${albumData.mode}"`;
+        // 为外部相册添加更多字段
+        if (albumType === 'external') {
+          albumFrontmatter += `
+layout: "masonry"
+columns: 3`;
+
+          // 如果有图片，设置封面和图片数组
+          if (albumData.photos.length > 0) {
+            albumFrontmatter += `
+cover: "${albumData.photos[0]}"
+mode: "${albumData.mode}"
+photos:`;
+            albumFrontmatter += `\n` + albumData.photos.map(photo => `  - src: "${photo}"`).join('\n');
+          } else {
+            albumFrontmatter += `
+mode: "${albumData.mode}"`;
+          }
+        } else {
+          albumFrontmatter += `
+mode: "${albumData.mode}"`;
         }
 
-        if(albumData.photos.length > 0) {
-          albumFrontmatter += `\nphotos:\n${albumData.photos.map(photo => `  - src: "${photo.src}"\n    alt: "${photo.alt}"`).join('\n')}`;
-        }
+        albumFrontmatter += `
+---\n\n${content}`;
 
-        albumFrontmatter += `\n---\n\n${content}`;
+        // 设置文件名 - 使用日期-标题格式，与帖子和日记一致
+        const slug = title.toLowerCase()
+                         .replace(/[^\w\s\u4e00-\u9fff]/g, '')  // 允许字母、数字、空格和中文字符
+                         .replace(/\s+/g, '-');                // 空格替换为短横线
 
-        // 设置文件名
-        document.getElementById('fileName').value = `${albumData.id}.md`;
+        document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
         document.getElementById('fileDirectory').value = 'src/content/albums';
 
         document.getElementById('markdownResult').textContent = albumFrontmatter;
         return; // 提前返回，因为我们已经设置了结果
     }
 
-    // 构建Frontmatter
-    let frontmatter = `---\ntitle: "${title}"`;
+    // 构建Frontmatter，只包含published字段（完全按照您的要求）
+    let frontmatter = `---
+title: "${title}"`;
 
-    // 对于帖子类型，添加published字段
+    // 对于帖子类型，只包含published字段（完全按照您的要求）
     if (type === 'normal') {
-      frontmatter += `\npublished: ${date}`;
+      frontmatter += `
+published: ${date}`;
     }
     // 相册和日记类型不需要published字段
 
-    if(description) frontmatter += `\ndescription: "${description}"`;
-    if(category) frontmatter += `\ncategory: "${category}"`;
-    if(tags.length > 0) frontmatter += `\ntags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
+    if(description) frontmatter += `
+description: "${description}"`;
+    if(category) frontmatter += `
+category: "${category}"`;
+    if(tags.length > 0) frontmatter += `
+tags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
 
     // 添加额外字段（避免重复添加已有的字段）
     Object.entries(extraFields).forEach(([key, value]) => {
-      if(value !== undefined && value !== "") {
+      if(value !== undefined) {
         // 跳过已显式添加的字段，避免重复
         if (type === 'normal' && key === 'published') {
           return; // published字段已添加，跳过
         }
 
-        if(typeof value === 'string' && value !== "") {
-          frontmatter += `\n${key}: "${value}"`;
-        } else if(typeof value === 'boolean') {
-          frontmatter += `\n${key}: ${value}`;
-        } else if(Array.isArray(value) && value.length > 0) {
-          frontmatter += `\n${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
-        } else if(typeof value === 'number') {
-          frontmatter += `\n${key}: ${value}`;
-        } else if(typeof value === 'object' && value !== null) {
-          frontmatter += `\n${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
+        if(typeof value === 'string') {
+          frontmatter += `
+${key}: "${value}"`;
+        } else if(typeof value === 'boolean' || typeof value === 'number') {
+          frontmatter += `
+${key}: ${value}`;
+        } else if(Array.isArray(value)) {
+          frontmatter += `
+${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
+        } else if(typeof value === 'object') {
+          frontmatter += `
+${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
         }
       }
     });
 
-    frontmatter += '\n---\n\n';
+    frontmatter += `
+---
+`;
 
     // 最终内容 = Frontmatter + 内容
     const fullContent = frontmatter + content;
@@ -599,17 +894,14 @@ hidden: ${albumData.hidden}`;
     document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
 
     document.getElementById('fileDirectory').value =
-        type === 'normal' ? 'src/content/posts' :
-        type === 'diary' ? 'src/content/diary' : 'src/content/albums';
+      type === 'normal' ? 'src/content/posts' :
+      type === 'diary' ? 'src/content/diary' : 'src/content/albums';
 
     // 显示在结果区域
     document.getElementById('markdownResult').textContent = fullContent;
   }
 
   // 为提交按钮添加事件监听器
-  document.getElementById('normalSubmitButton').addEventListener('click', () => generateMarkdown('normal'));
-  document.getElementById('diarySubmitButton').addEventListener('click', () => generateMarkdown('diary'));
-  document.getElementById('albumSubmitButton').addEventListener('click', () => generateMarkdown('album'));
 
   // 为所有输入字段添加实时预览功能
   const inputs = document.querySelectorAll('input, textarea');
@@ -626,30 +918,6 @@ hidden: ${albumData.hidden}`;
     }
   });
 
-  // 为复选框添加监听
-  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-  checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-      const activeForm = document.querySelector('.form-content:not(.hidden)');
-      if (activeForm) {
-        const formType = activeForm.id.replace('Form', '');
-        generateMarkdown(formType);
-      }
-    });
-  });
-
-  // 为单选按钮添加监听
-  const radios = document.querySelectorAll('input[type="radio"]');
-  radios.forEach(radio => {
-    radio.addEventListener('change', function() {
-      const activeForm = document.querySelector('.form-content:not(.hidden)');
-      if (activeForm) {
-        const formType = activeForm.id.replace('Form', '');
-        generateMarkdown(formType);
-      }
-    });
-  });
-
   // 复制功能
   document.getElementById('copyButton').addEventListener('click', function() {
     const code = document.getElementById('markdownResult').textContent;
@@ -662,350 +930,86 @@ hidden: ${albumData.hidden}`;
     });
   });
 
-  // 检查是否从内容管理器传递了编辑内容
-  function checkForEditContent() {
-    // 检查本地存储中是否有编辑内容
-    const editContent = localStorage.getItem('editContent');
-    const editType = localStorage.getItem('editingType');
-    const editSlug = localStorage.getItem('editingSlug');
-
-    if (editContent && editType) {
-      // 解析Frontmatter
-      const lines = editContent.split('\n');
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].trim() === '---') {
-          if (frontmatterStart === -1) {
-            frontmatterStart = i;
-          } else {
-            frontmatterEnd = i;
-            break;
-          }
-        }
-      }
-
-      if (frontmatterStart !== -1 && frontmatterEnd !== -1) {
-        const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
-        const frontmatter = frontmatterLines.join('\n');
-        const content = lines.slice(frontmatterEnd + 1).join('\n');
-
-        // 解析frontmatter
-        const parsedFrontmatter = parseFrontmatter(frontmatter);
-
-        // 根据编辑类型决定使用哪个选项卡
-        if (editType === 'diary') {
-          document.getElementById('diaryTab').click();
-        } else if (editType === 'album') {
-          document.getElementById('albumTab').click();
-        } else {
-          document.getElementById('normalTab').click();
-        }
-
-        // 填充表单字段
-        populateForm(parsedFrontmatter, content, editType, editSlug + '.md');
-
-        // 清除localStorage中的编辑信息
-        localStorage.removeItem('editContent');
-        localStorage.removeItem('editingType');
-        localStorage.removeItem('editingSlug');
-        localStorage.removeItem('editingFilePath');
-      }
+  // 认证按钮事件
+  document.getElementById('create-auth-btn').addEventListener('click', function() {
+    if (githubToken) {
+      // 如果已认证，清除令牌
+      localStorage.removeItem('github_access_token');
+      githubToken = null;
     } else {
-      // 如果没有编辑内容，说明是创建新内容，使用默认值
-      document.getElementById('normalPublished').value = getCurrentDate();
-      document.getElementById('diaryDate').value = getCurrentDate();
-      document.getElementById('albumDate').value = getCurrentDate();
-      generateMarkdown('normal'); // 默认显示帖子格式
+      // 如果未认证，显示模态框
+      document.getElementById('create-auth-modal').classList.remove('hidden');
+      // 触发重绘以启用过渡
+      void document.getElementById('create-auth-modal').offsetWidth;
+      document.getElementById('create-auth-modal').classList.remove('bg-opacity-0');
+      document.getElementById('create-auth-modal').classList.add('bg-opacity-50');
+      
+      const modalContent = document.getElementById('create-auth-modal').querySelector('div:last-child');
+      void modalContent.offsetWidth; // 触发重绘
+      modalContent.classList.remove('opacity-0', 'scale-95');
+      modalContent.classList.add('opacity-100', 'scale-100');
+      
+      document.getElementById('create-token-input').focus();
     }
-  }
+    updateCreateAuthStatus();
+  });
 
-  // 解析Frontmatter的辅助函数
-  function parseFrontmatter(frontmatter) {
-    const result = {};
-    const lines = frontmatter.split('\n');
-    let currentKey = '';
-    let multilineValue = '';
-    let inMultiline = false;
-
-    for (const line of lines) {
-      if (line.trim() === '') continue;
-
-      if (line.startsWith('  ') && inMultiline) {
-        // 这是多行数据的一部分
-        multilineValue += '\n' + line;
-      } else {
-        if (inMultiline) {
-          // 结束多行数据处理
-          result[currentKey] = parseMultilineValue(multilineValue);
-          inMultiline = false;
-        }
-
-        const match = line.match(/^([^:]+):\s*(.*)/);
-        if (match) {
-          const key = match[1].trim();
-          let value = match[2].trim();
-
-          if (value === '' && line.endsWith(':')) {
-            // 可能是多行数据的开始
-            currentKey = key;
-            inMultiline = true;
-            multilineValue = line + '\n';
-          } else {
-            // 解析单行值
-            result[key] = parseValue(value);
-          }
-        }
-      }
-    }
-
-    // 处理最后的多行值
-    if (inMultiline) {
-      result[currentKey] = parseMultilineValue(multilineValue);
-    }
-
-    return result;
-  }
-
-  // 解析值的辅助函数
-  function parseValue(value) {
-    if (value.startsWith('"') && value.endsWith('"')) {
-      return value.substring(1, value.length - 1);
-    } else if (value.startsWith("'") && value.endsWith("'")) {
-      return value.substring(1, value.length - 1);
-    } else if (value === 'true') {
-      return true;
-    } else if (value === 'false') {
-      return false;
-    } else if (!isNaN(value)) {
-      return Number(value);
-    } else if (value.startsWith('[') && value.endsWith(']')) {
-      // 简单解析数组
-      const arrayContent = value.substring(1, value.length - 1);
-      const items = arrayContent.split(',').map(item => item.trim());
-      return items.map(item => {
-        if (item.startsWith('"') && item.endsWith('"')) {
-          return item.substring(1, item.length - 1);
-        } else if (item.startsWith("'") && item.endsWith("'")) {
-          return item.substring(1, item.length - 1);
-        }
-        return item;
-      });
+  // 确认按钮事件
+  document.getElementById('confirm-create-auth-btn').addEventListener('click', function() {
+    const token = document.getElementById('create-token-input').value.trim();
+    if (token) {
+      localStorage.setItem('github_access_token', token);
+      githubToken = token;
+      updateCreateAuthStatus();
+      // 清空输入框并隐藏模态框
+      document.getElementById('create-token-input').value = '';
+      hideCreateAuthModal();
     } else {
-      return value;
+      showMessage('请输入有效的Personal Access Token', 'error');
     }
-  }
+  });
 
-  // 解析多行值的辅助函数
-  function parseMultilineValue(multilineValue) {
-    // 移除开头的键定义
-    const lines = multilineValue.split('\n');
-    const result = [];
+  // 取消按钮事件
+  document.getElementById('cancel-create-auth-btn').addEventListener('click', function() {
+    // 清空输入框并隐藏模态框
+    document.getElementById('create-token-input').value = '';
+    hideCreateAuthModal();
+  });
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.trim() === '') continue;
-
-      // 解析相册照片格式
-      if (line.trim().startsWith('-')) {
-        const photo = {};
-        // 偲测是相册照片格式
-        if (line.includes('src:')) {
-          const srcMatch = line.match(/src:\s*"([^"]*)"/);
-          if (srcMatch) photo.src = srcMatch[1];
-        }
-        if (line.includes('alt:')) {
-          const altMatch = line.match(/alt:\s*"([^"]*)"/);
-          if (altMatch) photo.alt = altMatch[1];
-        }
-        if (line.includes('title:')) {
-          const titleMatch = line.match(/title:\s*"([^"]*)"/);
-          if (titleMatch) photo.title = titleMatch[1];
-        }
-        if (line.includes('description:')) {
-          const descMatch = line.match(/description:\s*"([^"]*)"/);
-          if (descMatch) photo.description = descMatch[1];
-        }
-        if (line.includes('date:')) {
-          const dateMatch = line.match(/date:\s*"([^"]*)"/);
-          if (dateMatch) photo.date = dateMatch[1];
-        }
-        if (line.includes('location:')) {
-          const locationMatch = line.match(/location:\s*"([^"]*)"/);
-          if (locationMatch) photo.location = locationMatch[1];
-        }
-        if (line.includes('width:')) {
-          const widthMatch = line.match(/width:\s*(\d+)/);
-          if (widthMatch) photo.width = parseInt(widthMatch[1]);
-        }
-        if (line.includes('height:')) {
-          const heightMatch = line.match(/height:\s*(\d+)/);
-          if (heightMatch) photo.height = parseInt(heightMatch[1]);
-        }
-        if (line.includes('camera:')) {
-          const cameraMatch = line.match(/camera:\s*"([^"]*)"/);
-          if (cameraMatch) photo.camera = cameraMatch[1];
-        }
-        if (line.includes('lens:')) {
-          const lensMatch = line.match(/lens:\s*"([^"]*)"/);
-          if (lensMatch) photo.lens = lensMatch[1];
-        }
-        if (line.includes('settings:')) {
-          const settingsMatch = line.match(/settings:\s*"([^"]*)"/);
-          if (settingsMatch) photo.settings = settingsMatch[1];
-        }
-
-        if (Object.keys(photo).length > 0) {
-          result.push(photo);
-        }
-      }
+  // 点击模态框外部区域关闭
+  document.getElementById('create-auth-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      // 清空输入框并隐藏模态框
+      document.getElementById('create-token-input').value = '';
+      hideCreateAuthModal();
     }
+  });
 
-    return result;
-  }
-
-  // 填充表单的辅助函数
-  function populateForm(frontmatter, content, type, fileName) {
-    // 设置文件名
-    if (document.getElementById('fileName')) {
-      document.getElementById('fileName').value = fileName;
+  // 按ESC键关闭模态框
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.getElementById('create-auth-modal').classList.contains('hidden')) {
+      // 清空输入框并隐藏模态框
+      document.getElementById('create-token-input').value = '';
+      hideCreateAuthModal();
     }
+  });
 
-    // 填充表单字段
-    switch(type) {
-      case 'diary':
-        if (document.getElementById('diaryTitle')) document.getElementById('diaryTitle').value = frontmatter.title || '';
-        if (document.getElementById('diaryDate')) document.getElementById('diaryDate').value = frontmatter.date || getCurrentDate();
-        if (document.getElementById('diaryContent')) document.getElementById('diaryContent').value = content || '';
-
-        // 处理图片
-        if (frontmatter.images && Array.isArray(frontmatter.images) && frontmatter.images.length > 0) {
-          if (document.getElementById('diaryUseImage')) {
-            document.getElementById('diaryUseImage').checked = true;
-            const section = document.getElementById('diaryImageSection');
-            if (section) {
-              section.classList.remove('hidden');
-            }
-
-            // 添加图片输入框
-            frontmatter.images.forEach(image => {
-              const container = document.getElementById('diaryImagesContainer');
-              if (container) {
-                const inputDiv = document.createElement('div');
-                inputDiv.className = 'flex items-center space-x-2 mt-2';
-                inputDiv.innerHTML =
-                  '<input type="text" name="diaryImage[]" value="' + image + '" placeholder="图片文件名或外部链接"' +
-                    'class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none transition-all">' +
-                  '<button type="button" class="remove-image bg-red-100 hover:bg-red-200 text-red-600 px-2 py-2 rounded-lg transition-all">' +
-                    '<i class="fa fa-times" aria-hidden="true"></i>' +
-                  '</button>';
-                container.appendChild(inputDiv);
-
-                // 添加删除功能
-                inputDiv.querySelector('.remove-image').addEventListener('click', function() {
-                  this.parentElement.remove();
-                });
-              }
-            });
-          }
-        }
-        break;
-
-      case 'album':
-        if (document.getElementById('albumTitle')) document.getElementById('albumTitle').value = frontmatter.title || '';
-        if (document.getElementById('albumId')) document.getElementById('albumId').value = frontmatter.id || (frontmatter.title ? frontmatter.title.toLowerCase().replace(/\s+/g, '-') : 'new-album');
-        if (document.getElementById('albumDate')) document.getElementById('albumDate').value = frontmatter.date || getCurrentDate();
-        if (document.getElementById('albumDescription')) document.getElementById('albumDescription').value = frontmatter.description || '';
-        if (document.getElementById('albumLocation')) document.getElementById('albumLocation').value = frontmatter.location || '';
-        if (document.getElementById('albumTags') && frontmatter.tags && Array.isArray(frontmatter.tags)) {
-          document.getElementById('albumTags').value = frontmatter.tags.join(', ');
-        }
-        if (document.getElementById('albumLayout')) document.getElementById('albumLayout').value = frontmatter.layout || 'grid';
-        if (document.getElementById('albumColumns')) document.getElementById('albumColumns').value = frontmatter.columns || 3;
-        if (document.getElementById('albumCover')) document.getElementById('albumCover').value = frontmatter.cover || '';
-
-        // 处理隐藏属性
-        if (document.getElementById('albumHidden') && frontmatter.hidden !== undefined) {
-          document.getElementById('albumHidden').checked = frontmatter.hidden;
-        }
-
-        // 处理相册类型
-        if (frontmatter.mode === 'external') {
-          const externalRadio = document.querySelector('input[name="albumType"][value="external"]');
-          if (externalRadio) externalRadio.click();
-        }
-
-        // 处理照片
-        if (frontmatter.photos && Array.isArray(frontmatter.photos)) {
-          const container = document.getElementById('photosContainer');
-          if (container) {
-            frontmatter.photos.forEach(photo => {
-              const inputDiv = document.createElement('div');
-              inputDiv.className = 'flex items-center space-x-2 mt-2';
-              inputDiv.innerHTML =
-                '<input type="text" name="photoSrc[]" value="' + (photo.src || '') + '" placeholder="图片链接"' +
-                  'class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none transition-all">' +
-                '<button type="button" class="remove-photo bg-red-100 hover:bg-red-200 text-red-600 px-2 py-2 rounded-lg transition-all">' +
-                  '<i class="fa fa-times" aria-hidden="true"></i>' +
-                '</button>';
-              container.appendChild(inputDiv);
-
-              // 添加删除功能
-              inputDiv.querySelector('.remove-photo').addEventListener('click', function() {
-                this.parentElement.remove();
-              });
-            });
-          }
-        }
-        break;
-
-      case 'post':
-      default:
-        if (document.getElementById('normalTitle')) document.getElementById('normalTitle').value = frontmatter.title || '';
-        if (document.getElementById('normalPublished')) document.getElementById('normalPublished').value = frontmatter.published || frontmatter.date || getCurrentDate();
-        if (document.getElementById('normalDescription')) document.getElementById('normalDescription').value = frontmatter.description || '';
-        if (document.getElementById('normalTags') && frontmatter.tags && Array.isArray(frontmatter.tags)) {
-          document.getElementById('normalTags').value = frontmatter.tags.join(', ');
-        }
-        if (document.getElementById('normalCategory')) document.getElementById('normalCategory').value = frontmatter.category || '';
-
-        // 处理图片
-        if (frontmatter.image && document.getElementById('normalUseImage')) {
-          document.getElementById('normalUseImage').checked = true;
-          document.getElementById('normalImage').value = frontmatter.image;
-          const section = document.getElementById('normalImageSection');
-          if (section) {
-            section.classList.remove('hidden');
-          }
-        }
-
-        // 处理草稿
-        if (frontmatter.draft !== undefined && document.getElementById('normalDraft')) {
-          document.getElementById('normalDraft').checked = frontmatter.draft;
-        }
-
-        // 处理置顶
-        if (frontmatter.pinned !== undefined && document.getElementById('normalPinned')) {
-          document.getElementById('normalPinned').checked = frontmatter.pinned;
-        }
-
-        // 处理密码保护
-        if (frontmatter.password && document.getElementById('normalUsePassword')) {
-          document.getElementById('normalUsePassword').checked = true;
-          document.getElementById('normalPassword').value = frontmatter.password;
-          const section = document.getElementById('normalPasswordSection');
-          if (section) {
-            section.classList.remove('hidden');
-          }
-        }
-
-        if (document.getElementById('normalContent')) document.getElementById('normalContent').value = content || '';
-        break;
-    }
-
-    // 生成Markdown预览
-    generateMarkdown(type === 'post' ? 'normal' : type);
+  // 隐藏认证模态框的函数
+  function hideCreateAuthModal() {
+    const modal = document.getElementById('create-auth-modal');
+    const modalContent = modal.querySelector('div:last-child');
+    
+    // 添加关闭动画
+    modalContent.classList.remove('opacity-100', 'scale-100');
+    modalContent.classList.add('opacity-0', 'scale-95');
+    
+    modal.classList.remove('bg-opacity-50');
+    modal.classList.add('bg-opacity-0');
+    
+    // 等待动画完成后再隐藏元素
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200); // 与过渡时间匹配
   }
 
   // 提交到GitHub功能
@@ -1015,49 +1019,22 @@ hidden: ${albumData.hidden}`;
     const directory = document.getElementById('fileDirectory').value;
 
     if (!content || !fileName) {
-      alert('请先生成内容并填写文件名');
+      showMessage('请先生成内容并填写文件名', 'error');
       return;
     }
 
-    // 检查认证状态
-    let token = localStorage.getItem('github_access_token');
-
-    if (!token) {
-      alert('请先进行GitHub认证');
-      window.location.href = '/content-manager/';
+    if (!githubToken) {
+      showMessage('请先进行GitHub认证', 'error');
       return;
     }
 
     try {
-      // 验证令牌
-      const validateResponse = await fetch('https://api.github.com/user', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!validateResponse.ok) {
-        const tokenResponse = await fetch('https://api.github.com/user', {
-          headers: {
-            'Authorization': `token ${token}`
-          }
-        });
-
-        if (!tokenResponse.ok) {
-          localStorage.removeItem('github_access_token'); // 移除无效令牌
-          throw new Error('认证令牌无效或已过期，请重新输入');
-        }
-      }
-
-      // 构建完整路径
-      const filePath = `${directory}/${fileName}`;
-
       // 读取当前文件以获取SHA（如果文件已存在）
       let sha = null;
       try {
-        const response = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${filePath}`, {
+        const response = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${directory}/${fileName}`, {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${githubToken}`
           }
         });
 
@@ -1079,7 +1056,7 @@ hidden: ${albumData.hidden}`;
 
       // 准备提交数据
       const commitData = {
-        message: `添加/更新 ${filePath} [通过内容管理器]`,
+        message: `添加/更新 ${directory}/${fileName} [通过内容创建器]`,
         content: base64Content,
         branch: 'main'
       };
@@ -1089,10 +1066,10 @@ hidden: ${albumData.hidden}`;
       }
 
       // 提交文件
-      const result = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${filePath}`, {
+      const result = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${directory}/${fileName}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${githubToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(commitData)
@@ -1100,52 +1077,147 @@ hidden: ${albumData.hidden}`;
 
       const resultData = await result.json();
 
-      if (!result.ok) {
-        throw new Error(resultData.message || `HTTP ${result.status}: ${result.statusText}`);
+      if (result.ok) {
+        showMessage('文件已成功提交到GitHub仓库！', 'info');
+      } else {
+        console.error('提交失败:', resultData);
+        if (resultData.message && resultData.message.includes('Bad credentials')) {
+          localStorage.removeItem('github_access_token'); // 移除无效令牌
+          githubToken = null;
+          updateCreateAuthStatus();
+          showMessage('认证令牌无效或已过期，请重新输入', 'error');
+        } else {
+          showMessage('提交失败: ' + (resultData.message || JSON.stringify(resultData)), 'error');
+        }
       }
-
-      alert('文件已成功提交到GitHub仓库！');
     } catch (error) {
       console.error('提交错误:', error);
-      if (error.message.includes('Bad credentials') || error.message.includes('401')) {
-        localStorage.removeItem('github_access_token'); // 移除无效令牌
-        alert('认证令牌无效或已过期，请重新登录');
-      } else if (error.message.includes('fetch') || error.message.includes('network')) {
-        alert('网络连接错误，请检查网络连接后重试');
+      if (error.message.includes('fetch') || error.message.includes('network')) {
+        showMessage('网络连接错误，请检查网络连接后重试', 'error');
       } else {
-        alert('提交过程中发生错误: ' + error.message);
+        showMessage('提交过程中发生错误: ' + error.message, 'error');
       }
     }
   });
 
-  // 页面加载完成后检查是否有编辑内容
-  document.addEventListener('DOMContentLoaded', checkForEditContent);
+  // 页面加载时初始化
+  updateCreateAuthStatus();
 
-  // 暴露函数给全局作用域
-  window.getCurrentDate = getCurrentDate;
-  window.generateMarkdown = generateMarkdown;
+  // 初始化第一个表单
+  document.querySelectorAll('.form-content').forEach((form, index) => {
+    if (index === 0) {
+      form.classList.remove('hidden');
+    } else {
+      form.classList.add('hidden');
+    }
+  });
+
+  generateMarkdown('normal');
 </script>
 
 <style>
-  .tab-active {
-    color: #4F46E5;
-    font-weight: 600;
-    position: relative;
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
   }
-  .tab-active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%);
-    border-radius: 2px;
+  .fade-out {
+    animation: fadeOut 0.3s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  .tab-active {
+    color: var(--primary);
+    font-weight: 600;
   }
 
-  .card-shadow {
-    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.05), 0 8px 10px -6px rgba(79, 70, 229, 0.02);
-    transition: all 0.3s ease;
+  /* 复选框优化样式 */
+  input[type="checkbox"] {
+    transition: all 0.2s ease;
+  }
+
+  /* 按钮悬停效果 */
+  .btn-card {
+    transition: all 0.2s ease;
+  }
+
+  /* 表单控件聚焦效果 */
+  input[type="text"],
+  input[type="date"],
+  textarea,
+  select {
+    transition: all 0.2s ease;
+  }
+
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+  }
+
+  /* 标签悬停效果 */
+  label {
+    transition: all 0.2s ease;
+  }
+
+  label:hover {
+    color: var(--primary);
+  }
+
+  /* 按钮样式 */
+  .btn-card {
+    transition: all 0.2s ease;
+  }
+
+  /* 确保按钮文字在暗色背景下可见 */
+  .btn-card.text-white {
+    color: white;
+  }
+
+  /* For dark mode, ensure good contrast */
+  @media (prefers-color-scheme: dark) {
+    #normalSubmitButton {
+      color: #ffffff !important;
+    }
+  }
+
+  /* 图片输入框容器样式 */
+  .image-input-container {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+  }
+
+  .dark .image-input-container {
+    border-color: #374151;
+    background-color: #1f2937;
+  }
+
+  .image-input-container:hover {
+    border-color: var(--primary);
+  }
+
+  .dark .image-input-container:hover {
+    border-color: var(--primary);
   }
 </style>
-</Layout>
