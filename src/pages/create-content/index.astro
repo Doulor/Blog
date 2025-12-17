@@ -131,6 +131,28 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
                 class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
               <label for="normalPinned" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">置顶帖子</label>
             </div>
+
+            <div class="flex items-center space-x-3 pt-1">
+              <input type="checkbox" id="normalDraft" name="normalDraft"
+                class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+              <label for="normalDraft" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">草稿模式</label>
+            </div>
+
+            <div class="pt-2">
+              <div class="flex items-center space-x-3 mb-3 pt-1">
+                <input type="checkbox" id="normalUsePassword" name="normalUsePassword"
+                  class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+                <label for="normalUsePassword" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">启用密码保护</label>
+              </div>
+              <div id="normalPasswordSection" class="hidden pl-7 space-y-2 fade-in">
+                <label for="normalPassword" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">密码</label>
+                <div class="image-input-container">
+                  <input type="text" id="normalPassword" name="normalPassword" value="666999"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="输入密码">
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="space-y-2 pt-3">
@@ -501,6 +523,23 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
     }
   });
 
+  // 处理帖子密码保护显示/隐藏
+  document.getElementById('normalUsePassword').addEventListener('change', function() {
+    const section = document.getElementById('normalPasswordSection');
+    if(this.checked) {
+      section.classList.remove('hidden');
+      setTimeout(() => {
+        section.classList.add('fade-in');
+      }, 1);
+    } else {
+      section.classList.add('fade-out');
+      setTimeout(() => {
+        section.classList.add('hidden');
+        section.classList.remove('fade-out');
+      }, 300);
+    }
+  });
+
   // 添加日记图片输入框的函数
   function addDiaryImageInput() {
     const container = document.getElementById('diaryImagesContainer');
@@ -758,6 +797,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         // 处理额外字段，确保published字段存在以通过构建验证
         extraFields.draft = document.getElementById('normalDraft')?.checked;
         extraFields.pinned = document.getElementById('normalPinned')?.checked;
+
         // 如果勾选了使用封面图片，则添加图片字段
         if (document.getElementById('normalUseImage')?.checked) {
           const imageValue = document.getElementById('normalImage').value;
@@ -765,6 +805,16 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
             extraFields.image = imageValue;
           }
         }
+
+        // 处理密码保护
+        const usePassword = document.getElementById('normalUsePassword')?.checked;
+        if (usePassword) {
+          extraFields.encrypted = true;
+          extraFields.password = document.getElementById('normalPassword')?.value || '666999';
+        } else {
+          extraFields.encrypted = false;
+        }
+
         // 添加published字段以确保构建成功
         extraFields.published = date;
         break;
