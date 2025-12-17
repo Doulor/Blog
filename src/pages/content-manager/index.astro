@@ -315,11 +315,14 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
 </MainGridLayout>
 
 <script>
-  // 管理认证状态
-  let githubToken = localStorage.getItem('github_access_token') || null;
+  // 管理认证状态 - 使用函数获取最新token
+  function getGithubToken() {
+    return localStorage.getItem('github_access_token') || null;
+  }
 
   // 更新认证状态显示
   function updateAuthStatus() {
+    const githubToken = getGithubToken();
     const authStatus = document.getElementById('auth-status');
     const authBtnText = document.getElementById('auth-btn-text');
 
@@ -392,10 +395,10 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
 
   // 认证按钮事件
   document.getElementById('auth-btn').addEventListener('click', function() {
-    if (githubToken) {
+    const currentToken = getGithubToken();
+    if (currentToken) {
       // 如果已认证，清除令牌
       localStorage.removeItem('github_access_token');
-      githubToken = null;
     } else {
       // 如果未认证，显示模态框
       const modal = document.getElementById('auth-modal');
@@ -420,7 +423,6 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
     const token = document.getElementById('token-input').value.trim();
     if (token) {
       localStorage.setItem('github_access_token', token);
-      githubToken = token;
       updateAuthStatus();
       // 清空输入框并隐藏模态框
       document.getElementById('token-input').value = '';
@@ -476,6 +478,7 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
   // 编辑功能
   document.querySelectorAll('.edit-btn').forEach(button => {
     button.addEventListener('click', async function() {
+      const githubToken = getGithubToken();
       if (!githubToken) {
         showMessage('请先进行GitHub认证');
         return;
@@ -528,6 +531,7 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
   // 删除功能
   document.querySelectorAll('.delete-btn').forEach(button => {
     button.addEventListener('click', function() {
+      const githubToken = getGithubToken();
       if (!githubToken) {
         showMessage('请先进行GitHub认证');
         return;
@@ -545,6 +549,12 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
 
   // 执行删除操作
   async function performDelete(type, slug) {
+    const githubToken = getGithubToken();
+    if (!githubToken) {
+      showMessage('请先进行GitHub认证', 'error');
+      return;
+    }
+
     try {
       // 构建文件路径
       let filePath;
