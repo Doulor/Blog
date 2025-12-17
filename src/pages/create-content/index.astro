@@ -239,6 +239,31 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
             </div>
           </div>
 
+          <!-- 相册布局 -->
+          <div class="space-y-2 pt-4">
+            <label for="albumLayout" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">布局方式</label>
+            <select id="albumLayout" name="albumLayout"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+              <option value="grid">网格布局</option>
+              <option value="masonry">瀑布流布局</option>
+            </select>
+          </div>
+
+          <!-- 列数 -->
+          <div class="space-y-2 pt-2">
+            <label for="albumColumns" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">列数</label>
+            <input type="number" id="albumColumns" name="albumColumns" min="1" max="6" value="3"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+          </div>
+
+          <!-- 封面图片 -->
+          <div class="space-y-2 pt-2">
+            <label for="albumCover" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">封面图片路径</label>
+            <input type="text" id="albumCover" name="albumCover"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="相册封面图片路径，如：/images/albums/album-name/cover.jpg">
+          </div>
+
           <div id="externalAlbumSection" class="hidden space-y-3 pt-4">
             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">相册图片 <small class="text-neutral-500 dark:text-neutral-400">(外部链接)</small></label>
             <div id="photosContainer" class="space-y-2">
@@ -768,6 +793,9 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         const location = document.getElementById('albumLocation').value;
         tags = document.getElementById('albumTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
         const hidden = document.getElementById('albumHidden').checked;
+        const layout = document.getElementById('albumLayout').value || 'grid';
+        const columns = parseInt(document.getElementById('albumColumns').value) || 3;
+        const cover = document.getElementById('albumCover').value || '';
 
         // 创建内容
         content = `# ${title}\n\n${description || '这是一个相册页面'}`;
@@ -781,6 +809,9 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
           location: location || "",
           tags: tags.length ? tags : [],
           hidden: hidden || false,
+          layout: layout || "grid",
+          columns: columns || 3,
+          cover: cover,
           mode: albumType,
           photos: []
         };
@@ -798,28 +829,40 @@ hidden: ${albumData.hidden}
 description: "${albumData.description}"
 date: "${albumData.date}"
 location: "${albumData.location}"
-tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]`;
+tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]
+layout: "${albumData.layout}"
+columns: ${albumData.columns}`;
 
-        // 为外部相册添加更多字段
+        // 为外部相册设置封面图片
         if (albumType === 'external') {
-          albumFrontmatter += `
-layout: "masonry"
-columns: 3`;
-
-          // 如果有图片，设置封面和图片数组
-          if (albumData.photos.length > 0) {
+          // 如果用户指定了封面，使用用户指定的封面
+          if (albumData.cover) {
             albumFrontmatter += `
-cover: "${albumData.photos[0]}"
-mode: "${albumData.mode}"
-photos:`;
-            albumFrontmatter += `\n` + albumData.photos.map(photo => `  - src: "${photo}"`).join('\n');
-          } else {
+cover: "${albumData.cover}"`;
+          }
+          // 如果没有指定封面，但有图片，使用第一张图片作为封面
+          else if (albumData.photos.length > 0) {
             albumFrontmatter += `
-mode: "${albumData.mode}"`;
+cover: "${albumData.photos[0]}"`;
           }
         } else {
-          albumFrontmatter += `
+          // 本地相册，如果指定了封面，添加封面字段
+          if (albumData.cover) {
+            albumFrontmatter += `
+cover: "${albumData.cover}"`;
+          }
+        }
+
+        // 添加模式和图片数组
+        albumFrontmatter += `
 mode: "${albumData.mode}"`;
+
+        // 如果是外部相册且有图片，添加图片数组
+        if (albumType === 'external' && albumData.photos.length > 0) {
+          albumFrontmatter += `
+photos: [`;
+          albumFrontmatter += `\n` + albumData.photos.map(photo => `  {\n    src: "${photo}"\n  }`).join(',\n');
+          albumFrontmatter += `\n]`;
         }
 
         albumFrontmatter += `
@@ -904,7 +947,7 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
   // 为提交按钮添加事件监听器
 
   // 为所有输入字段添加实时预览功能
-  const inputs = document.querySelectorAll('input, textarea');
+  const inputs = document.querySelectorAll('input, textarea, select');
   inputs.forEach(input => {
     if (input.type !== 'checkbox' && input.type !== 'radio') {
       input.addEventListener('input', function() {
