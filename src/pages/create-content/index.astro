@@ -20,7 +20,10 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
       <div class="flex items-center justify-between">
         <div>
           <h3 class="font-medium text-lg">GitHub认证状态</h3>
-          <p id="create-auth-status" class="text-sm text-gray-600 dark:text-gray-400">未认证</p>
+          <p id="create-auth-status" class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+            <span id="create-auth-status-indicator" class="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+            <span id="create-auth-status-text">未认证</span>
+          </p>
         </div>
         <div class="flex space-x-2">
           <button type="button" class="btn-card h-12 px-4 rounded-lg" title="刷新认证状态" onclick="location.reload();">
@@ -392,14 +395,17 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 
   // 更新认证状态显示
   function updateCreateAuthStatus() {
-    const authStatus = document.getElementById('create-auth-status');
+    const authStatusText = document.getElementById('create-auth-status-text');
+    const authStatusIndicator = document.getElementById('create-auth-status-indicator');
     const authBtnText = document.getElementById('create-auth-btn-text');
 
     if (githubToken) {
-      authStatus.textContent = '已认证';
+      authStatusText.textContent = '已认证';
+      authStatusIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-2';
       authBtnText.textContent = '退出';
     } else {
-      authStatus.textContent = '未认证';
+      authStatusText.textContent = '未认证';
+      authStatusIndicator.className = 'w-3 h-3 rounded-full bg-red-500 mr-2';
       authBtnText.textContent = '登录';
     }
   }
