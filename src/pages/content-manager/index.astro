@@ -35,9 +35,14 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
             <h3 class="font-medium text-lg">GitHub认证状态</h3>
             <p id="auth-status" class="text-sm text-gray-600 dark:text-gray-400">未认证</p>
           </div>
-          <button id="auth-btn" class="btn-card h-12 px-4 rounded-lg">
-            <span id="auth-btn-text">登录</span>
-          </button>
+          <div class="flex space-x-2">
+            <button type="button" class="btn-card h-12 px-4 rounded-lg" title="刷新认证状态" onclick="location.reload();">
+              <i class="fa fa-refresh mr-1" aria-hidden="true"></i>刷新
+            </button>
+            <button id="auth-btn" class="btn-card h-12 px-4 rounded-lg">
+              <span id="auth-btn-text">登录</span>
+            </button>
+          </div>
         </div>
 
         <!-- GitHub Token 输入模态框 -->
@@ -642,6 +647,7 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
   // 初始化页面
   document.addEventListener('DOMContentLoaded', function() {
     updateAuthStatus();
+
   });
 </script>
 

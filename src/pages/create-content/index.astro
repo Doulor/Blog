@@ -22,9 +22,14 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
           <h3 class="font-medium text-lg">GitHub认证状态</h3>
           <p id="create-auth-status" class="text-sm text-gray-600 dark:text-gray-400">未认证</p>
         </div>
-        <button id="create-auth-btn" class="btn-card h-12 px-4 rounded-lg">
-          <span id="create-auth-btn-text">登录</span>
-        </button>
+        <div class="flex space-x-2">
+          <button type="button" class="btn-card h-12 px-4 rounded-lg" title="刷新认证状态" onclick="location.reload();">
+            <i class="fa fa-refresh mr-1" aria-hidden="true"></i>刷新
+          </button>
+          <button id="create-auth-btn" class="btn-card h-12 px-4 rounded-lg">
+            <span id="create-auth-btn-text">登录</span>
+          </button>
+        </div>
       </div>
       
       <!-- 消息区域 -->
@@ -150,6 +155,38 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
                   <input type="text" id="normalPassword" name="normalPassword" value="666999"
                     class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     placeholder="输入密码">
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <div class="flex items-center space-x-3 mb-3 pt-1">
+                <input type="checkbox" id="normalUseAuthor" name="normalUseAuthor"
+                  class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+                <label for="normalUseAuthor" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加作者信息</label>
+              </div>
+              <div id="normalAuthorSection" class="hidden pl-7 space-y-2 fade-in">
+                <label for="normalAuthor" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">作者名称</label>
+                <div class="image-input-container">
+                  <input type="text" id="normalAuthor" name="normalAuthor"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="输入作者名称(默认为Doulor)">
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <div class="flex items-center space-x-3 mb-3 pt-1">
+                <input type="checkbox" id="normalUseSource" name="normalUseSource"
+                  class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+                <label for="normalUseSource" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加来源链接</label>
+              </div>
+              <div id="normalSourceSection" class="hidden pl-7 space-y-2 fade-in">
+                <label for="normalSource" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">来源链接</label>
+                <div class="image-input-container">
+                  <input type="text" id="normalSource" name="normalSource"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="输入来源链接(默认为本站链接)">
                 </div>
               </div>
             </div>
@@ -540,6 +577,57 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
     }
   });
 
+  // 处理帖子作者信息显示/隐藏
+  document.getElementById('normalUseAuthor').addEventListener('change', function() {
+    const section = document.getElementById('normalAuthorSection');
+    if(this.checked) {
+      section.classList.remove('hidden');
+      setTimeout(() => {
+        section.classList.add('fade-in');
+      }, 1);
+    } else {
+      section.classList.add('fade-out');
+      setTimeout(() => {
+        section.classList.add('hidden');
+        section.classList.remove('fade-out');
+      }, 300);
+    }
+  });
+
+  // 处理帖子来源链接显示/隐藏
+  document.getElementById('normalUseSource').addEventListener('change', function() {
+    const section = document.getElementById('normalSourceSection');
+    if(this.checked) {
+      section.classList.remove('hidden');
+      setTimeout(() => {
+        section.classList.add('fade-in');
+      }, 1);
+    } else {
+      section.classList.add('fade-out');
+      setTimeout(() => {
+        section.classList.add('hidden');
+        section.classList.remove('fade-out');
+      }, 300);
+    }
+
+    // 触发生成预览以更新链接
+    const activeForm = document.querySelector('.form-content:not(.hidden)');
+    if (activeForm) {
+      const formType = activeForm.id.replace('Form', '');
+      generateMarkdown(formType);
+    }
+  });
+
+  // 监听来源链接输入框，触发预览更新
+  document.getElementById('normalSource').addEventListener('input', function() {
+    // 触发生成预览
+    const activeForm = document.querySelector('.form-content:not(.hidden)');
+    if (activeForm) {
+      const formType = activeForm.id.replace('Form', '');
+      generateMarkdown(formType);
+    }
+  });
+
   // 添加日记图片输入框的函数
   function addDiaryImageInput() {
     const container = document.getElementById('diaryImagesContainer');
@@ -815,6 +903,24 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
           extraFields.encrypted = false;
         }
 
+        // 处理作者信息
+        const useAuthor = document.getElementById('normalUseAuthor')?.checked;
+        if (useAuthor) {
+          const authorValue = document.getElementById('normalAuthor')?.value;
+          if (authorValue) {
+            extraFields.author = authorValue;
+          }
+        }
+
+        // 处理来源链接 - 仅在用户输入时添加
+        const useSource = document.getElementById('normalUseSource')?.checked;
+        if (useSource) {
+          const sourceValue = document.getElementById('normalSource')?.value;
+          if (sourceValue) {
+            extraFields.sourceLink = sourceValue;
+          }
+        }
+
         // 添加published字段以确保构建成功
         extraFields.published = date;
         break;
@@ -1036,12 +1142,12 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
       void document.getElementById('create-auth-modal').offsetWidth;
       document.getElementById('create-auth-modal').classList.remove('bg-opacity-0');
       document.getElementById('create-auth-modal').classList.add('bg-opacity-50');
-      
+
       const modalContent = document.getElementById('create-auth-modal').querySelector('div:last-child');
       void modalContent.offsetWidth; // 触发重绘
       modalContent.classList.remove('opacity-0', 'scale-95');
       modalContent.classList.add('opacity-100', 'scale-100');
-      
+
       document.getElementById('create-token-input').focus();
     }
     updateCreateAuthStatus();
@@ -1195,6 +1301,7 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
 
   // 页面加载时初始化
   updateCreateAuthStatus();
+
 
   // 初始化第一个表单
   document.querySelectorAll('.form-content').forEach((form, index) => {
