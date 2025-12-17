@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firef CMS - 统一内容编辑器</title>
+    <title>Firef CMS - 内容管理器</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -554,15 +554,86 @@
                 <!-- 帖子表单 -->
                 <form id="normalForm" class="form-content space-y-5">
                     <div class="space-y-2">
-                        <label for="normalContent" class="block text-sm font-medium text-[#475569]">帖子正文内容</label>
-                        <textarea id="normalContent" name="normalContent" rows="12"
+                        <label for="normalTitle" class="block text-sm font-medium text-[#475569]">标题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="normalTitle" name="normalTitle" required
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：我的中文帖子">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalPublished" class="block text-sm font-medium text-[#475569]">发布日期</label>
+                        <input type="date" id="normalPublished" name="normalPublished"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalDescription" class="block text-sm font-medium text-[#475569]">描述</label>
+                        <textarea id="normalDescription" name="normalDescription" rows="2"
                             class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth resize-none"
-                            placeholder="请输入帖子正文内容..."></textarea>
+                            placeholder="添加文档描述信息"></textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalTags" class="block text-sm font-medium text-[#475569]">标签 (用逗号分隔)</label>
+                        <input type="text" id="normalTags" name="normalTags"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：诗歌，测试">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalCategory" class="block text-sm font-medium text-[#475569]">分类</label>
+                        <input type="text" id="normalCategory" name="normalCategory"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：创作">
+                    </div>
+
+                    <div class="space-y-4 pt-2">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-3">
+                                <input type="checkbox" id="normalUseImage" name="normalUseImage"
+                                    class="custom-checkbox">
+                                <label for="normalUseImage" class="text-sm font-medium text-[#475569]">添加封面图片</label>
+                            </div>
+                            <div id="normalImageSection" class="hidden pl-7 space-y-2 fade-in">
+                                <label for="normalImage" class="block text-sm font-medium text-[#475569]">图片文件名（含后缀）</label>
+                                <input type="text" id="normalImage" name="normalImage"
+                                    class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                                    placeholder="例如：online.jpg">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="normalDraft" name="normalDraft"
+                                class="custom-checkbox">
+                            <label for="normalDraft" class="text-sm font-medium text-[#475569]">设为草稿</label>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center space-x-3 mb-3">
+                                <input type="checkbox" id="normalUsePassword" name="normalUsePassword"
+                                    class="custom-checkbox">
+                                <label for="normalUsePassword" class="text-sm font-medium text-[#475569]">设置密码保护</label>
+                            </div>
+                            <div id="normalPasswordSection" class="hidden pl-7 space-y-2 fade-in">
+                                <label for="normalPassword" class="block text-sm font-medium text-[#475569]">密码</label>
+                                <input type="text" id="normalPassword" name="normalPassword" value="666999"
+                                    class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="normalPinned" name="normalPinned"
+                                class="custom-checkbox">
+                            <label for="normalPinned" class="text-sm font-medium text-[#475569]">置顶帖子</label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-3">
+                        <label for="normalContent" class="block text-sm font-medium text-[#475569]">正文内容</label>
+                        <textarea id="normalContent" name="normalContent" rows="6"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth resize-none"
+                            placeholder="请输入文档正文内容..."></textarea>
                     </div>
 
                     <div class="pt-4">
                         <button type="button" id="normalSubmitButton" class="generate-btn w-full btn-gradient text-white font-medium py-3 px-6 rounded-[0.75rem] transition-smooth flex items-center justify-center" data-type="normal">
-                            <i class="fa fa-magic mr-2" aria-hidden="true"></i>更新帖子内容
+                            <i class="fa fa-magic mr-2" aria-hidden="true"></i>生成帖子文档
                         </button>
                     </div>
                 </form>
@@ -570,15 +641,41 @@
                 <!-- 日记表单 -->
                 <form id="diaryForm" class="form-content space-y-5 hidden">
                     <div class="space-y-2">
-                        <label for="diaryContent" class="block text-sm font-medium text-[#475569]">日记正文内容</label>
-                        <textarea id="diaryContent" name="diaryContent" rows="12"
+                        <label for="diaryTitle" class="block text-sm font-medium text-[#475569]">日记标题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="diaryTitle" name="diaryTitle" required
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：我的中文日记">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="diaryDate" class="block text-sm font-medium text-[#475569]">日记日期</label>
+                        <input type="date" id="diaryDate" name="diaryDate"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth">
+                    </div>
+                    <div class="pt-2">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <input type="checkbox" id="diaryUseImage" name="diaryUseImage"
+                                class="custom-checkbox">
+                            <label for="diaryUseImage" class="text-sm font-medium text-[#475569]">添加图片</label>
+                        </div>
+                        <div id="diaryImageSection" class="hidden pl-7 space-y-3 fade-in">
+                            <label class="block text-sm font-medium text-[#475569]">图片文件名或外部链接</label>
+                            <div id="diaryImagesContainer" class="space-y-2">
+                            </div>
+                            <button type="button" id="addImageBtn" class="text-sm text-[#10b981] hover:text-[#059669] transition-smooth flex items-center">
+                                <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-2 pt-2">
+                        <label for="diaryContent" class="block text-sm font-medium text-[#475569]">日记内容</label>
+                        <textarea id="diaryContent" name="diaryContent" rows="8"
                             class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth resize-none"
-                            placeholder="请输入日记正文内容..."></textarea>
+                            placeholder="今天天气很好..."></textarea>
                     </div>
 
                     <div class="pt-2">
                         <button type="button" id="diarySubmitButton" class="generate-btn w-full bg-gradient-to-r from-[#10b981] to-[#059669] text-white font-medium py-3 px-6 rounded-[0.75rem] transition-smooth flex items-center justify-center" data-type="diary">
-                            <i class="fa fa-book mr-2" aria-hidden="true"></i>更新日记内容
+                            <i class="fa fa-book mr-2" aria-hidden="true"></i>生成日记文档
                         </button>
                     </div>
                 </form>
@@ -586,15 +683,103 @@
                 <!-- 相册表单 -->
                 <form id="albumForm" class="form-content space-y-5 hidden">
                     <div class="space-y-2">
-                        <label for="albumDescription" class="block text-sm font-medium text-[#475569]">相册描述/正文内容</label>
-                        <textarea id="albumDescription" name="albumDescription" rows="12"
+                        <label for="albumTitle" class="block text-sm font-medium text-[#475569]">相册标题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="albumTitle" name="albumTitle" required
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：我的旅行相册">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumId" class="block text-sm font-medium text-[#475569]">相册ID <span class="text-red-500">*</span></label>
+                        <input type="text" id="albumId" name="albumId" required
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：my-travel-album (小写，用短横杠连接)">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumDate" class="block text-sm font-medium text-[#475569]">创建日期</label>
+                        <input type="date" id="albumDate" name="albumDate"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumDescription" class="block text-sm font-medium text-[#475569]">相册描述</label>
+                        <textarea id="albumDescription" name="albumDescription" rows="2"
                             class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth resize-none"
-                            placeholder="输入相册描述或正文内容..."></textarea>
+                            placeholder="描述这个相册的内容..."></textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumLocation" class="block text-sm font-medium text-[#475569]">拍摄地点</label>
+                        <input type="text" id="albumLocation" name="albumLocation"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：日本，东京">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumTags" class="block text-sm font-medium text-[#475569]">标签 (用逗号分隔)</label>
+                        <input type="text" id="albumTags" name="albumTags"
+                            class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth"
+                            placeholder="例如：旅行，风景，日本">
+                    </div>
+
+                    <div class="space-y-4 pt-2">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="albumHidden" name="albumHidden"
+                                class="custom-checkbox">
+                            <label for="albumHidden" class="text-sm font-medium text-[#475569]">隐藏相册</label>
+                        </div>
+                    </div>
+
+                    <div class="pt-3">
+                        <label class="block text-sm font-medium text-[#475569] mb-3">相册类型</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="flex items-center space-x-3 p-4 border border-[#e2e8f0] rounded-[0.75rem] cursor-pointer hover:bg-[#f1f5f9] transition-smooth">
+                                <input type="radio" name="albumType" value="local" checked
+                                    class="w-4 h-4 text-[#0ea5e9] border-[#cbd5e1] focus:ring-[#0ea5e9]">
+                                <div>
+                                    <div class="font-medium text-[#475569]">本地相册</div>
+                                    <div class="text-xs text-[#94a3b8]">上传图片到本地图库</div>
+                                </div>
+                            </label>
+                            <label class="flex items-center space-x-3 p-4 border border-[#e2e8f0] rounded-[0.75rem] cursor-pointer hover:bg-[#f1f5f9] transition-smooth">
+                                <input type="radio" name="albumType" value="external"
+                                    class="w-4 h-4 text-[#0ea5e9] border-[#cbd5e1] focus:ring-[#0ea5e9]">
+                                <div>
+                                    <div class="font-medium text-[#475569]">外部相册</div>
+                                    <div class="text-xs text-[#94a3b8]">使用外部图片链接</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 space-y-4">
+                        <div class="space-y-2">
+                            <label for="albumLayout" class="block text-sm font-medium text-[#475569]">布局方式</label>
+                            <select id="albumLayout" class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth">
+                                <option value="grid">网格布局</option>
+                                <option value="masonry">瀑布流布局</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="albumColumns" class="block text-sm font-medium text-[#475569]">列数</label>
+                            <input type="number" id="albumColumns" min="1" max="6" value="3"
+                                class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="albumCover" class="block text-sm font-medium text-[#475569]">封面图片</label>
+                            <input type="text" id="albumCover" placeholder="相册封面图片路径"
+                                class="w-full px-4 py-3 input-border focus:border-[#4f46e5] focus:ring-0 outline-none transition-smooth">
+                        </div>
+                    </div>
+
+                    <div id="externalAlbumSection" class="hidden space-y-3 pt-4">
+                        <label class="block text-sm font-medium text-[#475569]">相册图片 <small class="text-[#94a3b8]">(外部链接)</small></label>
+                        <div id="photosContainer" class="space-y-2">
+                        </div>
+                        <button type="button" id="addPhotoBtn" class="text-sm text-[#0ea5e9] hover:text-[#0284c7] transition-smooth flex items-center">
+                            <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+                        </button>
                     </div>
 
                     <div class="pt-4">
                         <button type="button" id="albumSubmitButton" class="generate-btn w-full bg-gradient-to-r from-[#0ea5e9] to-[#0369a1] text-white font-medium py-3 px-6 rounded-[0.75rem] transition-smooth flex items-center justify-center" data-type="album">
-                            <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>更新相册内容
+                            <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>生成相册文档
                         </button>
                     </div>
                 </form>
@@ -873,6 +1058,7 @@
             });
         });
 
+        // 获取当前日期函数
         function getCurrentDate() {
             const now = new Date();
             const year = now.getFullYear();
@@ -886,100 +1072,123 @@
         document.getElementById('diaryDate').value = getCurrentDate();
         document.getElementById('albumDate').value = getCurrentDate();
 
-        // 生成内容函数 - 简化版本，只更新内容部分，保留原metadata
+        // 生成内容函数
         function generateMarkdown(type) {
-            // 获取原始内容
-            const originalContent = localStorage.getItem('originalContent') || '';
-
-            if (originalContent) {
-                // 分离frontmatter和内容
-                const lines = originalContent.split('\n');
-                let frontmatterStart = -1;
-                let frontmatterEnd = -1;
-
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].trim() === '---') {
-                        if (frontmatterStart === -1) {
-                            frontmatterStart = i;
-                        } else {
-                            frontmatterEnd = i;
-                            break;
-                        }
-                    }
-                }
-
-                if (frontmatterStart !== -1 && frontmatterEnd !== -1) {
-                    // 提取frontmatter和内容
-                    const frontmatter = lines.slice(frontmatterStart, frontmatterEnd + 1).join('\n');
-                    const originalContentText = lines.slice(frontmatterEnd + 1).join('\n');
-
-                    // 根据类型获取新内容
-                    let newContent = '';
-                    switch(type) {
-                        case 'normal':
-                            newContent = document.getElementById('normalContent').value || originalContentText;
-                            break;
-                        case 'diary':
-                            newContent = document.getElementById('diaryContent').value || originalContentText;
-                            break;
-                        case 'album':
-                            // 对于相册，使用描述内容或保持原内容
-                            newContent = document.getElementById('albumDescription').value || originalContentText;
-                            break;
-                    }
-
-                    // 组合frontmatter和新内容
-                    const updatedContent = `${frontmatter}\n\n${newContent}`;
-
-                    // 显示在结果区域
-                    document.getElementById('markdownResult').textContent = updatedContent;
-
-                    // 设置文件名和其他信息
-                    const editSlug = localStorage.getItem('editingSlug');
-                    const editType = localStorage.getItem('editingType');
-
-                    if (editSlug && editType) {
-                        document.getElementById('fileName').value = editSlug + '.md';
-                        document.getElementById('fileDirectory').value =
-                            editType === 'post' ? 'src/content/posts' :
-                            editType === 'diary' ? 'src/content/diary' : 'src/content/albums';
-                    }
-
-                    return;
-                }
-            }
-
-            // 如果没有原始内容，使用原来的逻辑构建
             let title, date, description, tags = [], category, content;
             const extraFields = {};
 
             switch(type) {
                 case 'normal': // 帖子
-                    title = '未命名文档';
-                    date = getCurrentDate();
+                    title = document.getElementById('normalTitle').value;
+                    date = document.getElementById('normalPublished').value || getCurrentDate();
+                    description = document.getElementById('normalDescription').value;
+                    tags = document.getElementById('normalTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                    category = document.getElementById('normalCategory').value;
                     content = document.getElementById('normalContent').value;
-                    extraFields.published = date; // 添加published字段以确保构建成功
+
+                    // 处理额外字段，确保published字段存在以通过构建验证
+                    extraFields.image = document.getElementById('normalUseImage').checked ?
+                        document.getElementById('normalImage').value : undefined;
+                    extraFields.draft = document.getElementById('normalDraft').checked;
+                    extraFields.pinned = document.getElementById('normalPinned').checked;
+                    // 添加published字段以确保构建成功
+                    extraFields.published = date;
+                    if(document.getElementById('normalUsePassword').checked) {
+                        extraFields.password = document.getElementById('normalPassword').value;
+                        // 当有密码时，同时添加加密标志
+                        extraFields.encrypted = true;
+                    }
                     break;
 
                 case 'diary': // 日记
-                    title = '日记条目';
-                    date = getCurrentDate();
+                    title = document.getElementById('diaryTitle').value;
+                    date = document.getElementById('diaryDate').value || getCurrentDate();
+                    description = document.getElementById('diaryDescription')?.value || "";
+                    tags = (document.getElementById('diaryTags')?.value || "").split(',').map(tag => tag.trim()).filter(tag => tag);
                     content = document.getElementById('diaryContent').value;
-                    extraFields.date = date; // 为日记类型添加日期字段
+
+                    // 为日记类型添加日期字段
+                    extraFields.date = date;
+
+                    // 处理图片
+                    if(document.getElementById('diaryUseImage').checked) {
+                        const imageInputs = document.querySelectorAll('#diaryImagesContainer input[name="diaryImage[]"]');
+                        extraFields.images = Array.from(imageInputs).map(input => input.value).filter(val => val);
+                    }
                     break;
 
                 case 'album': // 相册
-                    title = '相册';
-                    date = getCurrentDate();
+                    title = document.getElementById('albumTitle').value;
+                    const albumId = document.getElementById('albumId').value;
+                    date = document.getElementById('albumDate').value || getCurrentDate();
                     description = document.getElementById('albumDescription').value;
-                    content = description || `# ${title}\n\n这是一个相册页面`;
-                    break;
+                    const location = document.getElementById('albumLocation').value;
+                    tags = document.getElementById('albumTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                    const layout = document.getElementById('albumLayout').value;
+                    const columns = parseInt(document.getElementById('albumColumns').value);
+                    const cover = document.getElementById('albumCover').value;
+                    const hidden = document.getElementById('albumHidden').checked;
+                    const mode = document.querySelector('input[name="albumType"]:checked').value;
+
+                    // 处理相册中的照片
+                    let photos = [];
+                    if(mode === 'external') {
+                        const photoInputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
+                        photos = Array.from(photoInputs).map(input => ({
+                            src: input.value,
+                            alt: "Photo"
+                        })).filter(photo => photo.src);
+                    }
+
+                    // 创建内容
+                    content = `# ${title}\n\n${description || '这是一个相册页面'}`;
+
+                    // 返回相册格式的数据
+                    const albumData = {
+                        title,
+                        id: albumId,
+                        date,
+                        description: description || "",
+                        location: location || "",
+                        tags: tags.length ? tags : [],
+                        layout: layout || "grid",
+                        columns: columns || 3,
+                        cover,
+                        hidden: hidden || false,
+                        mode: mode || "local",
+                        photos
+                    };
+
+                    // 生成相册的Markdown内容
+                    const albumFrontmatter = `---
+title: "${albumData.title}"
+id: "${albumData.id}"
+date: ${albumData.date}
+description: "${albumData.description}"
+location: "${albumData.location}"
+tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]
+layout: "${albumData.layout}"
+columns: ${albumData.columns}
+cover: "${albumData.cover}"
+hidden: ${albumData.hidden}
+mode: "${albumData.mode}"
+${albumData.photos.length > 0 ? `photos:\n${albumData.photos.map(photo => `  - src: "${photo.src}"\n    alt: "${photo.alt}"`).join('\n')}` : ''}
+---
+
+${content}`;
+
+                    // 设置文件名
+                    document.getElementById('fileName').value = `${albumData.id}.md`;
+                    document.getElementById('fileDirectory').value = 'src/content/albums';
+
+                    document.getElementById('markdownResult').textContent = albumFrontmatter;
+                    return; // 提前返回，因为我们已经设置了结果
             }
 
-            // 构建Frontmatter
+            // 构建Frontmatter，只包含published字段（完全按照您的要求）
             let frontmatter = `---\ntitle: "${title}"`;
 
-            // 对于帖子类型，添加published字段
+            // 对于帖子类型，只包含published字段（完全按照您的要求）
             if (type === 'normal') {
                 frontmatter += `\npublished: ${date}`;
             }
@@ -989,23 +1198,21 @@
             if(category) frontmatter += `\ncategory: "${category}"`;
             if(tags.length > 0) frontmatter += `\ntags: [${tags.map(tag => `"${tag}"`).join(', ')}]`;
 
-            // 添加额外字段
+            // 添加额外字段（避免重复添加已有的字段）
             Object.entries(extraFields).forEach(([key, value]) => {
-                if(value !== undefined && value !== "" && value !== null) {
+                if(value !== undefined) {
                     // 跳过已显式添加的字段，避免重复
                     if (type === 'normal' && key === 'published') {
                         return; // published字段已添加，跳过
                     }
 
-                    if(typeof value === 'string' && value !== "") {
+                    if(typeof value === 'string') {
                         frontmatter += `\n${key}: "${value}"`;
-                    } else if(typeof value === 'boolean') {
+                    } else if(typeof value === 'boolean' || typeof value === 'number') {
                         frontmatter += `\n${key}: ${value}`;
-                    } else if(Array.isArray(value) && value.length > 0) {
+                    } else if(Array.isArray(value)) {
                         frontmatter += `\n${key}: [${value.map(v => `"${v}"`).join(', ')}]`;
-                    } else if(typeof value === 'number') {
-                        frontmatter += `\n${key}: ${value}`;
-                    } else if(typeof value === 'object' && value !== null) {
+                    } else if(typeof value === 'object') {
                         frontmatter += `\n${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
                     }
                 }
@@ -1016,7 +1223,7 @@
             // 最终内容 = Frontmatter + 内容
             const fullContent = frontmatter + content;
 
-            // 设置文件名
+            // 设置文件名 - 使用日期-标题格式，支持中文字符
             const slug = title.toLowerCase()
                              .replace(/[^\w\s\u4e00-\u9fff]/g, '')  // 允许字母、数字、空格和中文字符
                              .replace(/\s+/g, '-');                // 空格替换为短横线
@@ -1029,92 +1236,6 @@
 
             // 显示在结果区域
             document.getElementById('markdownResult').textContent = fullContent;
-        }
-
-        // 解析简单frontmatter的辅助函数
-        function parseSimpleFrontmatter(frontmatterText) {
-            const result = {};
-            const lines = frontmatterText.split('\n');
-            let currentKey = '';
-            let multilineValue = '';
-            let inMultiline = false;
-
-            for (const line of lines) {
-                if (line.trim() === '') continue;
-
-                if (line.startsWith('  ') && inMultiline) {
-                    // 多行数据的一部分
-                    multilineValue += '\n' + line;
-                } else {
-                    if (inMultiline) {
-                        // 结束多行数据处理
-                        result[currentKey] = parseSimpleValue(multilineValue.trim());
-                        inMultiline = false;
-                    }
-
-                    const match = line.match(/^([^:]+):\s*(.*)/);
-                    if (match) {
-                        const key = match[1].trim();
-                        let value = match[2].trim();
-
-                        if (value === '' && line.endsWith(':')) {
-                            // 多行数组或对象的开始
-                            currentKey = key;
-                            inMultiline = true;
-                            multilineValue = line + '\n';
-                        } else {
-                            // 解析单行值
-                            result[key] = parseSimpleValue(value);
-                        }
-                    }
-                }
-            }
-
-            // 处理最后的多行值
-            if (inMultiline) {
-                result[currentKey] = parseSimpleValue(multilineValue);
-            }
-
-            return result;
-        }
-
-        // 解析简单值的辅助函数
-        function parseSimpleValue(value) {
-            if (value.startsWith('"') && value.endsWith('"')) {
-                return value.substring(1, value.length - 1);
-            } else if (value.startsWith("'") && value.endsWith("'")) {
-                return value.substring(1, value.length - 1);
-            } else if (value === 'true') {
-                return true;
-            } else if (value === 'false') {
-                return false;
-            } else if (!isNaN(value) && value.trim() !== '') {
-                const num = Number(value);
-                return isNaN(num) ? value : num;
-            } else if (value.startsWith('[') && value.endsWith(']')) {
-                // 解析数组
-                const arrayContent = value.substring(1, value.length - 1).trim();
-                if (arrayContent === '') return [];
-
-                const items = arrayContent.split(',').map(item => item.trim());
-                return items.map(item => {
-                    if (item.startsWith('"') && item.endsWith('"')) {
-                        return item.substring(1, item.length - 1);
-                    } else if (item.startsWith("'") && item.endsWith("'")) {
-                        return item.substring(1, item.length - 1);
-                    } else if (item === 'true') {
-                        return true;
-                    } else if (item === 'false') {
-                        return false;
-                    } else if (!isNaN(item)) {
-                        const num = Number(item);
-                        return isNaN(num) ? item : num;
-                    }
-                    return item;
-                });
-            } else {
-                return value;
-            }
         }
 
         // 为提交按钮添加事件监听器
@@ -1284,14 +1405,13 @@
                     console.log('文件不存在，将创建新文件');
                 }
 
-                // 使用可靠的方法正确编码内容以支持中文字符
-                const encoder = new TextEncoder();
-                const utf8Bytes = encoder.encode(content);
-                let binaryString = '';
-                for (let i = 0; i < utf8Bytes.length; i++) {
-                    binaryString += String.fromCharCode(utf8Bytes[i]);
+                // 正确编码内容，支持UTF-8编码
+                const uint8Array = new TextEncoder().encode(content);
+                let binary = '';
+                for (let i = 0; i < uint8Array.length; i++) {
+                  binary += String.fromCharCode(uint8Array[i]);
                 }
-                const base64Content = btoa(binaryString);
+                const base64Content = btoa(binary);
 
                 // 准备提交数据
                 const commitData = {
@@ -1319,25 +1439,29 @@
 
                 const resultData = await result.json();
 
-                if (!result.ok) {
-                    throw new Error(resultData.message || `HTTP ${result.status}: ${result.statusText}`);
-                }
+                hideFeedbackModal(); // 隐藏加载模态框
 
-                // 成功提交
-                hideFeedbackModal(); // 隐藏之前的加载模态框
-                showFeedbackModal('提交成功！');
-                setTimeout(() => {
-                    hideFeedbackModal();
-                    showSuccessModal('文件已成功提交到GitHub仓库！');
-                }, 1500);
+                if (result.ok) {
+                    // 成功提交
+                    hideFeedbackModal(); // 隐藏之前的加载模态框
+                    showFeedbackModal('提交成功！');
+                    setTimeout(() => {
+                        hideFeedbackModal();
+                        showSuccessModal('文件已成功提交到GitHub仓库！');
+                    }, 1500);
+                } else {
+                    console.error('提交失败:', resultData);
+                    if (resultData.message && resultData.message.includes('Bad credentials')) {
+                        localStorage.removeItem('github_access_token'); // 移除无效令牌
+                        alert('认证令牌无效或已过期，请重新输入');
+                    } else {
+                        alert('提交失败: ' + (resultData.message || JSON.stringify(resultData)));
+                    }
+                }
             } catch (error) {
                 hideFeedbackModal(); // 隐藏加载模态框
                 console.error('提交错误:', error);
-                if (error.message.includes('Bad credentials') || error.message.includes('401')) {
-                    localStorage.removeItem('github_access_token'); // 移除无效令牌
-                    alert('认证令牌无效或已过期，请重新输入');
-                    showTokenModal();
-                } else if (error.message.includes('fetch') || error.message.includes('network')) {
+                if (error.message.includes('fetch') || error.message.includes('network')) {
                     alert('网络连接错误，请检查网络连接后重试');
                 } else {
                     alert('提交过程中发生错误: ' + error.message);
@@ -1355,9 +1479,22 @@
                 return;
             }
 
+            // 隐藏模态框
+            hideTokenModal();
+
             // 如果选择保存令牌，则保存到本地存储
             if (saveToken) {
                 localStorage.setItem('github_access_token', token);
+            }
+
+            // 开始提交过程
+            const content = document.getElementById('markdownResult').textContent;
+            const fileName = document.getElementById('fileName').value;
+            const directory = document.getElementById('fileDirectory').value;
+
+            if (!content || !fileName) {
+                alert('请先生成内容并填写文件名');
+                return;
             }
 
             // 验证令牌
@@ -1385,19 +1522,7 @@
 
                 hideFeedbackModal(); // 隐藏验证模态框
 
-                // 隐藏模态框
-                hideTokenModal();
-
                 // 重新调用提交逻辑
-                const content = document.getElementById('markdownResult').textContent;
-                const fileName = document.getElementById('fileName').value;
-                const directory = document.getElementById('fileDirectory').value;
-
-                if (!content || !fileName) {
-                    alert('请先生成内容并填写文件名');
-                    return;
-                }
-
                 showFeedbackModal('正在提交文件到GitHub...');
 
                 const filePath = `${directory}/${fileName}`;
@@ -1419,14 +1544,13 @@
                     console.log('文件不存在，将创建新文件');
                 }
 
-                // 使用可靠的方法正确编码内容以支持中文字符
-                const encoder = new TextEncoder();
-                const utf8Bytes = encoder.encode(content);
-                let binaryString = '';
-                for (let i = 0; i < utf8Bytes.length; i++) {
-                    binaryString += String.fromCharCode(utf8Bytes[i]);
+                // 正确编码内容，支持UTF-8编码
+                const uint8Array = new TextEncoder().encode(content);
+                let binary = '';
+                for (let i = 0; i < uint8Array.length; i++) {
+                  binary += String.fromCharCode(uint8Array[i]);
                 }
-                const base64Content = btoa(binaryString);
+                const base64Content = btoa(binary);
 
                 // 准备提交数据
                 const commitData = {
@@ -1451,25 +1575,29 @@
 
                 const resultData = await result.json();
 
-                if (!result.ok) {
-                    throw new Error(resultData.message || `HTTP ${result.status}: ${result.statusText}`);
-                }
+                hideFeedbackModal(); // 隐藏加载模态框
 
-                // 成功提交
-                hideFeedbackModal(); // 隐藏之前的加载模态框
-                showFeedbackModal('提交成功！');
-                setTimeout(() => {
-                    hideFeedbackModal();
-                    showSuccessModal('文件已成功提交到GitHub仓库！');
-                }, 1500);
+                if (result.ok) {
+                    // 成功提交
+                    hideFeedbackModal(); // 隐藏之前的加载模态框
+                    showFeedbackModal('提交成功！');
+                    setTimeout(() => {
+                        hideFeedbackModal();
+                        showSuccessModal('文件已成功提交到GitHub仓库！');
+                    }, 1500);
+                } else {
+                    console.error('提交失败:', resultData);
+                    if (resultData.message && resultData.message.includes('Bad credentials')) {
+                        localStorage.removeItem('github_access_token'); // 移除无效令牌
+                        alert('认证令牌无效或已过期，请重新输入');
+                    } else {
+                        alert('提交失败: ' + (resultData.message || JSON.stringify(resultData)));
+                    }
+                }
             } catch (error) {
                 hideFeedbackModal(); // 隐藏加载模态框
                 console.error('提交错误:', error);
-                if (error.message.includes('Bad credentials') || error.message.includes('401')) {
-                    localStorage.removeItem('github_access_token'); // 移除无效令牌
-                    alert('认证令牌无效或已过期，请重新输入');
-                    showTokenModal();
-                } else if (error.message.includes('fetch') || error.message.includes('network')) {
+                if (error.message.includes('fetch') || error.message.includes('network')) {
                     alert('网络连接错误，请检查网络连接后重试');
                 } else {
                     alert('提交过程中发生错误: ' + error.message);
@@ -1500,382 +1628,6 @@
                 hideSuccessModal();
             }
         });
-
-        // 检查是否从内容管理器传递了编辑内容
-        function checkForEditContent() {
-            // 检查本地存储中是否有编辑内容
-            const editContent = localStorage.getItem('editContent');
-            const editType = localStorage.getItem('editingType');
-            const editSlug = localStorage.getItem('editingSlug');
-
-            if (editContent && editType) {
-                // 解析Frontmatter
-                const lines = editContent.split('\n');
-                let frontmatterStart = -1;
-                let frontmatterEnd = -1;
-
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].trim() === '---') {
-                        if (frontmatterStart === -1) {
-                            frontmatterStart = i;
-                        } else {
-                            frontmatterEnd = i;
-                            break;
-                        }
-                    }
-                }
-
-                if (frontmatterStart !== -1 && frontmatterEnd !== -1) {
-                    const frontmatterLines = lines.slice(frontmatterStart + 1, frontmatterEnd);
-                    const frontmatter = frontmatterLines.join('\n');
-                    const content = lines.slice(frontmatterEnd + 1).join('\n');
-
-                    // 解析frontmatter
-                    const parsedFrontmatter = parseFrontmatter(frontmatter);
-
-                    // 根据编辑类型决定使用哪个选项卡
-                    if (editType === 'diary') {
-                        document.getElementById('diaryTab').click();
-                    } else if (editType === 'album') {
-                        document.getElementById('albumTab').click();
-                    } else {
-                        document.getElementById('normalTab').click();
-                    }
-
-                    // 填充表单字段
-                    populateForm(parsedFrontmatter, content, editType, editSlug + '.md');
-
-                    // 清除localStorage中的编辑信息
-                    localStorage.removeItem('editContent');
-                    localStorage.removeItem('editingType');
-                    localStorage.removeItem('editingSlug');
-                    localStorage.removeItem('editingFilePath');
-                }
-            } else {
-                // 如果没有编辑内容，说明是创建新内容，使用默认值
-                document.getElementById('normalPublished').value = getCurrentDate();
-                document.getElementById('diaryDate').value = getCurrentDate();
-                document.getElementById('albumDate').value = getCurrentDate();
-                generateMarkdown('normal'); // 默认显示帖子格式
-            }
-        }
-
-        // 修正内容提交中的编码问题
-        function encodeContentForSubmission(content) {
-            // 使用TextEncoder来正确处理UTF-8编码
-            const encoder = new TextEncoder();
-            const data = encoder.encode(content);
-            // 正确转换为base64
-            let binary = '';
-            const len = data.byteLength;
-            for (let i = 0; i < len; i++) {
-              binary += String.fromCharCode(data[i]);
-            }
-            return btoa(binary);
-        }
-
-        // 修正内容解码显示问题
-        function decodeContentFromStorage(content) {
-            // 直接返回内容，不需要额外的解码，因为存储到localStorage时已经是正确的
-            return content;
-        }
-
-        // 解析Frontmatter的辅助函数
-        function parseFrontmatter(frontmatter) {
-            const result = {};
-            const lines = frontmatter.split('\n');
-            let currentKey = '';
-            let multilineValue = '';
-            let inMultiline = false;
-
-            for (const line of lines) {
-                if (line.trim() === '') continue;
-
-                if (line.startsWith('  ') && inMultiline) {
-                    // 这是多行数据的一部分
-                    multilineValue += '\n' + line;
-                } else {
-                    if (inMultiline) {
-                        // 结束多行数据处理
-                        result[currentKey] = parseMultilineValue(multilineValue);
-                        inMultiline = false;
-                    }
-
-                    const match = line.match(/^([^:]+):\s*(.*)/);
-                    if (match) {
-                        const key = match[1].trim();
-                        let value = match[2].trim();
-
-                        if (value === '' && line.endsWith(':')) {
-                            // 可能是多行数据的开始
-                            currentKey = key;
-                            inMultiline = true;
-                            multilineValue = line + '\n';
-                        } else {
-                            // 解析单行值
-                            result[key] = parseValue(value);
-                        }
-                    }
-                }
-            }
-
-            // 处理最后的多行值
-            if (inMultiline) {
-                result[currentKey] = parseMultilineValue(multilineValue);
-            }
-
-            return result;
-        }
-
-        // 解析值的辅助函数
-        function parseValue(value) {
-            if (value.startsWith('"') && value.endsWith('"')) {
-                return value.substring(1, value.length - 1);
-            } else if (value.startsWith("'") && value.endsWith("'")) {
-                return value.substring(1, value.length - 1);
-            } else if (value === 'true') {
-                return true;
-            } else if (value === 'false') {
-                return false;
-            } else if (!isNaN(value)) {
-                return Number(value);
-            } else if (value.startsWith('[') && value.endsWith(']')) {
-                // 简单解析数组
-                const arrayContent = value.substring(1, value.length - 1);
-                const items = arrayContent.split(',').map(item => item.trim());
-                return items.map(item => {
-                    if (item.startsWith('"') && item.endsWith('"')) {
-                        return item.substring(1, item.length - 1);
-                    } else if (item.startsWith("'") && item.endsWith("'")) {
-                        return item.substring(1, item.length - 1);
-                    }
-                    return item;
-                });
-            } else {
-                return value;
-            }
-        }
-
-        // 解析多行值的辅助函数
-        function parseMultilineValue(multilineValue) {
-            // 移除开头的键定义
-            const lines = multilineValue.split('\n');
-            const result = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                if (line.trim() === '') continue;
-
-                // 解析相册照片格式
-                if (line.trim().startsWith('-')) {
-                    const photo = {};
-                    // 偲测是相册照片格式
-                    if (line.includes('src:')) {
-                        const srcMatch = line.match(/src:\s*"([^"]*)"/);
-                        if (srcMatch) photo.src = srcMatch[1];
-                    }
-                    if (line.includes('alt:')) {
-                        const altMatch = line.match(/alt:\s*"([^"]*)"/);
-                        if (altMatch) photo.alt = altMatch[1];
-                    }
-                    if (line.includes('title:')) {
-                        const titleMatch = line.match(/title:\s*"([^"]*)"/);
-                        if (titleMatch) photo.title = titleMatch[1];
-                    }
-                    if (line.includes('description:')) {
-                        const descMatch = line.match(/description:\s*"([^"]*)"/);
-                        if (descMatch) photo.description = descMatch[1];
-                    }
-                    if (line.includes('date:')) {
-                        const dateMatch = line.match(/date:\s*"([^"]*)"/);
-                        if (dateMatch) photo.date = dateMatch[1];
-                    }
-                    if (line.includes('location:')) {
-                        const locationMatch = line.match(/location:\s*"([^"]*)"/);
-                        if (locationMatch) photo.location = locationMatch[1];
-                    }
-                    if (line.includes('width:')) {
-                        const widthMatch = line.match(/width:\s*(\d+)/);
-                        if (widthMatch) photo.width = parseInt(widthMatch[1]);
-                    }
-                    if (line.includes('height:')) {
-                        const heightMatch = line.match(/height:\s*(\d+)/);
-                        if (heightMatch) photo.height = parseInt(heightMatch[1]);
-                    }
-                    if (line.includes('camera:')) {
-                        const cameraMatch = line.match(/camera:\s*"([^"]*)"/);
-                        if (cameraMatch) photo.camera = cameraMatch[1];
-                    }
-                    if (line.includes('lens:')) {
-                        const lensMatch = line.match(/lens:\s*"([^"]*)"/);
-                        if (lensMatch) photo.lens = lensMatch[1];
-                    }
-                    if (line.includes('settings:')) {
-                        const settingsMatch = line.match(/settings:\s*"([^"]*)"/);
-                        if (settingsMatch) photo.settings = settingsMatch[1];
-                    }
-
-                    if (Object.keys(photo).length > 0) {
-                        result.push(photo);
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        // 填充表单的辅助函数
-        function populateForm(frontmatter, content, type, fileName) {
-            // 设置文件名
-            if (document.getElementById('fileName')) {
-                document.getElementById('fileName').value = fileName;
-            }
-
-            // 填充表单字段
-            switch(type) {
-                case 'diary':
-                    if (document.getElementById('diaryTitle')) document.getElementById('diaryTitle').value = frontmatter.title || '';
-                    if (document.getElementById('diaryDate')) document.getElementById('diaryDate').value = frontmatter.date || getCurrentDate();
-                    if (document.getElementById('diaryContent')) document.getElementById('diaryContent').value = content || '';
-
-                    // 处理图片
-                    if (frontmatter.images && Array.isArray(frontmatter.images) && frontmatter.images.length > 0) {
-                        if (document.getElementById('diaryUseImage')) {
-                            document.getElementById('diaryUseImage').checked = true;
-                            const section = document.getElementById('diaryImageSection');
-                            if (section) {
-                                section.classList.remove('hidden');
-                                setTimeout(() => section.classList.add('fade-in'), 1);
-                            }
-
-                            // 添加图片输入框
-                            frontmatter.images.forEach(image => {
-                                const container = document.getElementById('diaryImagesContainer');
-                                if (container) {
-                                    const inputDiv = document.createElement('div');
-                                    inputDiv.className = 'album-image-input fade-in';
-                                    inputDiv.innerHTML =
-                                        '<input type="text" name="diaryImage[]" value="' + image + '" placeholder="图片文件名或外部链接"' +
-                                            'class="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">' +
-                                        '<button type="button" class="remove-image bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg transition-smooth">' +
-                                            '<i class="fa fa-times" aria-hidden="true"></i>' +
-                                        '</button>';
-                                    container.appendChild(inputDiv);
-
-                                    // 添加删除功能
-                                    inputDiv.querySelector('.remove-image').addEventListener('click', function() {
-                                        const item = this.parentElement;
-                                        item.classList.add('fade-out');
-                                        setTimeout(() => item.remove(), 300);
-                                    });
-                                }
-                            });
-                        }
-                    }
-                    break;
-
-                case 'album':
-                    if (document.getElementById('albumTitle')) document.getElementById('albumTitle').value = frontmatter.title || '';
-                    if (document.getElementById('albumId')) document.getElementById('albumId').value = frontmatter.id || (frontmatter.title ? frontmatter.title.toLowerCase().replace(/\s+/g, '-') : 'new-album');
-                    if (document.getElementById('albumDate')) document.getElementById('albumDate').value = frontmatter.date || getCurrentDate();
-                    if (document.getElementById('albumDescription')) document.getElementById('albumDescription').value = frontmatter.description || '';
-                    if (document.getElementById('albumLocation')) document.getElementById('albumLocation').value = frontmatter.location || '';
-                    if (document.getElementById('albumTags') && frontmatter.tags && Array.isArray(frontmatter.tags)) {
-                        document.getElementById('albumTags').value = frontmatter.tags.join(', ');
-                    }
-                    if (document.getElementById('albumLayout')) document.getElementById('albumLayout').value = frontmatter.layout || 'grid';
-                    if (document.getElementById('albumColumns')) document.getElementById('albumColumns').value = frontmatter.columns || 3;
-                    if (document.getElementById('albumCover')) document.getElementById('albumCover').value = frontmatter.cover || '';
-
-                    // 处理隐藏属性
-                    if (document.getElementById('albumHidden') && frontmatter.hidden !== undefined) {
-                        document.getElementById('albumHidden').checked = frontmatter.hidden;
-                    }
-
-                    // 处理相册类型
-                    if (frontmatter.mode === 'external') {
-                        const externalRadio = document.querySelector('input[name="albumType"][value="external"]');
-                        if (externalRadio) externalRadio.click();
-                    }
-
-                    // 处理照片
-                    if (frontmatter.photos && Array.isArray(frontmatter.photos)) {
-                        const container = document.getElementById('photosContainer');
-                        if (container) {
-                            frontmatter.photos.forEach(photo => {
-                                const inputDiv = document.createElement('div');
-                                inputDiv.className = 'album-image-input fade-in';
-                                inputDiv.innerHTML =
-                                    '<input type="text" name="photoSrc[]" value="' + (photo.src || '') + '" placeholder="图片链接"' +
-                                        'class="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">' +
-                                    '<button type="button" class="remove-photo bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg transition-smooth">' +
-                                        '<i class="fa fa-times" aria-hidden="true"></i>' +
-                                    '</button>';
-                                container.appendChild(inputDiv);
-
-                                // 添加删除功能
-                                inputDiv.querySelector('.remove-photo').addEventListener('click', function() {
-                                    const item = this.parentElement;
-                                    item.classList.add('fade-out');
-                                    setTimeout(() => item.remove(), 300);
-                                });
-                            });
-                        }
-                    }
-                    break;
-
-                case 'post':
-                default:
-                    if (document.getElementById('normalTitle')) document.getElementById('normalTitle').value = frontmatter.title || '';
-                    if (document.getElementById('normalPublished')) document.getElementById('normalPublished').value = frontmatter.published || frontmatter.date || getCurrentDate();
-                    if (document.getElementById('normalDescription')) document.getElementById('normalDescription').value = frontmatter.description || '';
-                    if (document.getElementById('normalTags') && frontmatter.tags && Array.isArray(frontmatter.tags)) {
-                        document.getElementById('normalTags').value = frontmatter.tags.join(', ');
-                    }
-                    if (document.getElementById('normalCategory')) document.getElementById('normalCategory').value = frontmatter.category || '';
-
-                    // 处理图片
-                    if (frontmatter.image && document.getElementById('normalUseImage')) {
-                        document.getElementById('normalUseImage').checked = true;
-                        document.getElementById('normalImage').value = frontmatter.image;
-                        const section = document.getElementById('normalImageSection');
-                        if (section) {
-                            section.classList.remove('hidden');
-                            setTimeout(() => section.classList.add('fade-in'), 1);
-                        }
-                    }
-
-                    // 处理草稿
-                    if (frontmatter.draft !== undefined && document.getElementById('normalDraft')) {
-                        document.getElementById('normalDraft').checked = frontmatter.draft;
-                    }
-
-                    // 处理置顶
-                    if (frontmatter.pinned !== undefined && document.getElementById('normalPinned')) {
-                        document.getElementById('normalPinned').checked = frontmatter.pinned;
-                    }
-
-                    // 处理密码保护
-                    if (frontmatter.password && document.getElementById('normalUsePassword')) {
-                        document.getElementById('normalUsePassword').checked = true;
-                        document.getElementById('normalPassword').value = frontmatter.password;
-                        const section = document.getElementById('normalPasswordSection');
-                        if (section) {
-                            section.classList.remove('hidden');
-                            setTimeout(() => section.classList.add('fade-in'), 1);
-                        }
-                    }
-
-                    if (document.getElementById('normalContent')) document.getElementById('normalContent').value = content || '';
-                    break;
-            }
-
-            // 生成Markdown预览
-            generateMarkdown(type === 'post' ? 'normal' : type);
-        }
-
-        // 页面加载完成后检查是否有编辑内容
-        document.addEventListener('DOMContentLoaded', checkForEditContent);
 
         // 暴露函数给全局作用域
         window.getCurrentDate = getCurrentDate;

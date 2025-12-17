@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown文档生成工具（含相册管理功能）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        neutral: '#64748B',
+                        light: '#F8FAFC',
+                        dark: '#1E293B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            }
+            .transition-smooth {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            .tab-active {
+                border-bottom: 2px solid #4F46E5;
+                color: #4F46E5;
+                font-weight: 500;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .album-image-input {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen font-sans text-dark">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-primary mb-2 tracking-tight">
+                <i class="fa fa-file-text-o mr-3" aria-hidden="true"></i>Firef、文档生成器
+            </h1>
+            <p class="text-neutral text-lg max-w-2xl mx-auto">用于帖子文档与日记文档快速生成，支持为Doulor的博客帖子与日记编辑，新增相册管理功能。</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-2xl p-6 card-shadow transform hover:scale-[1.01] transition-smooth">
+                <div class="flex border-b border-slate-200 mb-6">
+                    <button id="normalTab" class="tab-btn py-2 px-6 text-left transition-smooth tab-active" data-target="normalForm">
+                        <i class="fa fa-file-text mr-2" aria-hidden="true"></i>帖子文档
+                    </button>
+                    <button id="diaryTab" class="tab-btn py-2 px-6 text-left text-neutral transition-smooth" data-target="diaryForm">
+                        <i class="fa fa-book mr-2" aria-hidden="true"></i>日记文档
+                    </button>
+                    <button id="albumTab" class="tab-btn py-2 px-6 text-left text-neutral transition-smooth" data-target="albumForm">
+                        <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>相册配置
+                    </button>
+                </div>
+
+                <!-- 帖子表单 -->
+                <form id="normalForm" class="form-content space-y-5">
+                    <div class="space-y-2">
+                        <label for="normalTitle" class="block text-sm font-medium text-neutral">标题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="normalTitle" name="normalTitle" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：我的中文帖子">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalPublished" class="block text-sm font-medium text-neutral">发布日期</label>
+                        <input type="date" id="normalPublished" name="normalPublished"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalDescription" class="block text-sm font-medium text-neutral">描述</label>
+                        <textarea id="normalDescription" name="normalDescription" rows="2"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth resize-none"
+                            placeholder="添加文档描述信息"></textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalTags" class="block text-sm font-medium text-neutral">标签 (用逗号分隔)</label>
+                        <input type="text" id="normalTags" name="normalTags"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：诗歌，测试">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="normalCategory" class="block text-sm font-medium text-neutral">分类</label>
+                        <input type="text" id="normalCategory" name="normalCategory"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：创作">
+                    </div>
+
+                    <!-- 所有复选框选项组合在一起 -->
+                    <div class="space-y-4 pt-2">
+                        <!-- 图片选项 -->
+                        <div>
+                            <div class="flex items-center space-x-2 mb-3">
+                                <input type="checkbox" id="normalUseImage" name="normalUseImage"
+                                    class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/50 transition-smooth">
+                                <label for="normalUseImage" class="text-sm font-medium text-neutral">添加封面图片</label>
+                            </div>
+                            <div id="normalImageSection" class="hidden pl-7 space-y-2 fade-in">
+                                <label for="normalImage" class="block text-sm font-medium text-neutral">图片文件名（含后缀）</label>
+                                <input type="text" id="normalImage" name="normalImage"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                                    placeholder="例如：online.jpg">
+                            </div>
+                        </div>
+
+                        <!-- 设为草稿 -->
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="normalDraft" name="normalDraft"
+                                class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/50 transition-smooth">
+                            <label for="normalDraft" class="text-sm font-medium text-neutral">设为草稿</label>
+                        </div>
+
+                        <!-- 密码保护 -->
+                        <div>
+                            <div class="flex items-center space-x-2 mb-3">
+                                <input type="checkbox" id="normalUsePassword" name="normalUsePassword"
+                                    class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/50 transition-smooth">
+                                <label for="normalUsePassword" class="text-sm font-medium text-neutral">设置密码保护</label>
+                            </div>
+                            <div id="normalPasswordSection" class="hidden pl-7 space-y-2 fade-in">
+                                <label for="normalPassword" class="block text-sm font-medium text-neutral">密码</label>
+                                <input type="text" id="normalPassword" name="normalPassword" value="666999"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                            </div>
+                        </div>
+
+                        <!-- 置顶帖子 -->
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="normalPinned" name="normalPinned"
+                                class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/50 transition-smooth">
+                            <label for="normalPinned" class="text-sm font-medium text-neutral">置顶帖子</label>
+                        </div>
+                    </div>
+                    <!-- 复选框组合结束 -->
+
+                    <div class="space-y-2 pt-3">
+                        <label for="normalContent" class="block text-sm font-medium text-neutral">正文内容</label>
+                        <textarea id="normalContent" name="normalContent" rows="6"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth resize-none"
+                            placeholder="请输入文档正文内容..."></textarea>
+                    </div>
+                    <div class="pt-4">
+                        <button type="submit" class="generate-btn w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-xl transition-smooth flex items-center justify-center" data-type="normal">
+                            <i class="fa fa-magic mr-2" aria-hidden="true"></i>生成帖子文档
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 日记表单 -->
+                <form id="diaryForm" class="form-content space-y-5 hidden">
+                    <div class="space-y-2">
+                        <label for="diaryTitle" class="block text-sm font-medium text-neutral">日记标题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="diaryTitle" name="diaryTitle" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：我的中文日记">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="diaryDate" class="block text-sm font-medium text-neutral">日记日期</label>
+                        <input type="date" id="diaryDate" name="diaryDate"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                    </div>
+                    <!-- 日记图片开关部分 -->
+                    <div class="pt-2">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <input type="checkbox" id="diaryUseImage" name="diaryUseImage"
+                                class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/50 transition-smooth">
+                            <label for="diaryUseImage" class="text-sm font-medium text-neutral">添加图片</label>
+                        </div>
+                        <div id="diaryImageSection" class="hidden pl-7 space-y-3 fade-in">
+                            <label class="block text-sm font-medium text-neutral">图片文件名（含后缀）</label>
+                            <div id="diaryImagesContainer" class="space-y-2">
+                                <!-- 图片输入框将动态添加到这里 -->
+                            </div>
+                            <button type="button" id="addImageBtn" class="text-sm text-primary hover:text-primary/80 transition-smooth flex items-center">
+                                <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 日记图片开关部分结束 -->
+                    <div class="space-y-2 pt-2">
+                        <label for="diaryContent" class="block text-sm font-medium text-neutral">日记内容</label>
+                        <textarea id="diaryContent" name="diaryContent" rows="8"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth resize-none"
+                            placeholder="今天天气很好..."></textarea>
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="generate-btn w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-xl transition-smooth flex items-center justify-center" data-type="diary">
+                            <i class="fa fa-book mr-2" aria-hidden="true"></i>生成日记文档
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 相册表单 -->
+                <form id="albumForm" class="form-content space-y-5 hidden">
+                    <div class="space-y-2">
+                        <label for="albumTitle" class="block text-sm font-medium text-neutral">相册标题 <span class="text-red-500">*</span></label>
+                        <input type="text" id="albumTitle" name="albumTitle" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：我的旅行相册">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumId" class="block text-sm font-medium text-neutral">相册ID <span class="text-red-500">*</span></label>
+                        <input type="text" id="albumId" name="albumId" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：my-travel-album (小写，用短横杠连接)">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumDate" class="block text-sm font-medium text-neutral">创建日期</label>
+                        <input type="date" id="albumDate" name="albumDate"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumDescription" class="block text-sm font-medium text-neutral">相册描述</label>
+                        <textarea id="albumDescription" name="albumDescription" rows="2"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth resize-none"
+                            placeholder="描述这个相册的内容..."></textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumLocation" class="block text-sm font-medium text-neutral">拍摄地点</label>
+                        <input type="text" id="albumLocation" name="albumLocation"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：日本，东京">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="albumTags" class="block text-sm font-medium text-neutral">标签 (用逗号分隔)</label>
+                        <input type="text" id="albumTags" name="albumTags"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="例如：旅行，风景，日本">
+                    </div>
+                    
+                    <!-- 相册选项 -->
+                    <div class="space-y-4 pt-2">
+                        <!-- 是否隐藏 -->
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="albumHidden" name="albumHidden"
+                                class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/50 transition-smooth">
+                            <label for="albumHidden" class="text-sm font-medium text-neutral">隐藏相册 (不会在相册列表显示)</label>
+                        </div>
+
+                        <!-- 相册类型 -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-neutral">相册类型</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="albumType" value="local" checked class="hidden">
+                                    <span id="localTypeBtn" class="radio-btn-local px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium transition-smooth hover:bg-slate-50">
+                                        本地图片
+                                    </span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="albumType" value="external" class="hidden">
+                                    <span id="externalTypeBtn" class="radio-btn-external px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium transition-smooth hover:bg-slate-50">
+                                        外部图片
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- 相册布局 -->
+                        <div class="space-y-2">
+                            <label for="albumLayout" class="block text-sm font-medium text-neutral">布局方式</label>
+                            <select id="albumLayout" name="albumLayout" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                                <option value="grid">网格布局</option>
+                                <option value="masonry">瀑布流布局</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 列数 -->
+                        <div class="space-y-2">
+                            <label for="albumColumns" class="block text-sm font-medium text-neutral">列数</label>
+                            <select id="albumColumns" name="albumColumns" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                                <option value="2">2列</option>
+                                <option value="3" selected>3列</option>
+                                <option value="4">4列</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 封面图片 -->
+                    <div class="space-y-2 pt-2">
+                        <label for="albumCover" class="block text-sm font-medium text-neutral">封面图片 <span class="text-red-500">*</span></label>
+                        <input type="text" id="albumCover" name="albumCover" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth"
+                            placeholder="本地相册: 封面图片文件名 (如: cover.jpg); 外部相册: 完整URL (如: https://example.com/image.jpg)">
+                    </div>
+                    
+                    <!-- 图片列表 - 仅在外部相册模式下显示 -->
+                    <div id="photosSection" class="space-y-2 pt-4 hidden">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-neutral">相册图片列表</label>
+                            <button type="button" id="addPhotoBtn" class="text-sm text-primary hover:text-primary/80 transition-smooth flex items-center">
+                                <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+                            </button>
+                        </div>
+                        <div id="photosContainer" class="space-y-3">
+                            <!-- 图片输入框将动态添加到这里 -->
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4">
+                        <button type="submit" class="generate-btn w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-xl transition-smooth flex items-center justify-center" data-type="album">
+                            <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>生成相册配置
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <h2 class="text-xl font-semibold mb-6 flex items-center">
+                    <i class="fa fa-eye text-primary mr-2" aria-hidden="true"></i>预览结果
+                </h2>
+                <div class="relative">
+                    <div id="resultContainer" class="bg-slate-50 rounded-xl p-5 font-mono text-sm overflow-auto max-h-[600px]">
+                        <pre id="markdownResult" class="text-slate-700">---
+title: "请选择选项卡并填写信息"
+date: 2025-09-29
+---
+
+请在左侧填写文档信息并点击生成按钮...</pre>
+                    </div>
+                    <button id="copyButton" class="absolute top-4 right-4 bg-white/80 hover:bg-white text-primary p-2 rounded-lg shadow-md transition-smooth opacity-70 hover:opacity-100">
+                        <i class="fa fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div id="copyMessage" class="hidden mt-3 text-sm text-center py-2 px-4 rounded-lg bg-secondary/10 text-secondary">
+                    <i class="fa fa-check mr-1" aria-hidden="true"></i>已复制到剪贴板
+                </div>
+                <div class="mt-4">
+                    <button id="downloadButton" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-6 rounded-xl transition-smooth flex items-center justify-center">
+                        <i class="fa fa-download mr-2" aria-hidden="true"></i>下载Markdown文件
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-neutral text-sm">
+            <p>Firef、文档生成工具 &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        let activeFormType = 'normal';
+        let photoCount = 0; // 用于为图片输入框分配唯一ID
+        
+        // 获取当前日期并格式化为YYYY-MM-DD
+        function getCurrentDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentDate = getCurrentDate();
+            
+            // 设置默认日期为当天
+            document.getElementById('normalPublished').value = currentDate;
+            document.getElementById('diaryDate').value = currentDate;
+            document.getElementById('albumDate').value = currentDate;
+            
+            // 更新预览中的日期
+            document.getElementById('markdownResult').textContent = `---
+title: "请选择选项卡并填写信息"
+date: ${currentDate}
+---
+
+请在左侧填写文档信息并点击生成按钮...`;
+
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const formContents = document.querySelectorAll('.form-content');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('tab-active'));
+                    btn.classList.add('tab-active');
+                    const target = btn.getAttribute('data-target');
+                    formContents.forEach(form => form.classList.add('hidden'));
+                    document.getElementById(target).classList.remove('hidden');
+                    activeFormType = target === 'normalForm' ? 'normal' : target === 'diaryForm' ? 'diary' : 'album';
+                    if (activeFormType === 'normal') generateNormalMarkdown();
+                    else if (activeFormType === 'diary') generateDiaryMarkdown();
+                    else generateAlbumMarkdown();
+                });
+            });
+
+            // 帖子图片开关事件监听
+            const normalUseImage = document.getElementById('normalUseImage');
+            const normalImageSection = document.getElementById('normalImageSection');
+            normalUseImage.addEventListener('change', () => {
+                normalUseImage.checked ? normalImageSection.classList.remove('hidden') : normalImageSection.classList.add('hidden');
+                generateNormalMarkdown();
+            });
+
+            // 帖子密码保护事件监听
+            const normalUsePassword = document.getElementById('normalUsePassword');
+            const normalPasswordSection = document.getElementById('normalPasswordSection');
+            normalUsePassword.addEventListener('change', () => {
+                normalUsePassword.checked ? normalPasswordSection.classList.remove('hidden') : normalPasswordSection.classList.add('hidden');
+                generateNormalMarkdown();
+            });
+
+            // 日记图片开关事件监听
+            const diaryUseImage = document.getElementById('diaryUseImage');
+            const diaryImageSection = document.getElementById('diaryImageSection');
+            diaryUseImage.addEventListener('change', () => {
+                if (diaryUseImage.checked) {
+                    diaryImageSection.classList.remove('hidden');
+                    // 确保至少有一个图片输入框
+                    if (document.querySelectorAll('.diary-image-input').length === 0) {
+                        addDiaryImageInput();
+                    }
+                } else {
+                    diaryImageSection.classList.add('hidden');
+                }
+                generateDiaryMarkdown();
+            });
+
+            // 添加图片按钮事件监听
+            document.getElementById('addImageBtn').addEventListener('click', addDiaryImageInput);
+            
+            // 监听相册类型切换事件（使用自定义按钮）
+            const albumTypeRadios = document.querySelectorAll('input[name="albumType"]');
+
+            // 初始化按钮样式
+            function initAlbumTypeButtons() {
+                const localTypeBtn = document.getElementById('localTypeBtn');
+                const externalTypeBtn = document.getElementById('externalTypeBtn');
+
+                // 设置初始样式
+                albumTypeRadios.forEach(radio => {
+                    if (radio.checked) {
+                        if (radio.value === 'local') {
+                            localTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                            localTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                            externalTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                            externalTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                        } else {
+                            externalTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                            externalTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                            localTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                            localTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                        }
+                    }
+                });
+            }
+
+            // 更新按钮样式和界面
+            function updateAlbumTypeInterface() {
+                const localTypeBtn = document.getElementById('localTypeBtn');
+                const externalTypeBtn = document.getElementById('externalTypeBtn');
+                const isExternal = document.querySelector('input[name="albumType"]:checked').value === 'external';
+                const photosSection = document.getElementById('photosSection');
+                const coverInput = document.getElementById('albumCover');
+
+                // 更新按钮样式
+                if (isExternal) {
+                    externalTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                    externalTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                    localTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                    localTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                } else {
+                    localTypeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                    localTypeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+                    externalTypeBtn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                    externalTypeBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                }
+
+                // 更新界面
+                if (isExternal) {
+                    photosSection.classList.remove('hidden');
+                    coverInput.placeholder = "外部相册封面URL (如: https://example.com/cover.jpg)";
+                    // 如果还没有图片输入框，添加一个
+                    if (document.querySelectorAll('#photosContainer > .image-input-container').length === 0) {
+                        addPhotoInput();
+                    }
+                } else {
+                    photosSection.classList.add('hidden');
+                    coverInput.placeholder = "本地相册封面文件名 (如: cover.jpg)";
+                }
+                generateAlbumMarkdown();
+            }
+
+            // 为自定义按钮添加事件监听器
+            document.getElementById('localTypeBtn').addEventListener('click', function() {
+                document.querySelector('input[value="local"]').checked = true;
+                updateAlbumTypeInterface();
+            });
+
+            document.getElementById('externalTypeBtn').addEventListener('click', function() {
+                document.querySelector('input[value="external"]').checked = true;
+                updateAlbumTypeInterface();
+            });
+
+            // 为隐藏的单选按钮也添加事件监听器
+            albumTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        updateAlbumTypeInterface();
+                    }
+                });
+            });
+
+            // 初始化按钮状态
+            initAlbumTypeButtons();
+
+            // 重新初始化状态，但只更新界面，不重复绑定事件
+            updateAlbumTypeInterface();
+
+            // 添加相册图片按钮事件监听
+            document.getElementById('addPhotoBtn').addEventListener('click', addPhotoInput);
+
+            // 输入变化时自动更新预览
+            document.querySelectorAll('#normalForm input, #normalForm textarea').forEach(input => {
+                input.addEventListener('input', generateNormalMarkdown);
+            });
+            document.querySelectorAll('#diaryForm input, #diaryForm textarea').forEach(input => {
+                input.addEventListener('input', generateDiaryMarkdown);
+            });
+            document.querySelectorAll('#albumForm input, #albumForm textarea, #albumForm select, #albumForm [type="radio"]').forEach(input => {
+                input.addEventListener('input', generateAlbumMarkdown);
+                input.addEventListener('change', generateAlbumMarkdown);
+            });
+
+            // 表单提交处理
+            document.querySelectorAll('#normalForm, #diaryForm, #albumForm').forEach(form => {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const type = form.id === 'normalForm' ? 'normal' : form.id === 'diaryForm' ? 'diary' : 'album';
+                    if (type === 'normal') generateNormalMarkdown();
+                    else if (type === 'diary') generateDiaryMarkdown();
+                    else generateAlbumMarkdown();
+                    const resultContainer = document.getElementById('resultContainer');
+                    resultContainer.classList.add('ring-2', `ring-${type === 'normal' ? 'primary' : type === 'diary' ? 'secondary' : 'purple-500'}/30`);
+                    setTimeout(() => resultContainer.classList.remove('ring-2', `ring-${type === 'normal' ? 'primary' : type === 'diary' ? 'secondary' : 'purple-500'}/30`), 1000);
+                });
+            });
+
+            // 复制功能
+            document.getElementById('copyButton').addEventListener('click', () => {
+                navigator.clipboard.writeText(document.getElementById('markdownResult').textContent).then(() => {
+                    const msg = document.getElementById('copyMessage');
+                    msg.classList.remove('hidden');
+                    setTimeout(() => msg.classList.add('hidden'), 2000);
+                });
+            });
+
+            // 下载功能
+            document.getElementById('downloadButton').addEventListener('click', () => {
+                const text = document.getElementById('markdownResult').textContent;
+                let title = activeFormType === 'normal'
+                    ? document.getElementById('normalTitle').value || '普通文档'
+                    : activeFormType === 'diary'
+                    ? document.getElementById('diaryTitle').value || '日记文档'
+                    : document.getElementById('albumId').value || document.getElementById('albumTitle').value || '相册配置';
+
+                // 替换Windows/macOS不允许的文件名特殊字符
+                const invalidChars = /[\\/:*?"<>|]/g;
+                const filename = `${title.replace(invalidChars, '-')}.md`;
+
+                // UTF-8编码的Blob
+                const blob = new Blob([text], { type: 'text/markdown; charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+
+            generateNormalMarkdown();
+        });
+
+        // 添加日记图片输入框
+        function addDiaryImageInput() {
+            const container = document.getElementById('diaryImagesContainer');
+            const imageInputDiv = document.createElement('div');
+            imageInputDiv.className = 'flex items-center space-x-2';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'flex-1 diary-image-input px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth';
+            input.placeholder = '例如：image.jpg';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'text-red-500 hover:text-red-700 transition-smooth p-2';
+            deleteBtn.innerHTML = '<i class="fa fa-trash" aria-hidden="true"></i>';
+            deleteBtn.addEventListener('click', function() {
+                container.removeChild(imageInputDiv);
+                generateDiaryMarkdown();
+            });
+            
+            imageInputDiv.appendChild(input);
+            imageInputDiv.appendChild(deleteBtn);
+            container.appendChild(imageInputDiv);
+            
+            // 监听输入变化
+            input.addEventListener('input', generateDiaryMarkdown);
+            
+            generateDiaryMarkdown();
+        }
+
+        // 添加相册图片输入框
+        function addPhotoInput() {
+            const container = document.getElementById('photosContainer');
+            const photoInputDiv = document.createElement('div');
+            photoInputDiv.className = 'image-input-container relative bg-slate-50 p-3 rounded-lg border border-slate-200 mb-3';
+
+            const srcInput = document.createElement('input');
+            srcInput.type = 'text';
+            srcInput.className = 'w-full px-3 py-2 pr-10 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth';
+            srcInput.placeholder = '外部图片链接 (必需，如: https://example.com/image.jpg)';
+            srcInput.required = true;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'absolute right-3 top-3 text-red-500 hover:text-red-700 transition-smooth p-1.5 rounded-md hover:bg-red-50 cursor-pointer';
+            deleteBtn.innerHTML = '<i class="fa fa-trash" aria-hidden="true"></i>';
+            deleteBtn.title = "删除此图片";
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation(); // 防止事件冒泡
+                container.removeChild(photoInputDiv);
+                generateAlbumMarkdown();
+            });
+
+            // 将所有元素添加到容器
+            photoInputDiv.appendChild(srcInput);
+            photoInputDiv.appendChild(deleteBtn);
+
+            container.appendChild(photoInputDiv);
+
+            // 监听输入变化
+            srcInput.addEventListener('input', generateAlbumMarkdown);
+
+            generateAlbumMarkdown();
+        }
+
+        // 生成帖子Markdown
+        function generateNormalMarkdown() {
+            const title = document.getElementById('normalTitle').value || '未命名文档';
+            const published = document.getElementById('normalPublished').value || getCurrentDate();
+            const useImage = document.getElementById('normalUseImage').checked;
+            const imageName = document.getElementById('normalImage').value || '';
+            const description = document.getElementById('normalDescription').value || '';
+            const tags = document.getElementById('normalTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const category = document.getElementById('normalCategory').value || '';
+            const draft = document.getElementById('normalDraft').checked;
+            const usePassword = document.getElementById('normalUsePassword').checked;
+            const password = document.getElementById('normalPassword').value || '666999';
+            const content = document.getElementById('normalContent').value || '';
+
+            let markdown = '---\n';
+            markdown += `title: "${title}"\n`;
+            markdown += `published: ${published}\n`;
+            // 帖子图片路径格式: image: "/image/posts/xxx"
+            if (useImage && imageName) {
+                markdown += `image: "/image/posts/${imageName}"\n`;
+            }
+            if (description) markdown += `description: "${description}"\n`;
+            markdown += `tags: ${tags.length ? `["${tags.join('", "')}"]` : '[]'}\n`;
+            if (category) markdown += `category: "${category}"\n`;
+            markdown += `draft: ${draft}\n`;
+            if (document.getElementById('normalPinned').checked) markdown += `pinned: true\n`;
+            if (usePassword) {
+                markdown += `encrypted: true\n`;
+                markdown += `password: "${password}"\n`;
+            }
+            markdown += '---\n\n';
+            markdown += content;
+            document.getElementById('markdownResult').textContent = markdown;
+        }
+
+        // 生成日记Markdown
+        function generateDiaryMarkdown() {
+            const title = document.getElementById('diaryTitle').value || '未命名日记';
+            const date = document.getElementById('diaryDate').value || getCurrentDate();
+            const useImage = document.getElementById('diaryUseImage').checked;
+            const content = document.getElementById('diaryContent').value || '今天没有记录内容...';
+            
+            // 获取所有图片输入框的值
+            const imageInputs = document.querySelectorAll('.diary-image-input');
+            const images = Array.from(imageInputs)
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+
+            let markdown = '---\n';
+            markdown += `title: "${title}"\n`;
+            markdown += `date: ${date}\n`;
+            // 日记图片格式: images: ["aaa","bbb","ccc"]
+            if (useImage && images.length > 0) {
+                markdown += `images: ${JSON.stringify(images)}\n`;
+            }
+            markdown += '---\n\n';
+            markdown += content;
+            document.getElementById('markdownResult').textContent = markdown;
+        }
+
+        // 生成相册Markdown
+        function generateAlbumMarkdown() {
+            const title = document.getElementById('albumTitle').value || '未命名相册';
+            const albumId = document.getElementById('albumId').value || 'unnamed-album';
+            const date = document.getElementById('albumDate').value || getCurrentDate();
+            const description = document.getElementById('albumDescription').value || '';
+            const location = document.getElementById('albumLocation').value || '';
+            const tags = document.getElementById('albumTags').value.split(',').map(t => t.trim()).filter(t => t);
+            const hidden = document.getElementById('albumHidden').checked;
+            const layout = document.getElementById('albumLayout').value || 'grid';
+            const columns = parseInt(document.getElementById('albumColumns').value) || 3;
+            const cover = document.getElementById('albumCover').value || '';
+            // 通过隐藏的单选按钮获取当前相册类型
+            const isExternal = document.querySelector('input[name="albumType"]:checked').value === 'external';
+
+            // 获取所有图片输入框的值
+            const photoContainers = document.querySelectorAll('#photosContainer > .image-input-container');
+            const photos = [];
+
+            photoContainers.forEach((container, index) => {
+                const src = container.children[0].value.trim(); // 图片链接
+
+                if (src) { // 只有当src不为空时才添加到相册
+                    const photo = {};
+                    photo.src = src;
+                    photos.push(photo);
+                }
+            });
+
+            let markdown = '---\n';
+            markdown += `title: "${title}"\n`;
+            markdown += `date: ${date}\n`;
+            markdown += `hidden: ${hidden}\n`;
+            if (description) markdown += `description: "${description}"\n`;
+            if (location) markdown += `location: "${location}"\n`;
+            if (tags.length > 0) markdown += `tags: ["${tags.join('", "')}"]\n`;
+            markdown += `layout: "${layout}"\n`;
+            markdown += `columns: ${columns}\n`;
+            if (cover) {
+                // 根据相册类型决定封面路径格式
+                if (isExternal) {
+                    // 外部相册：直接使用提供的URL
+                    markdown += `cover: "${cover}"\n`;
+                } else {
+                    // 本地相册：构建完整路径
+                    markdown += `cover: "/images/albums/${albumId}/${cover}"\n`;
+                }
+            }
+
+            if (isExternal) {
+                markdown += `mode: "external"\n`;
+                // 外部相册无论是否有图片都应该包含 photos 字段
+                markdown += 'photos: [\n';
+                if (photos.length > 0) {
+                    photos.forEach((photo, index) => {
+                        markdown += '  {\n';
+                        markdown += `    src: "${photo.src}"\n`;
+                        markdown += '  }';
+                        if (index < photos.length - 1) {
+                            markdown += ',';
+                        }
+                        markdown += '\n';
+                    });
+                }
+                markdown += ']\n';
+            }
+
+            markdown += '---\n\n';
+            markdown += `${title} 相冊`;
+            
+            document.getElementById('markdownResult').textContent = markdown;
+        }
+    </script>
+</body>
+</html>

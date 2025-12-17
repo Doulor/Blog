@@ -708,10 +708,18 @@ ${content}`;
                     console.log('文件不存在，将创建新文件');
                 }
                 
+                // 正确编码内容，支持UTF-8编码
+                const uint8Array = new TextEncoder().encode(content);
+                let binary = '';
+                for (let i = 0; i < uint8Array.length; i++) {
+                  binary += String.fromCharCode(uint8Array[i]);
+                }
+                const base64Content = btoa(binary);
+
                 // 准备提交数据
                 const commitData = {
                     message: `添加/更新 ${filePath}`,
-                    content: btoa(unescape(encodeURIComponent(content))),
+                    content: base64Content,
                     branch: 'main'
                 };
                 

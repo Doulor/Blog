@@ -171,7 +171,6 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
-		// 支持自定义导航栏链接,并且支持多级菜单,3.1版本新加
 		{
 			name: "链接",
 			url: "/links/",
@@ -203,7 +202,7 @@ export const navBarConfig: NavBarConfig = {
 				},
 			],
 		},
-	    {
+		{
 			name: "个人",
 			url: "/content/",
 			icon: "material-symbols:person",
@@ -217,12 +216,29 @@ export const navBarConfig: NavBarConfig = {
 			],
 		},
 		{
+			name: "内容管理器",
+			url: "/content-manager/",
+			icon: "mdi:file-table-box-multiple",
+			children: [
+				{
+					name: "管理内容",
+					url: "/content-manager/",
+					icon: "mdi:file-document-edit",
+				},
+				{
+					name: "创建内容",
+					url: "/create-content/",
+					icon: "mdi:file-plus",
+				},
+			],
+		},
+		{
 			name: "关于",
-			url: "/content/",
+			url: "/about/",
 			icon: "material-symbols:info",
 			children: [LinkPreset.About],
 		},
-		
+
 	],
 };
 

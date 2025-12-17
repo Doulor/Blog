@@ -1,0 +1,873 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+---
+
+<MainGridLayout title="内容创建器" description="创建新博客文章、日记和相册">
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+      <header class="mb-8">
+        <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
+          内容创建器
+        </h1>
+        <p class="text-neutral-600 dark:text-neutral-400">
+          创建新的博客文章、日记或相册
+        </p>
+      </header>
+
+      <!-- 认证状态 -->
+      <div class="mb-8 p-4 rounded-xl bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 border border-green-200 dark:border-green-800">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-medium text-lg">GitHub认证状态</h3>
+            <p id="create-auth-status" class="text-sm text-gray-600 dark:text-gray-400">未认证</p>
+          </div>
+          <button id="create-auth-btn" class="btn-card h-12 px-4 rounded-lg">
+            <span id="create-auth-btn-text">登录</span>
+          </button>
+        </div>
+
+        <!-- GitHub Token 输入模态框 -->
+        <div id="create-auth-modal" class="absolute inset-0 bg-black bg-opacity-0 flex items-start justify-center z-50 hidden transition-opacity ease-out duration-500">
+          <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 w-full max-w-md shadow-2xl mt-16 opacity-0 transition-all ease-out duration-500 scale-95">
+            <h3 class="text-lg font-semibold mb-4 text-neutral-900 dark:text-neutral-100">GitHub Personal Access Token</h3>
+            <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+              请输入您的GitHub Personal Access Token。该Token仅在本地存储，用于访问您的仓库。
+            </p>
+            <div class="mb-4">
+              <input
+                type="password"
+                id="create-token-input"
+                placeholder="输入您的Personal Access Token"
+                class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              >
+            </div>
+            <div class="flex justify-end space-x-3">
+              <button id="cancel-create-auth-btn" class="btn-card h-10 px-4 rounded-lg bg-gray-500 hover:bg-gray-600 text-white">
+                取消
+              </button>
+              <button id="confirm-create-auth-btn" class="btn-card h-10 px-4 rounded-lg bg-green-600 hover:bg-green-700 text-white">
+                确认
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 加载状态 -->
+      <div id="create-loading-indicator" class="hidden flex justify-center items-center mb-6">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
+        <span class="ml-3 text-neutral-600 dark:text-neutral-400">处理中...</span>
+      </div>
+
+      <!-- 提示信息 -->
+      <div id="create-message-area" class="mb-6 hidden">
+        <div id="create-info-message" class="p-4 rounded-lg bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-200 dark:border-blue-800"></div>
+        <div id="create-error-message" class="p-4 rounded-lg bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200 border border-red-200 dark:border-red-800 mt-2 hidden"></div>
+      </div>
+
+      <!-- 内容类型选择 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="content-type-card cursor-pointer" data-type="post">
+          <div class="card-base p-6 text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+              <i class="fa fa-file-text text-2xl text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">创建文章</h3>
+            <p class="text-sm text-neutral-600 dark:text-neutral-400">撰写新的博客文章</p>
+          </div>
+        </div>
+
+        <div class="content-type-card cursor-pointer" data-type="diary">
+          <div class="card-base p-6 text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+              <i class="fa fa-book text-2xl text-green-600 dark:text-green-400"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">创建日记</h3>
+            <p class="text-sm text-neutral-600 dark:text-neutral-400">记录生活点滴</p>
+          </div>
+        </div>
+
+        <div class="content-type-card cursor-pointer" data-type="album">
+          <div class="card-base p-6 text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+              <i class="fa fa-picture-o text-2xl text-purple-600 dark:text-purple-400"></i>
+            </div>
+            <h3 class="font-bold text-lg mb-2">创建相册</h3>
+            <p class="text-sm text-neutral-600 dark:text-neutral-400">整理图片集锦</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文章创建表单 -->
+      <div id="create-post-form" class="create-form hidden">
+        <h2 class="text-2xl font-semibold mb-6">创建新文章</h2>
+        <form id="post-create-form" class="space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <div class="space-y-6">
+                <div>
+                  <label for="create-post-title" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">标题</label>
+                  <input
+                    type="text"
+                    id="create-post-title"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="文章标题"
+                  />
+                </div>
+
+                <div>
+                  <label for="create-post-content" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">内容</label>
+                  <textarea
+                    id="create-post-content"
+                    rows="20"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-mono text-sm"
+                    placeholder="使用Markdown格式编写内容..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="card-base p-5">
+                <h3 class="font-semibold text-lg mb-4">文章设置</h3>
+
+                <div class="space-y-4">
+                  <div>
+                    <label for="create-post-date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">发布日期</label>
+                    <input
+                      type="date"
+                      id="create-post-date"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label for="create-post-description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">描述</label>
+                    <textarea
+                      id="create-post-description"
+                      rows="3"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="文章描述..."
+                    ></textarea>
+                  </div>
+
+                  <div>
+                    <label for="create-post-category" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">分类</label>
+                    <input
+                      type="text"
+                      id="create-post-category"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="文章分类"
+                    />
+                  </div>
+
+                  <div>
+                    <label for="create-post-tags" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">标签</label>
+                    <input
+                      type="text"
+                      id="create-post-tags"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="用逗号分隔的标签"
+                    />
+                  </div>
+
+                  <div class="flex items-center">
+                    <input type="checkbox" id="create-post-draft" class="h-4 w-4 text-[var(--primary)] border-neutral-300 rounded focus:ring-[var(--primary)]">
+                    <label for="create-post-draft" class="ml-2 text-sm text-neutral-700 dark:text-neutral-300">草稿</label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input type="checkbox" id="create-post-pinned" class="h-4 w-4 text-[var(--primary)] border-neutral-300 rounded focus:ring-[var(--primary)]">
+                    <label for="create-post-pinned" class="ml-2 text-sm text-neutral-700 dark:text-neutral-300">置顶</label>
+                  </div>
+
+                  <div class="pt-4">
+                    <label for="create-post-filename" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">文件名</label>
+                    <input
+                      type="text"
+                      id="create-post-filename"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="例如: 2025-01-01-my-new-post.md"
+                    />
+                    <p class="text-xs text-neutral-500 dark:text-neutral-500 mt-1">请包含正确的文件扩展名(.md)</p>
+                  </div>
+
+                  <div class="pt-4">
+                    <button type="button" id="submit-post-btn" class="w-full btn-card h-12 rounded-lg">创建文章</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- 日记创建表单 -->
+      <div id="create-diary-form" class="create-form hidden">
+        <h2 class="text-2xl font-semibold mb-6">创建新日记</h2>
+        <form id="diary-create-form" class="space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <div class="space-y-6">
+                <div>
+                  <label for="create-diary-title" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">标题</label>
+                  <input
+                    type="text"
+                    id="create-diary-title"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="日记标题"
+                  />
+                </div>
+
+                <div>
+                  <label for="create-diary-content" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">内容</label>
+                  <textarea
+                    id="create-diary-content"
+                    rows="20"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-mono text-sm"
+                    placeholder="记录今日..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="card-base p-5">
+                <h3 class="font-semibold text-lg mb-4">日记设置</h3>
+
+                <div class="space-y-4">
+                  <div>
+                    <label for="create-diary-date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">日期</label>
+                    <input
+                      type="date"
+                      id="create-diary-date"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label for="create-diary-tags" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">标签</label>
+                    <input
+                      type="text"
+                      id="create-diary-tags"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="用逗号分隔的标签"
+                    />
+                  </div>
+
+                  <div class="pt-4">
+                    <label for="create-diary-filename" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">文件名</label>
+                    <input
+                      type="text"
+                      id="create-diary-filename"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="例如: 2025-01-01-diary-entry.md"
+                    />
+                    <p class="text-xs text-neutral-500 dark:text-neutral-500 mt-1">请包含正确的文件扩展名(.md)</p>
+                  </div>
+
+                  <div class="pt-4">
+                    <button type="button" id="submit-diary-btn" class="w-full btn-card h-12 rounded-lg">创建日记</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- 相册创建表单 -->
+      <div id="create-album-form" class="create-form hidden">
+        <h2 class="text-2xl font-semibold mb-6">创建新相册</h2>
+        <form id="album-create-form" class="space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <div class="space-y-6">
+                <div>
+                  <label for="create-album-title" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">相册标题</label>
+                  <input
+                    type="text"
+                    id="create-album-title"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="相册标题"
+                  />
+                </div>
+
+                <div>
+                  <label for="create-album-description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">描述</label>
+                  <textarea
+                    id="create-album-description"
+                    rows="4"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="相册描述..."
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">照片</label>
+                  <div id="create-photos-container" class="space-y-3">
+                    <div class="photo-input-group flex items-center gap-3">
+                      <input
+                        type="text"
+                        name="photo-src[]"
+                        placeholder="照片URL"
+                        class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      />
+                      <button type="button" class="remove-photo btn-card h-12 px-4 rounded-lg text-red-500">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <button type="button" id="add-photo-field" class="mt-3 btn-card h-12 px-4 rounded-lg">
+                    <i class="fa fa-plus mr-2" aria-hidden="true"></i>添加照片
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="card-base p-5">
+                <h3 class="font-semibold text-lg mb-4">相册设置</h3>
+
+                <div class="space-y-4">
+                  <div>
+                    <label for="create-album-date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">日期</label>
+                    <input
+                      type="date"
+                      id="create-album-date"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label for="create-album-location" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">地点</label>
+                    <input
+                      type="text"
+                      id="create-album-location"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="拍摄地点"
+                    />
+                  </div>
+
+                  <div>
+                    <label for="create-album-tags" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">标签</label>
+                    <input
+                      type="text"
+                      id="create-album-tags"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="用逗号分隔的标签"
+                    />
+                  </div>
+
+                  <div class="pt-4">
+                    <label for="create-album-filename" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">文件名</label>
+                    <input
+                      type="text"
+                      id="create-album-filename"
+                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder="例如: 2025-01-01-my-trip-album.md"
+                    />
+                    <p class="text-xs text-neutral-500 dark:text-neutral-500 mt-1">请包含正确的文件扩展名(.md)</p>
+                  </div>
+
+                  <div class="pt-4">
+                    <button type="button" id="submit-album-btn" class="w-full btn-card h-12 rounded-lg">创建相册</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<script>
+  // 管理认证状态
+  let githubToken = localStorage.getItem('github_access_token') || null;
+
+  // 更新认证状态显示
+  function updateCreateAuthStatus() {
+    const authStatus = document.getElementById('create-auth-status');
+    const authBtnText = document.getElementById('create-auth-btn-text');
+
+    if (githubToken) {
+      authStatus.textContent = '已认证';
+      authBtnText.textContent = '退出';
+    } else {
+      authStatus.textContent = '未认证';
+      authBtnText.textContent = '登录';
+    }
+  }
+
+  // 显示信息
+  function showCreateMessage(message, type = 'info') {
+    const messageArea = document.getElementById('create-message-area');
+    const infoMessage = document.getElementById('create-info-message');
+    const errorMessage = document.getElementById('create-error-message');
+    
+    messageArea.classList.remove('hidden');
+    
+    if (type === 'info') {
+      infoMessage.textContent = message;
+      infoMessage.classList.remove('hidden');
+      errorMessage.classList.add('hidden');
+    } else if (type === 'error') {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove('hidden');
+      infoMessage.classList.add('hidden');
+    }
+  }
+
+  // 隐藏信息
+  function hideCreateMessage() {
+    document.getElementById('create-message-area').classList.add('hidden');
+    document.getElementById('info-message').classList.add('hidden');
+    document.getElementById('error-message').classList.add('hidden');
+  }
+
+  // 显示加载指示器
+  function showCreateLoading() {
+    document.getElementById('create-loading-indicator').classList.remove('hidden');
+  }
+
+  // 隐藏加载指示器
+  function hideCreateLoading() {
+    document.getElementById('create-loading-indicator').classList.add('hidden');
+  }
+
+  // 内容类型选择事件
+  document.querySelectorAll('.content-type-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const type = this.getAttribute('data-type');
+
+      // 隐藏所有表单
+      document.querySelectorAll('.create-form').forEach(form => {
+        form.classList.add('hidden');
+      });
+
+      // 显示选定类型的表单
+      document.getElementById('create-' + type + '-form').classList.remove('hidden');
+
+      // 设置当前日期
+      const today = new Date().toISOString().split('T')[0];
+      if (type === 'post') {
+        document.getElementById('create-post-date').value = today;
+      } else if (type === 'diary') {
+        document.getElementById('create-diary-date').value = today;
+      } else if (type === 'album') {
+        document.getElementById('create-album-date').value = today;
+      }
+    });
+  });
+
+  // 添加照片输入框
+  document.getElementById('add-photo-field').addEventListener('click', function() {
+    const container = document.getElementById('create-photos-container');
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'photo-input-group flex items-center gap-3 mt-3';
+    inputGroup.innerHTML = `
+      <input
+        type="text"
+        name="photo-src[]"
+        placeholder="照片URL"
+        class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+      />
+      <button type="button" class="remove-photo btn-card h-12 px-4 rounded-lg text-red-500">
+        <i class="fa fa-trash" aria-hidden="true"></i>
+      </button>
+    `;
+    container.appendChild(inputGroup);
+  });
+
+  // 删除照片输入框
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-photo')) {
+      e.target.closest('.photo-input-group').remove();
+    }
+  });
+
+  // 生成Frontmatter
+  function generateFrontmatter(metadata) {
+    const lines = ['---'];
+    for (const [key, value] of Object.entries(metadata)) {
+      if (Array.isArray(value)) {
+        lines.push(`${key}: [${value.map(v => `"${v}"`).join(', ')}]`);
+      } else if (typeof value === 'string') {
+        lines.push(`${key}: "${value}"`);
+      } else {
+        lines.push(`${key}: ${value}`);
+      }
+    }
+    lines.push('---', '');
+    return lines.join('\\n');
+  }
+
+  // 创建文章
+  document.getElementById('submit-post-btn').addEventListener('click', async function() {
+    if (!githubToken) {
+      showCreateMessage('请先进行GitHub认证');
+      return;
+    }
+
+    const title = document.getElementById('create-post-title').value;
+    const content = document.getElementById('create-post-content').value;
+    const date = document.getElementById('create-post-date').value;
+    const description = document.getElementById('create-post-description').value;
+    const category = document.getElementById('create-post-category').value;
+    const tags = document.getElementById('create-post-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const isDraft = document.getElementById('create-post-draft').checked;
+    const isPinned = document.getElementById('create-post-pinned').checked;
+    const fileName = document.getElementById('create-post-filename').value;
+
+    if (!title || !content || !fileName) {
+      showCreateMessage('请填写必填字段：标题、内容和文件名', 'error');
+      return;
+    }
+
+    showCreateLoading();
+
+    try {
+      // 构建Frontmatter
+      const metadata = {
+        title: title,
+        published: date,
+        description: description,
+        category: category,
+        tags: tags,
+        draft: isDraft,
+        pinned: isPinned
+      };
+
+      const frontmatter = generateFrontmatter(metadata);
+      const fullContent = frontmatter + content;
+
+      // 创建文件路径
+      const filePath = 'src/content/posts/' + fileName;
+
+      // 提交到GitHub
+      const response = await fetch('https://api.github.com/repos/Doulor/Blog/contents/' + filePath, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + githubToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `添加新文章 ${filePath} [通过内容管理器]`,
+          // 正确编码内容，支持UTF-8编码
+          content: (() => {
+            const uint8Array = new TextEncoder().encode(fullContent);
+            let binary = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+              binary += String.fromCharCode(uint8Array[i]);
+            }
+            return btoa(binary);
+          })()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '创建失败');
+      }
+
+      showCreateMessage('文章创建成功！');
+      
+      // 重置表单
+      document.getElementById('post-create-form').reset();
+      document.getElementById('create-post-date').value = new Date().toISOString().split('T')[0];
+    } catch (error) {
+      console.error('创建文章时出错:', error);
+      showCreateMessage('创建文章失败: ' + error.message, 'error');
+    } finally {
+      hideCreateLoading();
+    }
+  });
+
+  // 创建日记
+  document.getElementById('submit-diary-btn').addEventListener('click', async function() {
+    if (!githubToken) {
+      showCreateMessage('请先进行GitHub认证');
+      return;
+    }
+
+    const title = document.getElementById('create-diary-title').value;
+    const content = document.getElementById('create-diary-content').value;
+    const date = document.getElementById('create-diary-date').value;
+    const tags = document.getElementById('create-diary-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const fileName = document.getElementById('create-diary-filename').value;
+
+    if (!title || !content || !fileName) {
+      showCreateMessage('请填写必填字段：标题、内容和文件名', 'error');
+      return;
+    }
+
+    showCreateLoading();
+
+    try {
+      // 构建Frontmatter
+      const metadata = {
+        title: title,
+        date: date,
+        tags: tags
+      };
+
+      const frontmatter = generateFrontmatter(metadata);
+      const fullContent = frontmatter + content;
+
+      // 创建文件路径
+      const filePath = 'src/content/diary/' + fileName;
+
+      // 提交到GitHub
+      const response = await fetch('https://api.github.com/repos/Doulor/Blog/contents/' + filePath, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + githubToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `添加新日记 ${filePath} [通过内容管理器]`,
+          // 正确编码内容，支持UTF-8编码
+          content: (() => {
+            const uint8Array = new TextEncoder().encode(fullContent);
+            let binary = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+              binary += String.fromCharCode(uint8Array[i]);
+            }
+            return btoa(binary);
+          })()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '创建失败');
+      }
+
+      showCreateMessage('日记创建成功！');
+      
+      // 重置表单
+      document.getElementById('diary-create-form').reset();
+      document.getElementById('create-diary-date').value = new Date().toISOString().split('T')[0];
+    } catch (error) {
+      console.error('创建日记时出错:', error);
+      showCreateMessage('创建日记失败: ' + error.message, 'error');
+    } finally {
+      hideCreateLoading();
+    }
+  });
+
+  // 创建相册
+  document.getElementById('submit-album-btn').addEventListener('click', async function() {
+    if (!githubToken) {
+      showCreateMessage('请先进行GitHub认证');
+      return;
+    }
+
+    const title = document.getElementById('create-album-title').value;
+    const description = document.getElementById('create-album-description').value;
+    const date = document.getElementById('create-album-date').value;
+    const location = document.getElementById('create-album-location').value;
+    const tags = document.getElementById('create-album-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const fileName = document.getElementById('create-album-filename').value;
+    
+    // 获取照片URL
+    const photos = [];
+    document.querySelectorAll('#create-photos-container input[name="photo-src[]"]').forEach(input => {
+      if (input.value.trim() !== '') {
+        photos.push({ src: input.value.trim() });
+      }
+    });
+
+    if (!title || !fileName) {
+      showCreateMessage('请填写必填字段：标题和文件名', 'error');
+      return;
+    }
+
+    showCreateLoading();
+
+    try {
+      // 构建Frontmatter
+      const metadata = {
+        title: title,
+        date: date,
+        description: description,
+        location: location,
+        tags: tags,
+        photos: photos
+      };
+
+      const frontmatter = generateFrontmatter(metadata);
+      const fullContent = frontmatter + '\\n'; // 相册通常只有Frontmatter
+
+      // 创建文件路径
+      const filePath = 'src/content/albums/' + fileName;
+
+      // 提交到GitHub
+      const response = await fetch('https://api.github.com/repos/Doulor/Blog/contents/' + filePath, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + githubToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `添加新相册 ${filePath} [通过内容管理器]`,
+          // 正确编码内容，支持UTF-8编码
+          content: (() => {
+            const uint8Array = new TextEncoder().encode(fullContent);
+            let binary = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+              binary += String.fromCharCode(uint8Array[i]);
+            }
+            return btoa(binary);
+          })()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '创建失败');
+      }
+
+      showCreateMessage('相册创建成功！');
+      
+      // 重置表单
+      document.getElementById('album-create-form').reset();
+      document.getElementById('create-album-date').value = new Date().toISOString().split('T')[0];
+      // 重置照片输入区
+      document.getElementById('create-photos-container').innerHTML = `
+        <div class="photo-input-group flex items-center gap-3">
+          <input
+            type="text"
+            name="photo-src[]"
+            placeholder="照片URL"
+            class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          />
+          <button type="button" class="remove-photo btn-card h-12 px-4 rounded-lg text-red-500">
+            <i class="fa fa-trash" aria-hidden="true"></i>
+          </button>
+        </div>
+      `;
+    } catch (error) {
+      console.error('创建相册时出错:', error);
+      showCreateMessage('创建相册失败: ' + error.message, 'error');
+    } finally {
+      hideCreateLoading();
+    }
+  });
+
+  // 认证按钮事件
+  document.getElementById('create-auth-btn').addEventListener('click', function() {
+    if (githubToken) {
+      // 如果已认证，清除令牌
+      localStorage.removeItem('github_access_token');
+      githubToken = null;
+    } else {
+      // 如果未认证，显示模态框
+      const modal = document.getElementById('create-auth-modal');
+      modal.classList.remove('hidden');
+      // 确保在下一个动画帧中触发过渡
+      requestAnimationFrame(() => {
+        modal.classList.remove('bg-opacity-0');
+        modal.classList.add('bg-opacity-50');
+
+        const modalContent = modal.querySelector('div:last-child');
+        modalContent.classList.remove('opacity-0', 'scale-95');
+        modalContent.classList.add('opacity-100', 'scale-100');
+      });
+
+      document.getElementById('create-token-input').focus();
+    }
+    updateCreateAuthStatus();
+    hideCreateMessage();
+  });
+
+  // 确认按钮事件
+  document.getElementById('confirm-create-auth-btn').addEventListener('click', function() {
+    const token = document.getElementById('create-token-input').value.trim();
+    if (token) {
+      localStorage.setItem('github_access_token', token);
+      githubToken = token;
+      updateCreateAuthStatus();
+      hideCreateMessage();
+      // 清空输入框并隐藏模态框
+      document.getElementById('create-token-input').value = '';
+      hideCreateAuthModal();
+    } else {
+      showCreateMessage('请输入有效的Personal Access Token', 'error');
+    }
+  });
+
+  // 取消按钮事件
+  document.getElementById('cancel-create-auth-btn').addEventListener('click', function() {
+    // 清空输入框并隐藏模态框
+    document.getElementById('create-token-input').value = '';
+    hideCreateAuthModal();
+  });
+
+  // 点击模态框外部关闭
+  document.getElementById('create-auth-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      // 清空输入框并隐藏模态框
+      document.getElementById('create-token-input').value = '';
+      hideCreateAuthModal();
+    }
+  });
+
+  // 按ESC键关闭模态框
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.getElementById('create-auth-modal').classList.contains('hidden')) {
+      // 清空输入框并隐藏模态框
+      document.getElementById('create-token-input').value = '';
+      hideCreateAuthModal();
+    }
+  });
+
+  // 隐藏认证模态框的函数
+  function hideCreateAuthModal() {
+    const modal = document.getElementById('create-auth-modal');
+    const modalContent = modal.querySelector('div:last-child');
+
+    // 添加关闭动画
+    modalContent.classList.remove('opacity-100', 'scale-100');
+    modalContent.classList.add('opacity-0', 'scale-95');
+
+    modal.classList.remove('bg-opacity-50');
+    modal.classList.add('bg-opacity-0');
+
+    // 等待动画完成后再隐藏元素
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 500); // 与过渡时间匹配
+  }
+
+  // 页面加载初始化
+  document.addEventListener('DOMContentLoaded', function() {
+    updateCreateAuthStatus();
+    
+    // 设置默认日期为今天
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('create-post-date').value = today;
+    document.getElementById('create-diary-date').value = today;
+    document.getElementById('create-album-date').value = today;
+  });
+</script>
+
+<style>
+  .content-type-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1), 0 10px 10px -6px rgba(79, 70, 229, 0.05);
+  }
+  
+  .create-form.hidden {
+    display: none;
+  }
+  
+  .photo-input-group .remove-photo:hover {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+  }
+</style>
