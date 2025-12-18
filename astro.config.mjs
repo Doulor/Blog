@@ -257,7 +257,7 @@ export default defineConfig({
 					}
 					warn(warning);
 				},
-				external: ["masonry"], // Add masonry to external modules to prevent resolution error
+				external: ["masonry", "grid"], // Add masonry and grid to external modules to prevent resolution error
 			},
 		},
 	},
