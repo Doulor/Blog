@@ -279,28 +279,6 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
             </div>
           </div>
 
-          <div class="pt-3">
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">相册类型</label>
-            <div class="grid grid-cols-2 gap-4">
-              <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
-                <input type="radio" name="albumType" value="local" checked
-                  class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
-                <div>
-                  <div class="font-medium text-neutral-700 dark:text-neutral-300">本地相册</div>
-                  <div class="text-xs text-neutral-500 dark:text-neutral-400">上传图片到本地图库</div>
-                </div>
-              </label>
-              <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
-                <input type="radio" name="albumType" value="external"
-                  class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
-                <div>
-                  <div class="font-medium text-neutral-700 dark:text-neutral-300">外部相册</div>
-                  <div class="text-xs text-neutral-500 dark:text-neutral-400">使用外部图片链接</div>
-                </div>
-              </label>
-            </div>
-          </div>
-
           <!-- 相册布局 -->
           <div class="space-y-2 pt-4">
             <label for="albumLayout" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">布局方式</label>
@@ -326,12 +304,67 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
               placeholder="相册封面图片路径，如：/images/albums/album-name/cover.jpg">
           </div>
 
+          <div class="pt-3">
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">相册类型</label>
+            <div class="grid grid-cols-3 gap-4">
+              <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
+                <input type="radio" name="albumType" value="local" checked
+                  class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
+                <div>
+                  <div class="font-medium text-neutral-700 dark:text-neutral-300">本地相册</div>
+                  <div class="text-xs text-neutral-500 dark:text-neutral-400">上传图片到本地图库</div>
+                </div>
+              </label>
+              <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
+                <input type="radio" name="albumType" value="external"
+                  class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
+                <div>
+                  <div class="font-medium text-neutral-700 dark:text-neutral-300">外部相册</div>
+                  <div class="text-xs text-neutral-500 dark:text-neutral-400">使用外部图片链接</div>
+                </div>
+              </label>
+              <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
+                <input type="radio" name="albumType" value="r2"
+                  class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
+                <div>
+                  <div class="font-medium text-neutral-700 dark:text-neutral-300">R2相册</div>
+                  <div class="text-xs text-neutral-500 dark:text-neutral-400">从R2存储获取图片</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- R2相册功能区域 -->
+          <div id="r2AlbumSection" class="hidden space-y-3 pt-4">
+            <h3 class="text-lg font-semibold text-neutral-700 dark:text-neutral-300 mb-3 flex items-center">
+              <i class="fa fa-cloud mr-2 text-blue-500" aria-hidden="true"></i>R2 相册功能
+            </h3>
+            <div class="space-y-3">
+              <div class="space-y-2">
+                <label for="r2WorkerUrl" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Worker URL</label>
+                <input type="text" id="r2WorkerUrl"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="例如: https://r2img.firef.dpdns.org"
+                    value="https://r2img.firef.dpdns.org">
+              </div>
+              <div class="space-y-2">
+                <label for="r2Directory" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">R2 目录名</label>
+                <input type="text" id="r2Directory"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="例如: reality">
+              </div>
+              <button type="button" id="fetchR2ImagesBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-smooth flex items-center">
+                <i class="fa fa-sync mr-2" aria-hidden="true"></i>获取 R2 图片链接
+              </button>
+            </div>
+          </div>
+
           <div id="externalAlbumSection" class="hidden space-y-3 pt-4">
             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">相册图片 <small class="text-neutral-500 dark:text-neutral-400">(外部链接)</small></label>
             <div id="photosContainer" class="space-y-2">
             </div>
             <button type="button" id="addPhotoBtn" class="text-sm bg-[var(--accent)]/20 hover:bg-[var(--accent)] text-[var(--accent)] hover:text-white px-4 py-2 rounded-lg transition-smooth flex items-center border border-[var(--accent)]/30 hover:border-[var(--accent)]">
-              <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+              <i class="fa fa-plus mr-2" aria-hidden="true"></i> 添加图片
             </button>
           </div>
         </form>
@@ -761,7 +794,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         <input type="text" name="photoSrc[]" placeholder="图片链接"
             class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
         <button type="button" class="remove-photo bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
-            <span class="text-xl font-bold">🗑</span>
+            <span class="text-xl font-bold">×</span>
         </button>
     `;
     container.appendChild(inputDiv);
@@ -795,29 +828,135 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
   // 相册类型切换
   document.querySelectorAll('input[name="albumType"]').forEach(radio => {
     radio.addEventListener('change', function() {
-      const section = document.getElementById('externalAlbumSection');
+      const localSection = document.getElementById('externalAlbumSection'); // 用于隐藏外部相册部分
+      const r2Section = document.getElementById('r2AlbumSection');
       const container = document.getElementById('photosContainer');
 
+      // 隐藏所有外部相关部分
+      document.getElementById('externalAlbumSection').classList.add('hidden');
+      document.getElementById('externalAlbumSection').classList.remove('fade-in');
+      document.getElementById('r2AlbumSection').classList.add('hidden');
+      document.getElementById('r2AlbumSection').classList.remove('fade-in');
+
       if(this.value === 'external') {
-        section.classList.remove('hidden');
+        document.getElementById('externalAlbumSection').classList.remove('hidden');
         setTimeout(() => {
-          section.classList.add('fade-in');
+          document.getElementById('externalAlbumSection').classList.add('fade-in');
 
           // 如果没有图片输入框，则添加一个
           if (container.children.length === 0) {
             addAlbumImageInput();
           }
         }, 1);
-      } else {
-        section.classList.add('fade-out');
+      } else if(this.value === 'r2') {
+        document.getElementById('externalAlbumSection').classList.remove('hidden');
+        r2Section.classList.remove('hidden');
         setTimeout(() => {
-          section.classList.add('hidden');
-          section.classList.remove('fade-out');
-          // 清空所有图片输入框
+          document.getElementById('externalAlbumSection').classList.add('fade-in');
+          r2Section.classList.add('fade-in');
+
+          // 如果没有图片输入框，则清空（R2图片通过获取按钮添加）
           container.innerHTML = '';
-        }, 300);
+        }, 1);
       }
     });
+  });
+
+  // 添加从R2获取图片链接的功能
+  document.getElementById('fetchR2ImagesBtn').addEventListener('click', async function() {
+    const workerUrl = document.getElementById('r2WorkerUrl').value.trim();
+    const directory = document.getElementById('r2Directory').value.trim();
+
+    if (!workerUrl || !directory) {
+      showMessage('请填写Worker URL和R2目录名', 'error');
+      return;
+    }
+
+    // 显示加载状态
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>加载中...';
+    this.disabled = true;
+
+    try {
+      const response = await fetch(`${workerUrl}?dir=${encodeURIComponent(directory)}`);
+
+      if (!response.ok) {
+        throw new Error(`获取图片失败: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error('返回的数据格式不正确');
+      }
+
+      // 获取图片链接列表
+      const imageUrls = data.map(item => item.url);
+
+      if (imageUrls.length === 0) {
+        showMessage('该目录下没有找到图片', 'info');
+        return;
+      }
+
+      // 清空现有的图片输入框
+      const container = document.getElementById('photosContainer');
+      container.innerHTML = '';
+
+      // 添加从R2获取到的图片链接
+      imageUrls.forEach(url => {
+        const inputDiv = document.createElement('div');
+        inputDiv.className = 'album-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
+        inputDiv.innerHTML = `
+            <input type="text" name="photoSrc[]" value="${url}" placeholder="图片链接"
+                class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+            <button type="button" class="remove-photo bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
+                <span class="text-xl font-bold">×</span>
+            </button>
+        `;
+        container.appendChild(inputDiv);
+
+        // 添加输入事件监听器来实时更新内容
+        const inputField = inputDiv.querySelector('input');
+        inputField.addEventListener('input', function() {
+          const activeForm = document.querySelector('.form-content:not(.hidden)');
+          if (activeForm) {
+            const formType = activeForm.id.replace('Form', '');
+            generateMarkdown(formType);
+          }
+        });
+
+        // 添加删除功能
+        inputDiv.querySelector('.remove-photo').addEventListener('click', function() {
+          const item = this.parentElement;
+          item.classList.add('fade-out');
+          setTimeout(() => {
+            item.remove();
+            // 删除后更新生成的内容
+            const activeForm = document.querySelector('.form-content:not(.hidden)');
+            if (activeForm) {
+              const formType = activeForm.id.replace('Form', '');
+              generateMarkdown(formType);
+            }
+          }, 300);
+        });
+      });
+
+      // 更新预览
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+
+      showMessage(`成功获取到 ${imageUrls.length} 张图片链接`, 'info');
+    } catch (error) {
+      console.error('获取R2图片链接失败:', error);
+      showMessage(`获取R2图片链接失败: ${error.message}`, 'error');
+    } finally {
+      // 恢复按钮状态
+      this.innerHTML = originalText;
+      this.disabled = false;
+    }
   });
 
   // 添加相册图片功能
@@ -829,7 +968,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         <input type="text" name="photoSrc[]" placeholder="图片链接"
             class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
         <button type="button" class="remove-photo bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
-            <span class="text-xl font-bold">🗑</span>
+            <span class="text-xl font-bold">×</span>
         </button>
     `;
     container.appendChild(inputDiv);
@@ -964,6 +1103,8 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 
         // 处理相册模式
         const albumType = document.querySelector('input[name="albumType"]:checked').value;
+        // R2相册本质上也是外部链接，因为图片是从外部获取的
+        const effectiveMode = albumType === 'r2' ? 'external' : albumType;
         const albumData = {
           title,
           date,
@@ -974,12 +1115,12 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
           layout: layout || "grid",
           columns: columns || 3,
           cover: cover,
-          mode: albumType,
+          mode: effectiveMode,
           photos: []
         };
 
-        // 如果是外部相册，获取图片链接
-        if (albumType === 'external') {
+        // 如果是外部或R2相册，获取图片链接
+        if (albumType === 'external' || albumType === 'r2') {
           const photoInputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
           albumData.photos = Array.from(photoInputs).map(input => input.value).filter(val => val);
         }
@@ -995,8 +1136,8 @@ tags: [${albumData.tags.map(tag => `"${tag}"`).join(', ')}]
 layout: "${albumData.layout}"
 columns: ${albumData.columns}`;
 
-        // 为外部相册设置封面图片
-        if (albumType === 'external') {
+        // 为外部和R2相册设置封面图片
+        if (albumType === 'external' || albumType === 'r2') {
           // 如果用户指定了封面，使用用户指定的封面
           if (albumData.cover) {
             albumFrontmatter += `
@@ -1019,11 +1160,11 @@ cover: "${albumData.cover}"`;
         albumFrontmatter += `
 mode: "${albumData.mode}"`;
 
-        // 如果是外部相册且有图片，添加图片数组
-        if (albumType === 'external' && albumData.photos.length > 0) {
+        // 如果是外部或R2相册且有图片，添加图片数组
+        if ((albumType === 'external' || albumType === 'r2') && albumData.photos.length > 0) {
           albumFrontmatter += `
 photos: [`;
-          albumFrontmatter += `\n` + albumData.photos.map(photo => `  {\n    src: "${photo}"\n  }`).join(',\n');
+          albumFrontmatter += `\n` + albumData.photos.map(photo => `  { src: "${photo}" }`).join(',\n');
           albumFrontmatter += `\n]`;
         }
 
