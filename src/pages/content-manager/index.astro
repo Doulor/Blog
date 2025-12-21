@@ -87,6 +87,28 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
         <div id="error-message" class="p-4 rounded-lg bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200 border border-red-200 dark:border-red-800 mt-2 hidden"></div>
       </div>
 
+      <!-- 删除确认弹窗 -->
+      <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300">
+        <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 w-full max-w-md shadow-2xl mx-4 transform scale-95 transition-all duration-300 opacity-0">
+          <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+              <i class="fa fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl" aria-hidden="true"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">确认删除</h3>
+            <p class="text-neutral-600 dark:text-neutral-400 mb-2">您确定要删除 "<span id="deleteTitle" class="font-medium"></span>" 吗？</p>
+            <p class="text-neutral-600 dark:text-neutral-400 mb-6">此操作无法撤销。</p>
+            <div class="flex justify-end space-x-3">
+              <button id="cancelDeleteBtn" class="btn-card h-12 px-6 rounded-lg bg-gray-500 hover:bg-gray-600 text-white">
+                取消
+              </button>
+              <button id="confirmDeleteBtn" class="btn-card h-12 px-6 rounded-lg bg-red-600 hover:bg-red-700 text-white">
+                确定删除
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 选项卡 -->
       <div class="flex border-b border-neutral-200 dark:border-neutral-700 mb-6">
         <button id="posts-tab" class="tab-btn px-4 py-2 font-medium text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent hover:text-[var(--primary)] hover:border-[var(--primary)]" data-target="posts-content">
@@ -552,10 +574,77 @@ const sortedAlbums = albumsData.sort((a, b) => new Date(b.date).getTime() - new 
       const slug = this.getAttribute('data-slug');
       const title = this.getAttribute('data-title');
 
-      if (confirm('您确定要删除 "' + title + '" 吗？此操作无法撤销。')) {
-        performDelete(type, slug);
-      }
+      // 设置要删除的项目信息
+      document.getElementById('deleteTitle').textContent = title;
+      document.getElementById('confirmDeleteBtn').setAttribute('data-type', type);
+      document.getElementById('confirmDeleteBtn').setAttribute('data-slug', slug);
+
+      // 显示删除确认弹窗
+      showDeleteModal();
     });
+  });
+
+  // 显示删除确认弹窗
+  function showDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+
+    // 显示模态框并添加背景变暗效果
+    modal.classList.remove('hidden');
+    // 触发重绘以启用过渡
+    void modal.offsetWidth;
+    modal.classList.remove('opacity-0');
+    modal.classList.add('opacity-100');
+
+    const modalContent = modal.querySelector('div:last-child');
+    void modalContent.offsetWidth; // 触发重绘
+    modalContent.classList.remove('opacity-0', 'scale-95');
+    modalContent.classList.add('opacity-100', 'scale-100');
+  }
+
+  // 隐藏删除确认弹窗
+  function hideDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    const modalContent = modal.querySelector('div:last-child');
+
+    // 添加关闭动画
+    modalContent.classList.remove('opacity-100', 'scale-100');
+    modalContent.classList.add('opacity-0', 'scale-95');
+
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0');
+
+    // 等待动画完成后再隐藏元素
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300); // 与过渡时间匹配
+  }
+
+  // 确认删除按钮事件
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    const type = this.getAttribute('data-type');
+    const slug = this.getAttribute('data-slug');
+
+    performDelete(type, slug);
+    hideDeleteModal();
+  });
+
+  // 取消删除按钮事件
+  document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+    hideDeleteModal();
+  });
+
+  // 点击模态框外部区域关闭
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      hideDeleteModal();
+    }
+  });
+
+  // 按ESC键关闭模态框
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.getElementById('deleteModal').classList.contains('hidden')) {
+      hideDeleteModal();
+    }
   });
 
   // 执行删除操作
