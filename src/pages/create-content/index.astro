@@ -223,12 +223,60 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
               <label for="diaryUseImage" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加图片</label>
             </div>
             <div id="diaryImageSection" class="hidden pl-7 space-y-3 fade-in">
-              <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">图片文件名或外部链接</label>
-              <div id="diaryImagesContainer" class="space-y-2">
+              <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">图片类型</label>
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
+                  <input type="radio" name="diaryImageType" value="local" checked
+                    class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
+                  <div>
+                    <div class="font-medium text-neutral-700 dark:text-neutral-300">本地图片</div>
+                    <div class="text-xs text-neutral-500 dark:text-neutral-400">使用本地图片文件</div>
+                  </div>
+                </label>
+                <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
+                  <input type="radio" name="diaryImageType" value="r2"
+                    class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
+                  <div>
+                    <div class="font-medium text-neutral-700 dark:text-neutral-300">R2图片</div>
+                    <div class="text-xs text-neutral-500 dark:text-neutral-400">从R2存储获取图片</div>
+                  </div>
+                </label>
               </div>
-              <button type="button" id="addImageBtn" class="text-sm bg-[var(--secondary)]/20 hover:bg-[var(--secondary)] text-[var(--secondary)] hover:text-white px-4 py-2 rounded-lg transition-smooth flex items-center border border-[var(--secondary)]/30 hover:border-[var(--secondary)]">
-                <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
-              </button>
+
+              <!-- R2日记功能区域 -->
+              <div id="r2DiarySection" class="hidden space-y-3 pt-4">
+                <h3 class="text-lg font-semibold text-neutral-700 dark:text-neutral-300 mb-3 flex items-center">
+                  <i class="fa fa-cloud mr-2 text-blue-500" aria-hidden="true"></i>R2 日记图片功能
+                </h3>
+                <div class="space-y-3">
+                  <div class="space-y-2">
+                    <label for="diaryR2WorkerUrl" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Worker URL</label>
+                    <input type="text" id="diaryR2WorkerUrl"
+                        class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                        placeholder="例如: https://r2img.firef.dpdns.org"
+                        value="https://r2img.firef.dpdns.org">
+                  </div>
+                  <div class="space-y-2">
+                    <label for="diaryR2Directory" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">R2 目录名</label>
+                    <input type="text" id="diaryR2Directory"
+                        class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                        placeholder="例如: happyday (自动识别为 diary/happyday)">
+                  </div>
+                  <button type="button" id="fetchDiaryR2ImagesBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-smooth flex items-center">
+                    <i class="fa fa-sync mr-2" aria-hidden="true"></i>获取 R2 图片链接
+                  </button>
+                </div>
+              </div>
+
+              <!-- 本地图片输入区域 -->
+              <div id="localDiaryImageSection">
+                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">图片文件名或外部链接</label>
+                <div id="diaryImagesContainer" class="space-y-2">
+                </div>
+                <button type="button" id="addImageBtn" class="text-sm bg-[var(--secondary)]/20 hover:bg-[var(--secondary)] text-[var(--secondary)] hover:text-white px-4 py-2 rounded-lg transition-smooth flex items-center border border-[var(--secondary)]/30 hover:border-[var(--secondary)] mt-2">
+                  <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+                </button>
+              </div>
             </div>
           </div>
           <div class="space-y-2 pt-2">
@@ -351,7 +399,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
                 <label for="r2Directory" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">R2 目录名</label>
                 <input type="text" id="r2Directory"
                     class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    placeholder="例如: reality">
+                    placeholder="例如: sky (自动识别为 album/sky)">
               </div>
               <button type="button" id="fetchR2ImagesBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-smooth flex items-center">
                 <i class="fa fa-sync mr-2" aria-hidden="true"></i>获取 R2 图片链接
@@ -416,6 +464,24 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
               <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 text-center">需要先完成 GitHub 认证</p>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提交完成弹窗 -->
+  <div id="submitModal" class="fixed inset-0 bg-black bg-opacity-0 flex items-center justify-center z-50 hidden transition-opacity duration-300">
+    <div class="bg-white dark:bg-neutral-800 rounded-xl p-8 w-full max-w-md shadow-2xl mx-4 transform scale-95 transition-all duration-300 opacity-0">
+      <div class="text-center">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
+          <i class="fa fa-check text-green-600 dark:text-green-400 text-2xl" aria-hidden="true"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">提交成功</h3>
+        <p class="text-neutral-600 dark:text-neutral-400 mb-6">内容已成功提交到GitHub仓库！</p>
+        <div class="flex justify-end">
+          <button id="closeModalBtn" class="btn-card h-12 px-6 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white">
+            确定
+          </button>
         </div>
       </div>
     </div>
@@ -862,14 +928,41 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
     });
   });
 
-  // 添加从R2获取图片链接的功能
+  // 日记图片类型切换
+  document.querySelectorAll('input[name="diaryImageType"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      const r2Section = document.getElementById('r2DiarySection');
+      const localSection = document.getElementById('localDiaryImageSection');
+      const diaryImagesContainer = document.getElementById('diaryImagesContainer');
+
+      if(this.value === 'r2') {
+        r2Section.classList.remove('hidden');
+        setTimeout(() => {
+          r2Section.classList.add('fade-in');
+          // 清空本地图片输入框，因为R2图片通过获取按钮添加
+          diaryImagesContainer.innerHTML = '';
+        }, 1);
+      } else {
+        r2Section.classList.add('hidden');
+        r2Section.classList.remove('fade-in');
+      }
+    });
+  });
+
+  // 添加从R2获取相册图片链接的功能
   document.getElementById('fetchR2ImagesBtn').addEventListener('click', async function() {
     const workerUrl = document.getElementById('r2WorkerUrl').value.trim();
-    const directory = document.getElementById('r2Directory').value.trim();
+    let directory = document.getElementById('r2Directory').value.trim();
 
     if (!workerUrl || !directory) {
       showMessage('请填写Worker URL和R2目录名', 'error');
       return;
+    }
+
+    // 为相册添加路径前缀（仅当用户输入简短名称且未指定路径前缀时）
+    if (!directory.includes('/')) {
+      // 如果用户输入没有包含任何斜杠，假设这是一个简短目录名，添加 album/ 前缀
+      directory = 'album/' + directory;
     }
 
     // 显示加载状态
@@ -927,6 +1020,109 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 
         // 添加删除功能
         inputDiv.querySelector('.remove-photo').addEventListener('click', function() {
+          const item = this.parentElement;
+          item.classList.add('fade-out');
+          setTimeout(() => {
+            item.remove();
+            // 删除后更新生成的内容
+            const activeForm = document.querySelector('.form-content:not(.hidden)');
+            if (activeForm) {
+              const formType = activeForm.id.replace('Form', '');
+              generateMarkdown(formType);
+            }
+          }, 300);
+        });
+      });
+
+      // 更新预览
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+
+      showMessage(`成功获取到 ${imageUrls.length} 张图片链接`, 'info');
+    } catch (error) {
+      console.error('获取R2图片链接失败:', error);
+      showMessage(`获取R2图片链接失败: ${error.message}`, 'error');
+    } finally {
+      // 恢复按钮状态
+      this.innerHTML = originalText;
+      this.disabled = false;
+    }
+  });
+
+  // 添加从R2获取日记图片链接的功能
+  document.getElementById('fetchDiaryR2ImagesBtn').addEventListener('click', async function() {
+    const workerUrl = document.getElementById('diaryR2WorkerUrl').value.trim();
+    let directory = document.getElementById('diaryR2Directory').value.trim();
+
+    if (!workerUrl || !directory) {
+      showMessage('请填写Worker URL和R2目录名', 'error');
+      return;
+    }
+
+    // 为日记添加路径前缀（仅当用户输入简短名称且未指定路径前缀时）
+    if (!directory.includes('/')) {
+      // 如果用户输入没有包含任何斜杠，假设这是一个简短目录名，添加 diary/ 前缀
+      directory = 'diary/' + directory;
+    }
+
+    // 显示加载状态
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>加载中...';
+    this.disabled = true;
+
+    try {
+      const response = await fetch(`${workerUrl}?dir=${encodeURIComponent(directory)}`);
+
+      if (!response.ok) {
+        throw new Error(`获取图片失败: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error('返回的数据格式不正确');
+      }
+
+      // 获取图片链接列表
+      const imageUrls = data.map(item => item.url);
+
+      if (imageUrls.length === 0) {
+        showMessage('该目录下没有找到图片', 'info');
+        return;
+      }
+
+      // 清空现有的图片输入框
+      const container = document.getElementById('diaryImagesContainer');
+      container.innerHTML = '';
+
+      // 添加从R2获取到的图片链接
+      imageUrls.forEach(url => {
+        const inputDiv = document.createElement('div');
+        inputDiv.className = 'diary-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
+        inputDiv.innerHTML = `
+            <input type="text" name="diaryImage[]" value="${url}" placeholder="图片链接"
+                class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+            <button type="button" class="remove-diary-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
+                <span class="text-xl font-bold">×</span>
+            </button>
+        `;
+        container.appendChild(inputDiv);
+
+        // 添加输入事件监听器来实时更新内容
+        const inputField = inputDiv.querySelector('input');
+        inputField.addEventListener('input', function() {
+          const activeForm = document.querySelector('.form-content:not(.hidden)');
+          if (activeForm) {
+            const formType = activeForm.id.replace('Form', '');
+            generateMarkdown(formType);
+          }
+        });
+
+        // 添加删除功能
+        inputDiv.querySelector('.remove-diary-image').addEventListener('click', function() {
           const item = this.parentElement;
           item.classList.add('fade-out');
           setTimeout(() => {
@@ -1081,7 +1277,8 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         extraFields.date = date;
 
         // 处理图片
-        if(document.getElementById('diaryUseImage')?.checked) {
+        const diaryImageType = document.querySelector('input[name="diaryImageType"]:checked')?.value || 'local';
+        if(diaryImageType === 'r2' || (diaryImageType === 'local' && document.getElementById('diaryUseImage')?.checked)) {
           const imageInputs = document.querySelectorAll('#diaryImagesContainer input[name="diaryImage[]"]');
           extraFields.images = Array.from(imageInputs).map(input => input.value).filter(val => val);
         }
@@ -1424,7 +1621,8 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
       const resultData = await result.json();
 
       if (result.ok) {
-        showMessage('文件已成功提交到GitHub仓库！', 'info');
+        // 显示提交成功弹窗
+        showSubmitModal();
       } else {
         console.error('提交失败:', resultData);
         if (resultData.message && resultData.message.includes('Bad credentials')) {
@@ -1443,6 +1641,60 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
       } else {
         showMessage('提交过程中发生错误: ' + error.message, 'error');
       }
+    }
+  });
+
+  // 显示提交成功弹窗
+  function showSubmitModal() {
+    const modal = document.getElementById('submitModal');
+
+    // 显示模态框并添加背景变暗效果
+    modal.classList.remove('hidden');
+    // 触发重绘以启用过渡
+    void modal.offsetWidth;
+    modal.classList.remove('bg-opacity-0');
+    modal.classList.add('bg-opacity-50');
+
+    const modalContent = modal.querySelector('div:last-child');
+    void modalContent.offsetWidth; // 触发重绘
+    modalContent.classList.remove('opacity-0', 'scale-95');
+    modalContent.classList.add('opacity-100', 'scale-100');
+  }
+
+  // 隐藏提交成功弹窗
+  function hideSubmitModal() {
+    const modal = document.getElementById('submitModal');
+    const modalContent = modal.querySelector('div:last-child');
+
+    // 添加关闭动画
+    modalContent.classList.remove('opacity-100', 'scale-100');
+    modalContent.classList.add('opacity-0', 'scale-95');
+
+    modal.classList.remove('bg-opacity-50');
+    modal.classList.add('bg-opacity-0');
+
+    // 等待动画完成后再隐藏元素
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200); // 与过渡时间匹配
+  }
+
+  // 关闭模态框按钮事件
+  document.getElementById('closeModalBtn').addEventListener('click', function() {
+    hideSubmitModal();
+  });
+
+  // 点击模态框外部区域关闭
+  document.getElementById('submitModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      hideSubmitModal();
+    }
+  });
+
+  // 按ESC键关闭模态框
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.getElementById('submitModal').classList.contains('hidden')) {
+      hideSubmitModal();
     }
   });
 
