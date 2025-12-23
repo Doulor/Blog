@@ -28,7 +28,7 @@ import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 export default defineConfig({
-	site: "https://blog.firef.dpdns.org/",
+	site: "https://blog.doulor.cn/",
 
 	base: "/",
 	trailingSlash: "always",

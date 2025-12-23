@@ -250,7 +250,7 @@ export const profileConfig: ProfileConfig = {
 		{
 			name: "Home",
 			icon: "fa6-solid:house",
-			url: "https://firef.dpdns.org",
+			url: "https://doulor.cn",
 		},
 		{
 			name: "QQ",

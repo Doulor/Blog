@@ -92,7 +92,7 @@ Done (11.148s)! For help, type "help"
 - `server-port=25565`：服务器端口（默认25565，虚拟局域网/内网穿透需用到，保持默认即可）。
 - `spawn-protection=16`：出生点保护范围（计算公式：数值×2+1，默认16对应半径33，普通玩家无法交互方块；若无法挖方块，改为0即可）。
 
-详细配置信息点击 [此处](https://blog.firef.dpdns.org/posts/minecraft_serverproperties/ "minecraft_serverproperties") 跳转至另一篇帖子.
+详细配置信息点击 [此处](https://blog.doulor.cn/posts/minecraft_serverproperties/ "minecraft_serverproperties") 跳转至另一篇帖子.
 
 修改后按 `Ctrl+S` 保存，重新启动服务器至显示 `Done!` 字样，搭建完成。本地电脑可在游戏多人列表添加服务器，IP填写 `127.0.0.1` 即可进入（延迟接近0ms）。
 

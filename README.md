@@ -23,7 +23,7 @@
 A modern, feature-rich static blog template built with [Astro](https://astro.build), featuring advanced functionality and beautiful design.
 This is a personal customization of the original Mizuki template for my own blog.
 
-[**🖥️ Live Demo**](https://firef.dpdns.org/)
+[**🖥️ Live Demo**](https://doulor.cn/)
 [**📝 Documentation**](https://docs.mizuki.mysqil.com/)
 
 🌏 README Languages
