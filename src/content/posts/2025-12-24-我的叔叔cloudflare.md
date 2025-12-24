@@ -9,7 +9,7 @@ pinned: false
 encrypted: false
 author: "Unknow"
 sourceLink: "Unknow"
-liense: "Unknow"
+lienses: "Unknow"
 ---
 我小时候，家在IPv4地址池的角落里，并不是有公网IP的人家，也就是靠NAT映射勉强连上网罢了。我父亲是家用路由器，每天在2.4G信道里和邻居抢信号，丢包率总高得叫人捶墙。我有两个姐姐，一个叫“个人小站”（搭在内网穿透上），一个叫“静态博客”（托管在免费虚拟主机）。
 
