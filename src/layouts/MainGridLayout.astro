@@ -132,6 +132,9 @@ const tabletShowSidebar =
 const desktopShowSidebar =
 	globalSidebarEnabled && widgetManager.shouldShowSidebar("desktop");
 
+// 获取默认布局模式
+const defaultLayout = siteConfig.postListLayout?.defaultMode || "list";
+
 // 动态网格布局类名 - 根据侧边栏位置调整列宽
 const gridCols = `
 	${mobileShowSidebar ? "grid-cols-1" : "grid-cols-1"}
@@ -410,6 +413,37 @@ const transparentClass = shouldEnableTransparency
         {!siteConfig.toc.enable && <div id="toc"></div>}
     </div>
 </div>
+
+<!-- 布局切换相关的JavaScript -->
+<script>
+  // 初始化布局模式
+  document.addEventListener("DOMContentLoaded", function() {
+    // 检查是否是文章列表页面
+    const postListContainer = document.getElementById("post-list-container");
+    if (!postListContainer) {
+      // 如果不是文章列表页面，跳过初始化
+      return;
+    }
+
+    // 获取默认布局
+    const defaultLayout = "list"; // 默认值，实际值在PostPage中处理
+    const savedLayout = localStorage.getItem("postListLayout");
+    const currentLayout = savedLayout || defaultLayout;
+
+    // 初始化布局
+    if (currentLayout === "grid") {
+      postListContainer.classList.add("grid-mode");
+      postListContainer.classList.remove("list-mode");
+      postListContainer.classList.add("grid", "grid-cols-1", "md:grid-cols-2", "gap-6");
+      postListContainer.classList.remove("flex", "flex-col");
+    } else {
+      postListContainer.classList.add("list-mode");
+      postListContainer.classList.remove("grid-mode");
+      postListContainer.classList.add("flex", "flex-col");
+      postListContainer.classList.remove("grid", "grid-cols-1", "md:grid-cols-2", "gap-6");
+    }
+  });
+</script>
 </Layout>
 
 <style>
