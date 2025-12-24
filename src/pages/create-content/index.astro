@@ -193,6 +193,22 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
                 </div>
               </div>
             </div>
+
+            <div class="pt-2">
+              <div class="flex items-center space-x-3 mb-3 pt-1">
+                <input type="checkbox" id="normalUseLicense" name="normalUseLicense"
+                  class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
+                <label for="normalUseLicense" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加许可证信息</label>
+              </div>
+              <div id="normalLicenseSection" class="hidden pl-7 space-y-2 fade-in">
+                <label for="normalLicense" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">许可证</label>
+                <div class="image-input-container">
+                  <input type="text" id="normalLicense" name="normalLicense"
+                    class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    placeholder="输入许可证名称，如：CC BY 4.0">
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="space-y-2 pt-3">
@@ -733,6 +749,40 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
     }
   });
 
+  // 处理帖子许可证信息显示/隐藏
+  document.getElementById('normalUseLicense').addEventListener('change', function() {
+    const section = document.getElementById('normalLicenseSection');
+    if(this.checked) {
+      section.classList.remove('hidden');
+      setTimeout(() => {
+        section.classList.add('fade-in');
+      }, 1);
+    } else {
+      section.classList.add('fade-out');
+      setTimeout(() => {
+        section.classList.add('hidden');
+        section.classList.remove('fade-out');
+      }, 300);
+    }
+
+    // 触发生成预览以更新许可证信息
+    const activeForm = document.querySelector('.form-content:not(.hidden)');
+    if (activeForm) {
+      const formType = activeForm.id.replace('Form', '');
+      generateMarkdown(formType);
+    }
+  });
+
+  // 监听许可证输入框，触发预览更新
+  document.getElementById('normalLicense').addEventListener('input', function() {
+    // 触发生成预览
+    const activeForm = document.querySelector('.form-content:not(.hidden)');
+    if (activeForm) {
+      const formType = activeForm.id.replace('Form', '');
+      generateMarkdown(formType);
+    }
+  });
+
   // 添加日记图片输入框的函数
   function addDiaryImageInput() {
     const container = document.getElementById('diaryImagesContainer');
@@ -1259,6 +1309,15 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
           const sourceValue = document.getElementById('normalSource')?.value;
           if (sourceValue) {
             extraFields.sourceLink = sourceValue;
+          }
+        }
+
+        // 处理许可证信息
+        const useLicense = document.getElementById('normalUseLicense')?.checked;
+        if (useLicense) {
+          const licenseValue = document.getElementById('normalLicense')?.value;
+          if (licenseValue) {
+            extraFields.license = licenseValue;
           }
         }
 
