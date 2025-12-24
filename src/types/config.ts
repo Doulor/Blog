@@ -28,6 +28,12 @@ export type SiteConfig = {
 		};
 	};
 
+	// 文章列表布局配置
+	postListLayout: {
+		defaultMode: "list" | "grid"; // 默认布局模式："list" 列表模式（单列布局），"grid" 网格模式（双列布局）
+		allowSwitch: boolean; // 是否允许用户切换布局
+	};
+
 	translate?: {
 		enable: boolean; // 是否启用翻译功能
 		service?: string; // 翻译服务类型，如 'client.edge'

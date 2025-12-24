@@ -31,6 +31,15 @@ export const siteConfig: SiteConfig = {
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 
+	// 文章列表布局配置
+	postListLayout: {
+		// 默认布局模式："list" 列表模式（单列布局），"grid" 网格模式（双列布局）
+		// 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
+		defaultMode: "list",
+		// 是否允许用户切换布局
+		allowSwitch: true,
+	},
+
 	translate: {
 		enable: true, // 启用翻译功能
 		service: "client.edge", // 使用 Edge 浏览器翻译服务
