@@ -172,6 +172,28 @@ const { postSlug } = Astro.props;
 <script>
   // 页面加载完成后执行
   document.addEventListener('DOMContentLoaded', function() {
+    // 检查是否在构建环境中（服务器端渲染）
+    if (typeof window === 'undefined') {
+      return; // 在构建环境中不执行客户端脚本
+    }
+
+    // 检查Supabase配置
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+    // 如果缺少必要的环境变量，显示错误信息
+    if (!supabaseUrl || !supabaseAnonKey) {
+      const commentsList = document.getElementById('comments-list');
+      if (commentsList) {
+        commentsList.innerHTML = `
+          <p class="text-gray-500 text-center py-4">
+            评论功能未配置
+          </p>
+        `;
+      }
+      return;
+    }
+
     // 管理员状态
     let isAdmin = false;
     // 管理员密码（通过环境变量配置）
@@ -225,29 +247,18 @@ const { postSlug } = Astro.props;
     // 获取当前文章ID
     const currentPostId = document.getElementById('comments-container')?.dataset.postSlug || '';
     if (!currentPostId) {
-      commentsList.innerHTML = `
-        <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
-          <i class="fas fa-exclamation-circle mr-1"></i> 未获取到文章信息，点击刷新
-        </p>
-      `;
+      if (commentsList) {
+        commentsList.innerHTML = `
+          <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+            <i class="fas fa-exclamation-circle mr-1"></i> 未获取到文章信息，点击刷新
+          </p>
+        `;
+      }
       return;
     }
 
     // 加载Supabase并初始化评论功能
     import('@supabase/supabase-js').then(({ createClient }) => {
-      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-
-      // 检查Supabase配置
-      if (!supabaseUrl || !supabaseAnonKey) {
-        commentsList.innerHTML = `
-          <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
-            <i class="fas fa-exclamation-circle mr-1"></i> 配置缺失，点击刷新
-          </p>
-        `;
-        return;
-      }
-
       // 创建Supabase客户端
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -264,7 +275,9 @@ const { postSlug } = Astro.props;
 
           // 处理无评论情况
           if (!data || data.length === 0) {
-            commentsList.innerHTML = '<p class="text-gray-500">暂无评论，快来发表第一条评论吧～</p>';
+            if (commentsList) {
+              commentsList.innerHTML = '<p class="text-gray-500 text-center py-4">暂无评论，快来发表第一条评论吧～</p>';
+            }
             return;
           }
 
@@ -283,14 +296,16 @@ const { postSlug } = Astro.props;
               </div>
             </div>
           `).join('');
-          
-          commentsList.innerHTML = commentsHtml;
+
+          if (commentsList) {
+            commentsList.innerHTML = commentsHtml;
+          }
 
           // 绑定删除按钮事件
           document.querySelectorAll('.delete-button').forEach(btn => {
             btn.addEventListener('click', async (e) => {
               e.stopPropagation();
-              
+
               // 权限验证
               if (!isAdmin) {
                 showToast('权限不足，无法删除评论');
@@ -304,7 +319,7 @@ const { postSlug } = Astro.props;
                     .from('comments')
                     .delete()
                     .eq('id', btn.dataset.commentId);
-                  
+
                   if (error) throw error;
                   showToast('评论已成功删除', false);
                   loadComments(); // 刷新评论列表
@@ -317,11 +332,13 @@ const { postSlug } = Astro.props;
 
         } catch (err) {
           console.error('加载评论错误:', err);
-          commentsList.innerHTML = `
-            <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
-              <i class="fas fa-exclamation-circle mr-1"></i> 加载失败，点击刷新
-            </p>
-          `;
+          if (commentsList) {
+            commentsList.innerHTML = `
+              <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+                <i class="fas fa-exclamation-circle mr-1"></i> 加载失败，点击刷新
+              </p>
+            `;
+          }
         }
       }
 
@@ -329,66 +346,70 @@ const { postSlug } = Astro.props;
       loadComments();
 
       // 评论提交逻辑
-      commentForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      if (commentForm) {
+        commentForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
 
-        // 获取表单数据
-        const nickname = document.getElementById('nickname').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const content = document.getElementById('content').value.trim();
+          // 获取表单数据
+          const nickname = document.getElementById('nickname').value.trim();
+          const email = document.getElementById('email').value.trim();
+          const content = document.getElementById('content').value.trim();
 
-        // 表单验证
-        if (!nickname || !content) {
-          showToast('请填写昵称和评论内容');
-          return;
-        }
+          // 表单验证
+          if (!nickname || !content) {
+            showToast('请填写昵称和评论内容');
+            return;
+          }
 
-        // 防止重复提交
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 提交中...';
+          // 防止重复提交
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 提交中...';
 
-        try {
-          // 提交评论到Supabase
-          const { error } = await supabase
-            .from('comments')
-            .insert([{ 
-              post_id: currentPostId, 
-              nickname, 
-              email, 
-              content, 
-              is_approved: true 
-            }]);
+          try {
+            // 提交评论到Supabase
+            const { error } = await supabase
+              .from('comments')
+              .insert([{
+                post_id: currentPostId,
+                nickname,
+                email,
+                content,
+                is_approved: true
+              }]);
 
-          if (error) throw error;
+            if (error) throw error;
 
-          // 提交成功处理
-          submitBtn.classList.replace('bg-blue-600', 'bg-green-600');
-          submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 提交成功！';
-          showToast('评论提交成功', false);
+            // 提交成功处理
+            submitBtn.classList.replace('bg-blue-600', 'bg-green-600');
+            submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 提交成功！';
+            showToast('评论提交成功', false);
 
-          // 重置表单并刷新评论
-          commentForm.reset();
-          loadComments();
+            // 重置表单并刷新评论
+            commentForm.reset();
+            loadComments();
 
-          // 恢复按钮状态
-          setTimeout(() => {
-            submitBtn.classList.replace('bg-green-600', 'bg-blue-600');
-            submitBtn.innerHTML = '提交评论';
+            // 恢复按钮状态
+            setTimeout(() => {
+              submitBtn.classList.replace('bg-green-600', 'bg-blue-600');
+              submitBtn.innerHTML = '提交评论';
+              submitBtn.disabled = false;
+            }, 3000);
+          } catch (err) {
+            showToast(`提交失败: ${err.message}`);
             submitBtn.disabled = false;
-          }, 3000);
-        } catch (err) {
-          showToast(`提交失败: ${err.message}`);
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '提交评论';
-        }
-      });
+            submitBtn.innerHTML = '提交评论';
+          }
+        });
+      }
     }).catch(err => {
       console.error('Supabase初始化错误:', err);
-      commentsList.innerHTML = `
-        <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
-          <i class="fas fa-exclamation-circle mr-1"></i> 评论功能异常，点击刷新
-        </p>
-      `;
+      if (commentsList) {
+        commentsList.innerHTML = `
+          <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+            <i class="fas fa-exclamation-circle mr-1"></i> 评论功能异常，点击刷新
+          </p>
+        `;
+      }
     });
   });
 </script>
