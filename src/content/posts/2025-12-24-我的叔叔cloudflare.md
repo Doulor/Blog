@@ -4,6 +4,7 @@ published: 2025-12-24
 description: "在家庭网络的角落，每一条数据包都在和带宽、延迟搏斗。本篇文章用拟人的幽默手法，讲述了“Cloudflare叔叔”和一家人的网络缘分，从憧憬到失落，折射出小家与大互联网的真实碰撞。你是否也在等待那个让网速飞起来的“节点”？欢迎读这段关于家庭、连接与数字世界的轻松故事。"
 category: "搬运"
 tags: ["CloudFlare"]
+image: "https://img.doulor.cn/post/cloudflare-uncle/5bbfd3046eb3289aef85a21322a9b9e8.png"
 draft: false
 pinned: false
 encrypted: false
