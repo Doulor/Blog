@@ -222,6 +222,11 @@ export const navBarConfig: NavBarConfig = {
 					url: "/albums/",
 					icon: "material-symbols:photo-library",
 				},
+				{
+					name: "留言板",
+					url: "/guestbook/",
+					icon: "material-symbols:chat",
+				},
 			],
 		},
 		{
