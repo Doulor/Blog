@@ -1538,18 +1538,19 @@ if (window.swup) {
     const progressWidget = document.querySelector('.reading-progress-widget');
     let progressFadeTimer;
 
-		const scheduleFade = (delay = 1400) => {
+    // 将 scheduleFade 的延迟由 350ms 调长为 1200ms
+    const scheduleFade = (delay = 1200) => {
       if (!progressWidget) return;
       if (progressFadeTimer) clearTimeout(progressFadeTimer);
       progressFadeTimer = window.setTimeout(() => {
-				progressWidget.classList.add('faded', 'idle');
+        progressWidget.classList.add('faded', 'idle');
       }, delay);
     };
 
     const showWidgetNow = () => {
       if (!progressWidget) return;
-			progressWidget.classList.add('visible');
-			progressWidget.classList.remove('faded', 'idle');
+      progressWidget.classList.add('visible');
+      progressWidget.classList.remove('faded', 'idle');
     };
 
     const updateReadingProgress = () => {
@@ -1560,29 +1561,23 @@ if (window.swup) {
       const percent = height > 0 ? Math.min(100, Math.max(0, (scrollTop / height) * 100)) : 0;
       const pctText = `${percent.toFixed(0)}%`;
       progressBar.style.width = percent + "%";
-			progressBar.style.opacity = percent <= 0 ? "0" : "1";
+      progressBar.style.opacity = percent <= 0 ? "0" : "1";
       if (progressPercent) progressPercent.textContent = pctText;
       showWidgetNow();
-      scheduleFade(350);
+      scheduleFade(1200); // 这里也同步调长
     };
 
-    const handleUserActivity = () => {
-      showWidgetNow();
-      scheduleFade();
-    };
-
+    // 只监听滚动，不再监听鼠标/触摸移动
     const bindReadingProgress = () => {
       updateReadingProgress();
       window.removeEventListener('scroll', updateReadingProgress);
       window.addEventListener('scroll', updateReadingProgress, { passive: true });
 
-      window.removeEventListener('mousemove', handleUserActivity);
-      window.removeEventListener('touchmove', handleUserActivity);
-      window.addEventListener('mousemove', handleUserActivity, { passive: true });
-      window.addEventListener('touchmove', handleUserActivity, { passive: true });
+      window.removeEventListener('mousemove', updateReadingProgress);
+      window.removeEventListener('touchmove', updateReadingProgress);
 
       showWidgetNow();
-      scheduleFade(350);
+      scheduleFade(1200);
     };
 
     bindReadingProgress();
