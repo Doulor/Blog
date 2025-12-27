@@ -15,51 +15,30 @@ function isExternalUrl(url: string): boolean {
   }
 }
 
-// 保留原始时间格式化函数
-function formatTime(dateString: string): string {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffInMinutes = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60),
-  );
-
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
-  }
-  if (diffInMinutes < 1440) { // 24小时
-    const hours = Math.floor(diffInMinutes / 60);
-    return `${hours}${i18n(I18nKey.diaryHoursAgo)}`;
-  }
-  const days = Math.floor(diffInMinutes / 1440);
-  return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+// 规范化图片字段，兼容 "[text](https://...)" 写法
+function normalizeImage(url: string): string {
+  const match = url.match(/\((https?:[^)]+)\)/);
+  return match ? match[1] : url.trim();
 }
 
 // 获取实际日记数据并按日期排序
 const diaries = await getCollection('diary')
-  .then(items => items.sort((a, b) => new Date(b.data.date) - new Date(a.data.date)));
+  .then(items => items.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()));
 
-// 保留原始时间格式化函数
-function formatTime(dateString: string): string {
+// 相对时间格式化函数
+function formatTime(dateInput: string | Date): string {
+  const date = new Date(dateInput);
   const now = new Date();
-  const date = new Date(dateString);
-  const diffInMinutes = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60),
-  );
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
-  }
-  if (diffInMinutes < 1440) { // 24小时
-    const hours = Math.floor(diffInMinutes / 60);
-    return `${hours}${i18n(I18nKey.diaryHoursAgo)}`;
-  }
-  const days = Math.floor(diffInMinutes / 1440);
-  return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+  if (diffInMinutes < 60) return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
+  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
+  return `${Math.floor(diffInMinutes / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;
 }
 
-// 新增：绝对时间格式化函数
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+// 绝对时间格式化函数
+function formatDate(dateInput: string | Date): string {
+  const date = new Date(dateInput);
   const lang = siteConfig.lang || "zh-CN"; // 使用站点配置的语言或默认中文
   // 将配置语言映射为可用的locale标识符
   const localeMap: Record<string, string> = {
@@ -102,8 +81,11 @@ function formatDate(dateString: string): string {
         <!-- 短文列表 -->
         <div class="moments-timeline">
           <div class="timeline-list space-y-4">
-            {diaries.map(diary => (
-              <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all" key={diary.slug}>
+            {diaries.map(diary => {
+              const dateObj = new Date(diary.data.date);
+              const dateIso = dateObj.toISOString();
+              return (
+              <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all">
                 <a href={`/diary/${diary.slug}/`} class="block">
                   <div class="moment-content">
                     {/* 新增：日记标题（保持原有设计语言） */}
@@ -121,16 +103,20 @@ function formatDate(dateString: string): string {
                     {/* 处理图片显示 */}
                     {diary.data.images && diary.data.images.length > 0 && (
                       <div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
-                        {diary.data.images.map((image, index) => (
-                          <div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform" key={index}>
+                        {diary.data.images.map((image) => {
+                          const normalized = normalizeImage(image);
+                          const external = isExternalUrl(normalized);
+                          return (
+                          <div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform">
                             <img
-                              src={isExternalUrl(image) ? image : `/images/diary/${image}`}
+                              src={external ? normalized : `/images/diary/${normalized}`}
                               alt={i18n(I18nKey.diaryImage)}
                               class="w-full h-full object-cover"
                               loading="lazy"
                             />
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -141,14 +127,15 @@ function formatDate(dateString: string): string {
                 <div class="moment-footer flex justify-between items-center">
                   <div class="moment-time flex items-center gap-2 text-75 text-xs md:text-sm lg:text-base">
                     <i class="time-icon text-xs md:text-sm">📅</i>
-                    <time datetime={diary.data.date} class="absolute-date">
-                      {formatDate(diary.data.date)}
+                    <time datetime={dateIso} class="absolute-date">
+                      {formatDate(dateObj)}
                     </time>
-                    <span class="relative-date text-xs md:text-sm lg:text-base">| {formatTime(diary.data.date)}</span>
+                    <span class="relative-date text-xs md:text-sm lg:text-base">| {formatTime(dateObj)}</span>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

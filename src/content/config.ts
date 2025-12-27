@@ -28,10 +28,22 @@ const postsCollection = defineCollection({
 		nextSlug: z.string().default(""),
 	}),
 });
+const diaryCollection = defineCollection({
+	schema: z.object({
+		title: z.string(),
+		date: z.coerce.date(),
+		description: z.string().optional().default(""),
+		excerpt: z.string().optional().default(""),
+		images: z.array(z.string()).optional().default([]),
+		lang: z.string().optional().default(""),
+		pinned: z.boolean().optional().default(false),
+	}),
+});
 const specCollection = defineCollection({
 	schema: z.object({}),
 });
 export const collections = {
 	posts: postsCollection,
+	diary: diaryCollection,
 	spec: specCollection,
 };
