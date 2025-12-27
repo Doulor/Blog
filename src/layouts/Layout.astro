@@ -196,7 +196,91 @@ const bannerOffset =
 			'page-width': `${PAGE_WIDTH}rem`,
 		}}></style>  <!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 
+		<style is:global>
+			:root {
+				--reading-progress-color: hsl({configHue}, 80%, 60%);
+			}
 
+			.reading-progress-widget {
+				position: fixed;
+				right: 18px;
+				bottom: 97px; /* 再略微下移 */
+				z-index: 1200;
+				min-width: 210px;
+				padding: 10px 12px;
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				justify-content: center;
+				border-radius: 14px;
+				background: color-mix(in srgb, var(--page-bg, #0b1221) 20%, rgba(255,255,255,0.7) 80%);
+				backdrop-filter: blur(10px);
+				box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+				border: 1px solid rgba(255,255,255,0.12);
+				color: #111;
+				opacity: 0;
+				pointer-events: none;
+				transform: translateY(8px);
+				transition: opacity 760ms ease, transform 340ms ease;
+			}
+
+			.reading-progress-widget.visible {
+				opacity: 0.95;
+				pointer-events: auto;
+				transform: translateY(0);
+			}
+
+			.reading-progress-widget.faded {
+				opacity: 0.2; /* 更高透明度，更加淡出 */
+				pointer-events: none;
+			}
+
+			.reading-progress-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 8px;
+				font-size: 13px;
+				font-weight: 500;
+				color: #111;
+			}
+
+			.reading-progress-track {
+				margin-top: 0;
+				width: 100%;
+				height: 6px;
+				background: rgba(0,0,0,0.05);
+				border-radius: 999px;
+				overflow: hidden;
+				position: relative; /* ★★★ 关键修复：加上这行 ★★★ */
+			}
+
+			#reading-progress-bar {
+				position: absolute;
+				left: 0;
+				top: 0;
+				height: 100%;
+				width: 0%;
+				background: linear-gradient(90deg, var(--reading-progress-color) 0%, color-mix(in srgb, var(--reading-progress-color) 60%, #fff 40%) 100%);
+				transition: width 160ms ease-out;
+				border-radius: 999px;
+			}
+
+			@media (max-width: 640px) {
+				.reading-progress-widget {
+					min-width: 180px;
+					padding: 8px 10px;
+					right: 10px;
+					bottom: 70px;
+				}
+				.reading-progress-header {
+					font-size: 12px;
+				}
+				.reading-progress-track {
+					height: 5px;
+				}
+			}
+		</style>
 
 		<slot name="head"></slot>
 
@@ -211,6 +295,18 @@ const bannerOffset =
 	<body class=" min-h-screen " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner, "zen-maru-gothic-enabled": siteConfig.font.zenMaruGothic.enable}]}
 		  data-overlayscrollbars-initialize
 	>
+		<!-- 仅在文章页面显示阅读进度条 -->
+		<!-- 总是渲染进度条组件，但初始隐藏 -->
+<div class="reading-progress-widget" style="display:none;">
+  <div class="reading-progress-header">
+    <span>📖 阅读进度</span>
+    <span id="reading-progress-percent">0%</span>
+  </div>
+  <div class="reading-progress-track">
+    <div id="reading-progress-bar"></div>
+  </div>
+</div>
+
 		<!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
 		{shouldShowTopHighlight && <div class="top-gradient-highlight"></div>}
 		<ConfigCarrier></ConfigCarrier>
@@ -1252,6 +1348,7 @@ let backToTopBtn = document.getElementById('back-to-top-btn');
 let toc = document.getElementById('toc-wrapper');
 let navbar = document.getElementById('navbar-wrapper')
 
+
 // 节流函数
 function throttle(func: Function, limit: number) {
 	let inThrottle: boolean;
@@ -1385,4 +1482,90 @@ if (window.swup) {
 	document.addEventListener("swup:enable", setup)
 }
 </script>
+
+<script is:inline>
+  // 进度条只在/posts/页面显示，Swup切换后自动判断
+  function handleReadingProgressDisplay() {
+    const widget = document.querySelector('.reading-progress-widget');
+    if (!widget) return;
+    if (location.pathname.startsWith('/posts/')) {
+      widget.style.display = '';
+    } else {
+      widget.style.display = 'none';
+    }
+  }
+
+  // 进度条逻辑
+  function setupReadingProgress() {
+    const progressBar = document.getElementById('reading-progress-bar');
+    const progressPercent = document.getElementById('reading-progress-percent');
+    const progressWidget = document.querySelector('.reading-progress-widget');
+    let progressFadeTimer;
+
+    const scheduleFade = (delay = 1000) => {
+      if (!progressWidget) return;
+      if (progressFadeTimer) clearTimeout(progressFadeTimer);
+      progressFadeTimer = window.setTimeout(() => {
+        progressWidget.classList.add('faded');
+      }, delay);
+    };
+
+    const showWidgetNow = () => {
+      if (!progressWidget) return;
+      progressWidget.classList.add('visible');
+      progressWidget.classList.remove('faded');
+    };
+
+    const updateReadingProgress = () => {
+      if (!progressBar) return;
+      const doc = document.documentElement;
+      const scrollTop = doc.scrollTop || document.body.scrollTop;
+      const height = doc.scrollHeight - doc.clientHeight;
+      const percent = height > 0 ? Math.min(100, Math.max(0, (scrollTop / height) * 100)) : 0;
+      const pctText = `${percent.toFixed(0)}%`;
+      progressBar.style.width = percent + "%";
+      if (progressPercent) progressPercent.textContent = pctText;
+      showWidgetNow();
+      scheduleFade(350);
+    };
+
+    const handleUserActivity = () => {
+      showWidgetNow();
+      scheduleFade();
+    };
+
+    const bindReadingProgress = () => {
+      updateReadingProgress();
+      window.removeEventListener('scroll', updateReadingProgress);
+      window.addEventListener('scroll', updateReadingProgress, { passive: true });
+
+      window.removeEventListener('mousemove', handleUserActivity);
+      window.removeEventListener('touchmove', handleUserActivity);
+      window.addEventListener('mousemove', handleUserActivity, { passive: true });
+      window.addEventListener('touchmove', handleUserActivity, { passive: true });
+
+      showWidgetNow();
+      scheduleFade(350);
+    };
+
+    bindReadingProgress();
+    document.addEventListener('swup:contentReplaced', () => {
+      handleReadingProgressDisplay();
+      bindReadingProgress();
+    });
+    document.addEventListener('swup:enable', () => {
+      handleReadingProgressDisplay();
+      bindReadingProgress();
+    }, { once: true });
+  }
+
+  // 初始挂载
+  handleReadingProgressDisplay();
+  setupReadingProgress();
+  document.addEventListener('swup:contentReplaced', handleReadingProgressDisplay);
+  document.addEventListener('swup:enable', handleReadingProgressDisplay, { once: true });
+</script>
+
+</body>
+</html>
 
