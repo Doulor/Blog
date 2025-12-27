@@ -106,14 +106,20 @@ function formatDate(dateInput: string | Date): string {
                         {diary.data.images.map((image) => {
                           const normalized = normalizeImage(image);
                           const external = isExternalUrl(normalized);
+                          const displaySrc = external ? normalized : `/images/diary/${normalized}`;
                           return (
-                          <div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform">
+                          <div
+                            class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform moment-image-zoom"
+                            data-src={displaySrc}
+                            data-alt={i18n(I18nKey.diaryImage)}
+                          >
                             <img
-                              src={external ? normalized : `/images/diary/${normalized}`}
+                              src={displaySrc}
                               alt={i18n(I18nKey.diaryImage)}
                               class="w-full h-full object-cover"
                               loading="lazy"
                             />
+                            <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
                           </div>
                           );
                         })}
@@ -147,6 +153,62 @@ function formatDate(dateInput: string | Date): string {
     </div>
   </div>
 </MainGridLayout>
+
+<script>
+  // 列表页图片点击放大（不跳转详情，兼容 astro:after-swap）
+  const initDiaryListLightbox = () => {
+  const targets = document.querySelectorAll('.moment-image-zoom');
+
+  const createLightbox = (src, alt) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-200';
+      overlay.innerHTML = `
+        <div class="relative max-w-6xl w-full max-h-[90vh] flex items-center justify-center">
+          <img src="${src}" alt="${alt || ''}" class="max-h-[85vh] max-w-full object-contain rounded-xl shadow-2xl" />
+          <button aria-label="close" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 text-white text-2xl leading-none flex items-center justify-center hover:bg-black/80 transition" style="cursor:pointer">&times;</button>
+        </div>
+      `;
+
+      const remove = () => {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 200);
+        document.removeEventListener('keydown', onKey);
+      };
+
+      const onKey = (e) => {
+        if (e.key === 'Escape') remove();
+      };
+
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) remove();
+      });
+      overlay.querySelector('button')?.addEventListener('click', remove);
+      document.addEventListener('keydown', onKey);
+
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+      });
+    };
+
+    targets.forEach((item) => {
+      if (!(item instanceof HTMLElement)) return;
+      if (item.dataset.zoomBound) return;
+      item.dataset.zoomBound = 'true';
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const src = item.getAttribute('data-src');
+        const alt = item.getAttribute('data-alt') || '';
+        if (src) createLightbox(src, alt);
+      });
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', initDiaryListLightbox);
+  document.addEventListener('astro:after-swap', initDiaryListLightbox);
+</script>
 
 <style>
   /* 保留原始所有样式 */

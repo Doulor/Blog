@@ -151,9 +151,10 @@ const diaryDateIso = diaryDate.toISOString();
 </MainGridLayout>
 
 <script>
-  // 简易灯箱：点击图片放大，支持 ESC 关闭
-  document.addEventListener('DOMContentLoaded', () => {
-    const targets = document.querySelectorAll('.image-zoom-target');
+  // 简易灯箱：点击图片放大，支持 ESC 关闭（兼容 astro:after-swap）
+  const initDiaryLightbox = () => {
+    const galleryTargets = document.querySelectorAll('.image-zoom-target');
+    const markdownTargets = document.querySelectorAll('.markdown-content img');
 
     const createLightbox = (src, alt) => {
       const overlay = document.createElement('div');
@@ -187,12 +188,24 @@ const diaryDateIso = diaryDate.toISOString();
       });
     };
 
-    targets.forEach((wrapper) => {
-      wrapper.addEventListener('click', () => {
-        const img = wrapper.querySelector('img');
-        if (!img) return;
+    const bindTarget = (el) => {
+      if (!(el instanceof HTMLElement) || el.dataset.zoomBound) return;
+      el.dataset.zoomBound = 'true';
+      el.style.cursor = 'zoom-in';
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const img = el.tagName === 'IMG' ? el : el.querySelector('img');
+        if (!(img instanceof HTMLImageElement)) return;
         createLightbox(img.src, img.alt);
       });
-    });
-  });
+    };
+
+    galleryTargets.forEach(bindTarget);
+    markdownTargets.forEach(bindTarget);
+  };
+
+  document.addEventListener('DOMContentLoaded', initDiaryLightbox);
+  document.addEventListener('astro:after-swap', initDiaryLightbox);
 </script>
