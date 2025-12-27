@@ -107,7 +107,7 @@ const diaryDateIso = diaryDate.toISOString();
         )}
       </header>
 
-      <Markdown class="markdown-content onload-animation mb-8">
+      <Markdown class="markdown-content onload-animation mb-8" data-lightbox-base={diaryBasePath}>
         <Content />
       </Markdown>
 
@@ -123,7 +123,11 @@ const diaryDateIso = diaryDate.toISOString();
               const normalized = normalizeImage(image);
               const external = isExternalUrl(normalized);
               return (
-                <div class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer image-zoom-target">
+                <div 
+                  class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer"
+                  data-lightbox-src={external ? normalized : join(diaryBasePath, normalized)}
+                  data-lightbox-alt={`${diary.data.title} - ${index + 1}`}
+                >
                   {external ? (
                     <img
                       src={normalized}
@@ -150,62 +154,29 @@ const diaryDateIso = diaryDate.toISOString();
   </div>
 </MainGridLayout>
 
+<script is:inline src="/js/lightbox.js"></script>
 <script>
-  // 简易灯箱：点击图片放大，支持 ESC 关闭（兼容 astro:after-swap）
-  const initDiaryLightbox = () => {
-    const galleryTargets = document.querySelectorAll('.image-zoom-target');
-    const markdownTargets = document.querySelectorAll('.markdown-content img');
+  // 为 Markdown 内容中的图片动态添加 data-lightbox-src
+  function setupMarkdownLightbox() {
+    const markdownContent = document.querySelector('.markdown-content');
+    if (!markdownContent) return;
 
-    const createLightbox = (src, alt) => {
-      const overlay = document.createElement('div');
-      overlay.className = 'fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-200';
-      overlay.innerHTML = `
-        <div class="relative max-w-6xl w-full max-h-[90vh] flex items-center justify-center">
-          <img src="${src}" alt="${alt || ''}" class="max-h-[85vh] max-w-full object-contain rounded-xl shadow-2xl" />
-          <button aria-label="close" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 text-white text-2xl leading-none flex items-center justify-center hover:bg-black/80 transition" style="cursor:pointer">&times;</button>
-        </div>
-      `;
+    const images = markdownContent.querySelectorAll('img');
+    images.forEach(img => {
+      // 如果父元素已经是灯箱触发器，则跳过
+      if (img.closest('[data-lightbox-src]')) return;
 
-      const remove = () => {
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.remove(), 200);
-        document.removeEventListener('keydown', onKey);
-      };
+      // 为图片本身或其最近的父链接添加属性
+      const parentLink = img.closest('a');
+      const targetEl = parentLink || img;
 
-      const onKey = (e) => {
-        if (e.key === 'Escape') remove();
-      };
+      if (!targetEl.hasAttribute('data-lightbox-src')) {
+        targetEl.setAttribute('data-lightbox-src', img.src);
+        targetEl.setAttribute('data-lightbox-alt', img.alt);
+      }
+    });
+  }
 
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) remove();
-      });
-      overlay.querySelector('button')?.addEventListener('click', remove);
-      document.addEventListener('keydown', onKey);
-
-      document.body.appendChild(overlay);
-      requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-      });
-    };
-
-    const bindTarget = (el) => {
-      if (!(el instanceof HTMLElement) || el.dataset.zoomBound) return;
-      el.dataset.zoomBound = 'true';
-      el.style.cursor = 'zoom-in';
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        const img = el.tagName === 'IMG' ? el : el.querySelector('img');
-        if (!(img instanceof HTMLImageElement)) return;
-        createLightbox(img.src, img.alt);
-      });
-    };
-
-    galleryTargets.forEach(bindTarget);
-    markdownTargets.forEach(bindTarget);
-  };
-
-  document.addEventListener('DOMContentLoaded', initDiaryLightbox);
-  document.addEventListener('astro:after-swap', initDiaryLightbox);
+  document.addEventListener('astro:page-load', setupMarkdownLightbox);
+  document.addEventListener('astro:after-swap', setupMarkdownLightbox);
 </script>
