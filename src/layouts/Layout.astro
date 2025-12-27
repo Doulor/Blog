@@ -196,7 +196,127 @@ const bannerOffset =
 			'page-width': `${PAGE_WIDTH}rem`,
 		}}></style>  <!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 
+		<style is:global>
+			:root {
+				--reading-progress-color: hsl(var(--hue, {configHue}), 80%, 60%);
+			}
 
+			.reading-progress-widget {
+				position: fixed;
+				right: 18px;
+				bottom: 97px; /* 再略微下移 */
+				z-index: 1200;
+				min-width: 210px;
+				padding: 10px 12px;
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				justify-content: center;
+				border-radius: 14px;
+				background: color-mix(in srgb, var(--page-bg, #0b1221) 20%, rgba(255,255,255,0.7) 80%);
+				backdrop-filter: blur(10px);
+				box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+				border: 1px solid rgba(255,255,255,0.12);
+				color: #111;
+				opacity: 0;
+				pointer-events: none;
+				transform: translateY(8px) scale(0.82);
+				transition:
+					opacity 900ms ease,
+					transform 900ms ease,
+					border-radius 900ms ease,
+					width 600ms ease,
+					min-width 900ms ease,
+					padding 900ms ease,
+					gap 400ms ease;
+			}
+
+			.reading-progress-widget.visible {
+				opacity: 0.95;
+				pointer-events: auto;
+				transform: translateY(0) scale(1);
+			}
+
+			.reading-progress-widget.faded {
+				opacity: 0.6; /* 更高透明度，更加淡出 */
+				pointer-events: none;
+			}
+
+			/* Idle: collapse to square at right */
+			.reading-progress-widget.idle {
+				width: 46px;
+				min-width: 46px;
+				padding: 10px;
+				border-radius: 12px;
+				transform: translateY(8px) scale(0.9);
+				gap: 0;
+				align-items: center;
+			}
+
+			.reading-progress-widget.idle .reading-progress-header {
+				opacity: 0;
+				max-height: 0;
+				margin: 0;
+				overflow: hidden;
+			}
+
+			.reading-progress-widget.idle .reading-progress-track {
+				width: 100%;
+				height: 6px;
+			}
+
+			.reading-progress-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 8px;
+				font-size: 13px;
+				font-weight: 500;
+				color: #111;
+				max-height: 32px;
+				transition: opacity 260ms ease, max-height 260ms ease, margin 260ms ease;
+			}
+
+			.reading-progress-track {
+				margin-top: 0;
+				width: 100%;
+				height: 8px;
+				background: rgba(0,0,0,0.05);
+				border-radius: 999px;
+				overflow: hidden;
+				position: relative;
+				transition: height 260ms ease, width 260ms ease;
+			}
+
+			#reading-progress-bar {
+				position: absolute;
+				left: 0;
+				top: 0;
+				height: 100%;
+				width: 0%;
+				min-width: 2px;
+				background: var(--reading-progress-color);
+				transition: width 220ms cubic-bezier(.4,0,.2,1);
+				border-radius: 999px;
+				box-shadow: 0 0 4px 0 hsla(var(--hue, {configHue}), 80%, 60%, 0.35);
+				opacity: 0;
+			}
+
+			@media (max-width: 640px) {
+				.reading-progress-widget {
+					min-width: 180px;
+					padding: 8px 10px;
+					right: 10px;
+					bottom: 80px;
+				}
+				.reading-progress-header {
+					font-size: 12px;
+				}
+				.reading-progress-track {
+					height: 7px;
+				}
+			}
+		</style>
 
 		<slot name="head"></slot>
 
@@ -211,6 +331,18 @@ const bannerOffset =
 	<body class=" min-h-screen " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner, "zen-maru-gothic-enabled": siteConfig.font.zenMaruGothic.enable}]}
 		  data-overlayscrollbars-initialize
 	>
+		<!-- 仅在文章页面显示阅读进度条 -->
+		<!-- 总是渲染进度条组件，但初始隐藏 -->
+<div class="reading-progress-widget" style="display:none;">
+  <div class="reading-progress-header">
+    <span>📖 阅读进度</span>
+    <span id="reading-progress-percent">0%</span>
+  </div>
+  <div class="reading-progress-track">
+    <div id="reading-progress-bar"></div>
+  </div>
+</div>
+
 		<!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
 		{shouldShowTopHighlight && <div class="top-gradient-highlight"></div>}
 		<ConfigCarrier></ConfigCarrier>
@@ -657,17 +789,17 @@ import {
 import { siteConfig } from '../config';
 
 /* Preload fonts */
-// (async function() {
-// 	try {
-// 		await Promise.all([
-// 			document.fonts.load("400 1em Roboto"),
-// 			document.fonts.load("700 1em Roboto"),
-// 		]);
-// 		document.body.classList.remove("hidden");
-// 	} catch (error) {
-// 		console.log("Failed to load fonts:", error);
-// 	}
-// })();
+/* (async function() {
+	try {
+		await Promise.all([
+			document.fonts.load("400 1em Roboto"),
+			document.fonts.load("700 1em Roboto"),
+		]);
+		document.body.classList.remove("hidden");
+	} catch (error) {
+		console.log("Failed to load fonts:", error);
+	}
+})(); */
 
 /* TODO This is a temporary solution for style flicker issue when the transition is activated */
 /* issue link: https://github.com/withastro/astro/issues/8711, the solution get from here too */
@@ -1022,6 +1154,59 @@ async function loadAndInitTranslate() {
 
 
 
+// 统一的页面加载事件派发器，确保初次和每次 Swup 切换后都能通知到页面脚本
+const emitPageLoaded = () => {
+	const event = new CustomEvent('mizuki:page:loaded', {
+		detail: { path: window.location.pathname, timestamp: Date.now() }
+	});
+	window.dispatchEvent(event);
+	// 同时发到 document，兼容之前的监听写法
+	document.dispatchEvent(event);
+};
+
+function refreshContentManagerAuthStatus() {
+	if (!window.location.pathname.includes('/content-manager')) return;
+	const githubToken = localStorage.getItem('github_access_token');
+	const statusText = document.getElementById('auth-status-text');
+	const statusIndicator = document.getElementById('auth-status-indicator');
+	const authBtnText = document.getElementById('auth-btn-text');
+	if (statusText && statusIndicator && authBtnText) {
+		if (githubToken) {
+			statusText.textContent = '已认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-2';
+			authBtnText.textContent = '退出';
+		} else {
+			statusText.textContent = '未认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-red-500 mr-2';
+			authBtnText.textContent = '登录';
+		}
+	}
+}
+
+function refreshCreateContentAuthStatus() {
+	if (!window.location.pathname.includes('/create-content')) return;
+	const githubToken = localStorage.getItem('github_access_token');
+	const statusText = document.getElementById('create-auth-status-text');
+	const statusIndicator = document.getElementById('create-auth-status-indicator');
+	const authBtnText = document.getElementById('create-auth-btn-text');
+	if (statusText && statusIndicator && authBtnText) {
+		if (githubToken) {
+			statusText.textContent = '已认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-2';
+			authBtnText.textContent = '退出';
+		} else {
+			statusText.textContent = '未认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-red-500 mr-2';
+			authBtnText.textContent = '登录';
+		}
+	}
+}
+
+const handleGlobalPageLoaded = () => {
+	refreshContentManagerAuthStatus();
+	refreshCreateContentAuthStatus();
+};
+
 const setup = () => {
 	// TODO: temp solution to change the height of the banner
 /*
@@ -1051,50 +1236,26 @@ const setup = () => {
 		}
 	})
 	window.swup.hooks.on('content:replace', () => {
-		// 只处理新的katex元素的滚动条，使用原生CSS滚动条
-		initCustomScrollbar();
-		
-		// 检查当前页面是否为文章页面（有TOC元素）
-		const tocWrapper = document.getElementById('toc-wrapper');
-		const isArticlePage = tocWrapper !== null;
-		
-		// 只在文章页面重新初始化 TOC 组件
-		if (isArticlePage) {
-			const tocElement = document.querySelector('table-of-contents');
-			if (tocElement && typeof (tocElement as any).init === 'function') {
-				setTimeout(() => {
-					(tocElement as any).init();
-				}, 100);
-			}
-			
-			// 重新初始化移动端 TOC 组件
-			if (typeof (window as any).mobileTOCInit === 'function') {
-				setTimeout(() => {
-					(window as any).mobileTOCInit();
-				}, 100);
-			}
-		}
-		
-		// 页面内容替换后重新执行翻译（仅在翻译已加载时）
-		setTimeout(() => {
-			if (siteConfig.translate?.enable && typeof (window as any).translate !== 'undefined') {
-				(window as any).translate.execute();
-			}
-		}, 100);
-		
-		// 重新初始化semifull模式的滚动检测
-		const navbar = document.getElementById('navbar')
-		if (navbar) {
-			const transparentMode = navbar.getAttribute('data-transparent-mode')
-			
-			if (transparentMode === 'semifull') {
-				// 重新调用初始化函数来重新绑定滚动事件
-				if (typeof (window as any).initSemifullScrollDetection === 'function') {
-					(window as any).initSemifullScrollDetection()
-				}
-			}
-		}
-	})
+            // 只处理新的katex元素的滚动条，使用原生CSS滚动条
+            initCustomScrollbar();
+            
+            // 检查当前页面是否为文章页面（有TOC元素）
+            const tocWrapper = document.getElementById('toc-wrapper');
+            const isArticlePage = tocWrapper !== null;
+            
+            // 只在文章页面重新初始化 TOC 组件
+            if (isArticlePage) {
+                const tocElement = document.querySelector('table-of-contents');
+                if (tocElement && typeof (tocElement as any).init === 'function') {
+                    setTimeout(() => {
+                        (tocElement as any).init();
+                    }, 100);
+                }
+            }
+
+            // 新增：通知页面脚本在 Swup 切换后重新初始化
+			emitPageLoaded();
+        })
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')
@@ -1181,18 +1342,8 @@ const setup = () => {
 		
 		// 检查当前页面是否为文章页面，如果是则触发自定义事件用于初始化评论系统
 		setTimeout(() => {
-			if (document.getElementById('tcomment')) {
-				// 触发自定义事件，通知评论系统页面已完全加载
-				const pageLoadedEvent = new CustomEvent('mizuki:page:loaded', {
-					detail: {
-						path: window.location.pathname,
-						timestamp: Date.now()
-					}
-				});
-				document.dispatchEvent(pageLoadedEvent);
-				console.log('Layout: 触发 mizuki:page:loaded 事件，路径:', window.location.pathname);
-			}
-		}, 300);
+			emitPageLoaded();
+		}, 150);
 	});
 	window.swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
 		setTimeout(() => {
@@ -1209,6 +1360,20 @@ const setup = () => {
         }, 200)
 	});
 }
+
+// 首次页面加载也派发一次，确保非 Swup 进入时页面脚本能初始化
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => {
+		emitPageLoaded();
+		handleGlobalPageLoaded();
+	}, { once: true });
+} else {
+	emitPageLoaded();
+	handleGlobalPageLoaded();
+}
+
+window.addEventListener('mizuki:page:loaded', handleGlobalPageLoaded);
+
 if (window?.swup?.hooks) {
 	setup()
 } else {
@@ -1218,6 +1383,7 @@ if (window?.swup?.hooks) {
 let backToTopBtn = document.getElementById('back-to-top-btn');
 let toc = document.getElementById('toc-wrapper');
 let navbar = document.getElementById('navbar-wrapper')
+
 
 // 节流函数
 function throttle(func: Function, limit: number) {
@@ -1352,4 +1518,86 @@ if (window.swup) {
 	document.addEventListener("swup:enable", setup)
 }
 </script>
+
+<script is:inline>
+  // 进度条只在/posts/页面显示，Swup切换后自动判断
+  function handleReadingProgressDisplay() {
+    const widget = document.querySelector('.reading-progress-widget');
+    if (!widget) return;
+    if (location.pathname.startsWith('/posts/')) {
+      widget.style.display = '';
+    } else {
+      widget.style.display = 'none';
+    }
+  }
+
+  // 进度条逻辑
+  function setupReadingProgress() {
+    const progressBar = document.getElementById('reading-progress-bar');
+    const progressPercent = document.getElementById('reading-progress-percent');
+    const progressWidget = document.querySelector('.reading-progress-widget');
+    let progressFadeTimer;
+
+    // 将 scheduleFade 的延迟由 350ms 调长为 1200ms
+    const scheduleFade = (delay = 1200) => {
+      if (!progressWidget) return;
+      if (progressFadeTimer) clearTimeout(progressFadeTimer);
+      progressFadeTimer = window.setTimeout(() => {
+        progressWidget.classList.add('faded', 'idle');
+      }, delay);
+    };
+
+    const showWidgetNow = () => {
+      if (!progressWidget) return;
+      progressWidget.classList.add('visible');
+      progressWidget.classList.remove('faded', 'idle');
+    };
+
+    const updateReadingProgress = () => {
+      if (!progressBar) return;
+      const doc = document.documentElement;
+      const scrollTop = doc.scrollTop || document.body.scrollTop;
+      const height = doc.scrollHeight - doc.clientHeight;
+      const percent = height > 0 ? Math.min(100, Math.max(0, (scrollTop / height) * 100)) : 0;
+      const pctText = `${percent.toFixed(0)}%`;
+      progressBar.style.width = percent + "%";
+      progressBar.style.opacity = percent <= 0 ? "0" : "1";
+      if (progressPercent) progressPercent.textContent = pctText;
+      showWidgetNow();
+      scheduleFade(1200); // 这里也同步调长
+    };
+
+    // 只监听滚动，不再监听鼠标/触摸移动
+    const bindReadingProgress = () => {
+      updateReadingProgress();
+      window.removeEventListener('scroll', updateReadingProgress);
+      window.addEventListener('scroll', updateReadingProgress, { passive: true });
+
+      window.removeEventListener('mousemove', updateReadingProgress);
+      window.removeEventListener('touchmove', updateReadingProgress);
+
+      showWidgetNow();
+      scheduleFade(1200);
+    };
+
+    bindReadingProgress();
+    document.addEventListener('swup:contentReplaced', () => {
+      handleReadingProgressDisplay();
+      bindReadingProgress();
+    });
+    document.addEventListener('swup:enable', () => {
+      handleReadingProgressDisplay();
+      bindReadingProgress();
+    }, { once: true });
+  }
+
+  // 初始挂载
+  handleReadingProgressDisplay();
+  setupReadingProgress();
+  document.addEventListener('swup:contentReplaced', handleReadingProgressDisplay);
+  document.addEventListener('swup:enable', handleReadingProgressDisplay, { once: true });
+</script>
+
+</body>
+</html>
 

@@ -5,7 +5,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 ---
 
 <MainGridLayout title="内容创建器" description="创建新的博客文章、日记和相册">
-  <div class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+  <div id="create-content-root" class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
     <header class="mb-8">
       <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
         内容创建器
@@ -505,8 +505,13 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 </MainGridLayout>
 
 <script>
-  // 管理认证状态
-  let githubToken = localStorage.getItem('github_access_token') || null;
+  function setupCreateContent() {
+    const rootEl = document.getElementById('create-content-root');
+    if (!rootEl || rootEl.dataset.ccInit === 'true') return;
+    rootEl.dataset.ccInit = 'true';
+
+    // 管理认证状态
+    let githubToken = localStorage.getItem('github_access_token') || null;
 
   // 更新认证状态显示
   function updateCreateAuthStatus() {
@@ -1771,6 +1776,23 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
   });
 
   generateMarkdown('normal');
+
+  }
+
+  // 触发初始化（首次加载 + Swup 无刷切换）
+  function triggerCreateContentInit(attempt = 0) {
+    const rootEl = document.getElementById('create-content-root');
+    if (!rootEl && attempt < 5) {
+      return setTimeout(() => triggerCreateContentInit(attempt + 1), 50);
+    }
+    setTimeout(setupCreateContent, 0);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => triggerCreateContentInit());
+  window.addEventListener('mizuki:page:loaded', () => triggerCreateContentInit());
+  if (document.readyState !== 'loading') {
+    triggerCreateContentInit();
+  }
 </script>
 
 <style>

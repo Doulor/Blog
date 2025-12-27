@@ -171,7 +171,25 @@ const { postSlug } = Astro.props;
 
 <script>
   // 页面加载完成后执行
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', initSupabaseComments);
+
+  // 如果脚本注入时页面已加载，立即尝试初始化
+  if (document.readyState !== 'loading') {
+    setTimeout(initSupabaseComments, 0);
+  }
+
+  // 支持 Swup 和自定义事件的重新初始化
+  document.addEventListener('mizuki:page:loaded', () => setTimeout(initSupabaseComments, 50));
+  if (typeof window !== 'undefined' && window.swup?.hooks) {
+    window.swup.hooks.on('content:replace', () => setTimeout(initSupabaseComments, 50));
+  }
+
+  function initSupabaseComments() {
+    // 防重复初始化：页面销毁重建后重新执行
+    const commentsContainer = document.getElementById('comments-container');
+    if (!commentsContainer || commentsContainer.dataset.supabaseReady === 'true') return;
+    commentsContainer.dataset.supabaseReady = 'true';
+
     // 检查是否在构建环境中（服务器端渲染）
     if (typeof window === 'undefined') {
       return; // 在构建环境中不执行客户端脚本
@@ -204,6 +222,7 @@ const { postSlug } = Astro.props;
       const toast = document.createElement('div');
       toast.className = `toast ${isError ? 'error' : 'success'}`;
       toast.textContent = message;
+
       document.body.appendChild(toast);
       // 3秒后自动移除提示
       setTimeout(() => toast.remove(), 3000);
@@ -406,10 +425,10 @@ const { postSlug } = Astro.props;
       if (commentsList) {
         commentsList.innerHTML = `
           <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
-            <i class="fas fa-exclamation-circle mr-1"></i> 评论功能异常，点击刷新
+            <i class="fas fa-exclamation-circle mr-1"></i> Supabase 初始化失败，点击刷新
           </p>
         `;
       }
     });
-  });
+  }
 </script>

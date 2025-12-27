@@ -203,12 +203,6 @@ export const navBarConfig: NavBarConfig = {
 					external: true,
 					icon: "fa6-brands:discord",
 				},
-				{
-					name: "Post-editor",
-					url: "/my-editor/",
-					external: false,
-					icon: "mdi:file-edit",
-				},
 			],
 		},
 		{
@@ -221,6 +215,11 @@ export const navBarConfig: NavBarConfig = {
 					name: "相册",
 					url: "/albums/",
 					icon: "material-symbols:photo-library",
+				},
+				{
+					name: "留言板",
+					url: "/guestbook/",
+					icon: "material-symbols:chat",
 				},
 			],
 		},

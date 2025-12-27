@@ -1,183 +1,182 @@
 ---
+import { join } from "node:path";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import Markdown from "../../components/misc/Markdown.astro";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
-import Layout from "../../layouts/Layout.astro";
-import { getEntry } from 'astro:content';
+import { siteConfig } from "../../config";
+import { getDir } from "../../utils/url-utils";
+import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 
 // 检测外部图片链接的函数
-function isExternalUrl(url) {
-  try {
-    const parsed = new URL(url);
-    return /^https?:$/.test(parsed.protocol);
-  } catch {
-    return false;
-  }
+function isExternalUrl(url: string): boolean {
+	try {
+		const parsed = new URL(url);
+		return /^https?:$/.test(parsed.protocol);
+	} catch {
+		return false;
+	}
+}
+
+// 规范化图片字段，兼容类似 "[xxx](https://...)" 的写法
+function normalizeImage(url: string): string {
+  const match = url.match(/\((https?:[^)]+)\)/);
+  return match ? match[1] : url.trim();
+}
+
+// 绝对时间格式化（沿用列表页逻辑）
+function formatDate(dateInput: string | Date): string {
+  const date = new Date(dateInput);
+	const lang = siteConfig.lang || "zh-CN";
+	const localeMap: Record<string, string> = {
+		"zh_CN": "zh-CN",
+		"zh_TW": "zh-TW",
+		"en": "en-US",
+		"ja": "ja-JP",
+	};
+	const locale = localeMap[lang] || lang;
+
+	return date.toLocaleDateString(locale, {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+		weekday: "short",
+	});
+}
+
+// 相对时间显示
+function formatTime(dateInput: string | Date): string {
+  const now = new Date();
+  const date = new Date(dateInput);
+	const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+	if (diffInMinutes < 60) return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
+	if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
+	return `${Math.floor(diffInMinutes / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;
 }
 
 export async function getStaticPaths() {
-  const { getCollection } = await import("astro:content");
-  const diaries = await getCollection('diary');
-  return diaries.map((diary) => ({
-    params: { id: diary.slug },
-    props: { diary },
-  }));
+	const { getCollection } = await import("astro:content");
+	const diaries = await getCollection("diary");
+	return diaries.map((diary) => ({
+		params: { id: diary.slug },
+		props: { diary },
+	}));
 }
 
 const { diary } = Astro.props;
+const { Content, headings } = await diary.render();
+const gallery = diary.data.images || [];
+const description =
+	diary.data.description ||
+	diary.data.excerpt ||
+	diary.body?.slice(0, 160) ||
+	i18n(I18nKey.diarySubtitle);
+const diaryBasePath = join("content/", getDir(diary.id));
+const diaryDate = new Date(diary.data.date);
+const diaryDateIso = diaryDate.toISOString();
 ---
 
-<Layout title={diary.data.title} description={diary.data.description || diary.body?.slice(0, 160)}>
-  <div class="flex w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 py-8" style="opacity: 0;" id="main-container">
-    <div class="max-w-4xl w-full mx-auto px-4">
-      <!-- 主卡片 -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
-        <!-- 返回按钮区域 - 使用低调但明显的颜色 -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex items-center">
-            <a href="/diary/" class="inline-flex items-center gap-2 text-white bg-gray-600 hover:bg-gray-700 transition-colors text-base font-medium px-4 py-2 rounded-lg shadow">
-              <i class="fas fa-arrow-left"></i> 返回日记列表
-            </a>
-          </div>
+<MainGridLayout
+  title={diary.data.title}
+  description={description}
+  lang={diary.data.lang || siteConfig.lang}
+  setOGTypeArticle={true}
+  headings={headings}
+>
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
+    <div class="card-base z-10 px-5 md:px-8 lg:px-10 py-6 md:py-8 relative w-full">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <a
+          href="/diary/"
+          class="inline-flex items-center gap-2 px-4 md:px-5 py-2.5 rounded-xl text-sm md:text-base font-semibold text-white bg-[var(--primary)] hover:bg-[color:var(--primary-dark,var(--primary))] shadow-lg hover:shadow-xl transition transform hover:-translate-y-[1px] active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--card-bg)]"
+        >
+          <span class="text-lg">←</span>
+          <span>{i18n(I18nKey.diary)}</span>
+        </a>
+        <div class="flex flex-col text-right text-75 text-xs md:text-sm">
+          <time datetime={diaryDateIso} class="font-semibold text-90">{formatDate(diaryDate)}</time>
+          <span class="mt-0.5">{formatTime(diaryDate)}</span>
         </div>
-
-        <!-- 内容区域 -->
-        <article class="p-6 md:p-8">
-          <header class="mb-6">
-            <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-              {diary.data.title}
-            </h1>
-            <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-400 text-sm md:text-base">
-              <time datetime={diary.data.date} class="flex items-center gap-1.5">
-                <i class="fas fa-calendar text-gray-500"></i>
-                {new Date(diary.data.date).toLocaleDateString('zh-CN', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  weekday: 'long'
-                })}
-              </time>
-            </div>
-          </header>
-
-          <div class="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-base mb-6 md:mb-8">
-            {diary.body}
-          </div>
-
-          {/* 在正文和图片之间添加分隔符 */}
-          {diary.data.images && diary.data.images.length > 0 && (
-            <hr class="border-t border-gray-200 dark:border-gray-700 my-6" />
-          )}
-
-          {/* 处理图片显示 - 移到内容下方 */}
-          {diary.data.images && diary.data.images.length > 0 && (
-            <div class="moment-images grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {diary.data.images.map((image, index) => (
-                <div class="image-item relative rounded-xl overflow-hidden aspect-square cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group" key={index}>
-                  <img
-                    src={isExternalUrl(image) ? image : `/images/diary/${image}`}
-                    alt={`${diary.data.title} - 图片 ${index + 1}`}
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <i class="fas fa-search-plus text-white text-2xl"></i>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </article>
       </div>
+
+      <header class="mb-4 md:mb-6">
+        <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-90 leading-tight mb-2">{diary.data.title}</h1>
+        {description && (
+          <p class="text-75 text-sm md:text-base leading-relaxed">{description}</p>
+        )}
+      </header>
+
+      <Markdown class="markdown-content onload-animation mb-8" data-lightbox-base={diaryBasePath}>
+        <Content />
+      </Markdown>
+
+      {gallery.length > 0 && (
+        <section class="space-y-3">
+          <div class="flex items-center gap-2 text-75 text-sm font-semibold">
+            <span>📷</span>
+            <span>{i18n(I18nKey.diaryImage) || "Images"}</span>
+            <span class="text-xs text-60">({gallery.length})</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {gallery.map((image: string, index: number) => {
+              const normalized = normalizeImage(image);
+              const external = isExternalUrl(normalized);
+              return (
+                <div 
+                  class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer"
+                  data-lightbox-src={external ? normalized : join(diaryBasePath, normalized)}
+                  data-lightbox-alt={`${diary.data.title} - ${index + 1}`}
+                >
+                  {external ? (
+                    <img
+                      src={normalized}
+                      alt={`${diary.data.title} - ${index + 1}`}
+                      class="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <ImageWrapper
+                      src={normalized}
+                      alt={`${diary.data.title} - ${index + 1}`}
+                      class="w-full h-full"
+                      basePath={diaryBasePath}
+                    />
+                  )}
+                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   </div>
+</MainGridLayout>
 
-  <script>
-    // 添加页面进入动画
-    document.addEventListener('DOMContentLoaded', () => {
-      const container = document.getElementById('main-container');
-      setTimeout(() => {
-        container.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        container.style.opacity = '1';
-        container.style.transform = 'translateY(0)';
-      }, 50);
+<script is:inline src="/js/lightbox.js"></script>
+<script>
+  // 为 Markdown 内容中的图片动态添加 data-lightbox-src
+  function setupMarkdownLightbox() {
+    const markdownContent = document.querySelector('.markdown-content');
+    if (!markdownContent) return;
+
+    const images = markdownContent.querySelectorAll('img');
+    images.forEach(img => {
+      // 如果父元素已经是灯箱触发器，则跳过
+      if (img.closest('[data-lightbox-src]')) return;
+
+      // 为图片本身或其最近的父链接添加属性
+      const parentLink = img.closest('a');
+      const targetEl = parentLink || img;
+
+      if (!targetEl.hasAttribute('data-lightbox-src')) {
+        targetEl.setAttribute('data-lightbox-src', img.src);
+        targetEl.setAttribute('data-lightbox-alt', img.alt);
+      }
     });
+  }
 
-    // 为图片添加点击放大功能，添加动画效果
-    document.addEventListener('DOMContentLoaded', () => {
-      const imageItems = document.querySelectorAll('.image-item');
-
-      imageItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-          if (e.target.tagName === 'IMG' || e.target.closest('.image-item')) {
-            // 获取图片元素
-            const img = e.target.tagName === 'IMG' ? e.target : e.target.closest('.image-item').querySelector('img');
-            const imgSrc = img.src;
-            const imgAlt = img.alt;
-
-            // 创建模态框
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 cursor-zoom-out opacity-0';
-            modal.innerHTML = `
-              <div class="relative max-w-6xl max-h-[90vh] transform scale-95">
-                <img src="${imgSrc}" alt="${imgAlt}" class="max-h-[80vh] max-w-full object-contain block mx-auto rounded-lg" />
-                <button class="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-colors"
-                        style="cursor: pointer;">&times;</button>
-              </div>
-            `;
-
-            document.body.appendChild(modal);
-
-            // 触发进入动画
-            setTimeout(() => {
-              modal.style.transition = 'opacity 0.3s ease';
-              modal.style.opacity = '1';
-
-              const modalContent = modal.querySelector('div');
-              if (modalContent) {
-                modalContent.style.transition = 'transform 0.3s ease';
-                modalContent.style.transform = 'scale(1)';
-              }
-            }, 10);
-
-            // 关闭模态框事件
-            const closeBtn = modal.querySelector('button');
-            closeBtn.addEventListener('click', () => {
-              // 触发退出动画
-              modal.style.transition = 'opacity 0.3s ease';
-              modal.style.opacity = '0';
-
-              const modalContent = modal.querySelector('div');
-              if (modalContent) {
-                modalContent.style.transition = 'transform 0.3s ease';
-                modalContent.style.transform = 'scale(0.95)';
-              }
-
-              setTimeout(() => {
-                document.body.removeChild(modal);
-              }, 300);
-            });
-
-            // 点击模态框背景关闭
-            modal.addEventListener('click', (e) => {
-              if (e.target === modal) {
-                // 触发退出动画
-                modal.style.transition = 'opacity 0.3s ease';
-                modal.style.opacity = '0';
-
-                const modalContent = modal.querySelector('div');
-                if (modalContent) {
-                  modalContent.style.transition = 'transform 0.3s ease';
-                  modalContent.style.transform = 'scale(0.95)';
-                }
-
-                setTimeout(() => {
-                  document.body.removeChild(modal);
-                }, 300);
-              }
-            });
-          }
-        });
-      });
-    });
-  </script>
-</Layout>
+  document.addEventListener('astro:page-load', setupMarkdownLightbox);
+  document.addEventListener('astro:after-swap', setupMarkdownLightbox);
+</script>
