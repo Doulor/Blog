@@ -1872,6 +1872,15 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
     color: white;
   }
 
+  /* 确认弹窗按钮需要更高对比度 */
+  #submitModal .btn-card {
+    background: color-mix(in srgb, var(--primary), #000 30%);
+    border: 1px solid color-mix(in srgb, var(--primary), #000 40%);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
   /* For dark mode, ensure good contrast */
   @media (prefers-color-scheme: dark) {
     #normalSubmitButton {
