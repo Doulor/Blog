@@ -220,19 +220,49 @@ const bannerOffset =
 				color: #111;
 				opacity: 0;
 				pointer-events: none;
-				transform: translateY(8px);
-				transition: opacity 760ms ease, transform 340ms ease;
+				transform: translateY(8px) scale(0.82);
+				transition:
+					opacity 900ms ease,
+					transform 500ms ease,
+					border-radius 420ms ease,
+					width 420ms ease,
+					min-width 420ms ease,
+					padding 420ms ease,
+					gap 420ms ease;
 			}
 
 			.reading-progress-widget.visible {
 				opacity: 0.95;
 				pointer-events: auto;
-				transform: translateY(0);
+				transform: translateY(0) scale(1);
 			}
 
 			.reading-progress-widget.faded {
-				opacity: 0.2; /* 更高透明度，更加淡出 */
+				opacity: 0.6; /* 更高透明度，更加淡出 */
 				pointer-events: none;
+			}
+
+			/* Idle: collapse to square at right */
+			.reading-progress-widget.idle {
+				width: 46px;
+				min-width: 46px;
+				padding: 10px;
+				border-radius: 12px;
+				transform: translateY(8px) scale(0.9);
+				gap: 0;
+				align-items: center;
+			}
+
+			.reading-progress-widget.idle .reading-progress-header {
+				opacity: 0;
+				max-height: 0;
+				margin: 0;
+				overflow: hidden;
+			}
+
+			.reading-progress-widget.idle .reading-progress-track {
+				width: 100%;
+				height: 6px;
 			}
 
 			.reading-progress-header {
@@ -243,6 +273,8 @@ const bannerOffset =
 				font-size: 13px;
 				font-weight: 500;
 				color: #111;
+				max-height: 32px;
+				transition: opacity 260ms ease, max-height 260ms ease, margin 260ms ease;
 			}
 
 			.reading-progress-track {
@@ -253,6 +285,7 @@ const bannerOffset =
 				border-radius: 999px;
 				overflow: hidden;
 				position: relative;
+				transition: height 260ms ease, width 260ms ease;
 			}
 
 			#reading-progress-bar {
@@ -263,7 +296,7 @@ const bannerOffset =
 				width: 0%;
 				min-width: 2px;
 				background: var(--reading-progress-color);
-				transition: width 160ms cubic-bezier(.4,0,.2,1);
+				transition: width 220ms cubic-bezier(.4,0,.2,1);
 				border-radius: 999px;
 				box-shadow: 0 0 4px 0 hsla(var(--hue, {configHue}), 80%, 60%, 0.35);
 				opacity: 0;
@@ -1505,18 +1538,18 @@ if (window.swup) {
     const progressWidget = document.querySelector('.reading-progress-widget');
     let progressFadeTimer;
 
-    const scheduleFade = (delay = 1000) => {
+		const scheduleFade = (delay = 1400) => {
       if (!progressWidget) return;
       if (progressFadeTimer) clearTimeout(progressFadeTimer);
       progressFadeTimer = window.setTimeout(() => {
-        progressWidget.classList.add('faded');
+				progressWidget.classList.add('faded', 'idle');
       }, delay);
     };
 
     const showWidgetNow = () => {
       if (!progressWidget) return;
-      progressWidget.classList.add('visible');
-      progressWidget.classList.remove('faded');
+			progressWidget.classList.add('visible');
+			progressWidget.classList.remove('faded', 'idle');
     };
 
     const updateReadingProgress = () => {
