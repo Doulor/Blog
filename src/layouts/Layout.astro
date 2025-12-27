@@ -657,17 +657,17 @@ import {
 import { siteConfig } from '../config';
 
 /* Preload fonts */
-// (async function() {
-// 	try {
-// 		await Promise.all([
-// 			document.fonts.load("400 1em Roboto"),
-// 			document.fonts.load("700 1em Roboto"),
-// 		]);
-// 		document.body.classList.remove("hidden");
-// 	} catch (error) {
-// 		console.log("Failed to load fonts:", error);
-// 	}
-// })();
+/* (async function() {
+	try {
+		await Promise.all([
+			document.fonts.load("400 1em Roboto"),
+			document.fonts.load("700 1em Roboto"),
+		]);
+		document.body.classList.remove("hidden");
+	} catch (error) {
+		console.log("Failed to load fonts:", error);
+	}
+})(); */
 
 /* TODO This is a temporary solution for style flicker issue when the transition is activated */
 /* issue link: https://github.com/withastro/astro/issues/8711, the solution get from here too */
@@ -1022,6 +1022,59 @@ async function loadAndInitTranslate() {
 
 
 
+// 统一的页面加载事件派发器，确保初次和每次 Swup 切换后都能通知到页面脚本
+const emitPageLoaded = () => {
+	const event = new CustomEvent('mizuki:page:loaded', {
+		detail: { path: window.location.pathname, timestamp: Date.now() }
+	});
+	window.dispatchEvent(event);
+	// 同时发到 document，兼容之前的监听写法
+	document.dispatchEvent(event);
+};
+
+function refreshContentManagerAuthStatus() {
+	if (!window.location.pathname.includes('/content-manager')) return;
+	const githubToken = localStorage.getItem('github_access_token');
+	const statusText = document.getElementById('auth-status-text');
+	const statusIndicator = document.getElementById('auth-status-indicator');
+	const authBtnText = document.getElementById('auth-btn-text');
+	if (statusText && statusIndicator && authBtnText) {
+		if (githubToken) {
+			statusText.textContent = '已认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-2';
+			authBtnText.textContent = '退出';
+		} else {
+			statusText.textContent = '未认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-red-500 mr-2';
+			authBtnText.textContent = '登录';
+		}
+	}
+}
+
+function refreshCreateContentAuthStatus() {
+	if (!window.location.pathname.includes('/create-content')) return;
+	const githubToken = localStorage.getItem('github_access_token');
+	const statusText = document.getElementById('create-auth-status-text');
+	const statusIndicator = document.getElementById('create-auth-status-indicator');
+	const authBtnText = document.getElementById('create-auth-btn-text');
+	if (statusText && statusIndicator && authBtnText) {
+		if (githubToken) {
+			statusText.textContent = '已认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-2';
+			authBtnText.textContent = '退出';
+		} else {
+			statusText.textContent = '未认证';
+			statusIndicator.className = 'w-3 h-3 rounded-full bg-red-500 mr-2';
+			authBtnText.textContent = '登录';
+		}
+	}
+}
+
+const handleGlobalPageLoaded = () => {
+	refreshContentManagerAuthStatus();
+	refreshCreateContentAuthStatus();
+};
+
 const setup = () => {
 	// TODO: temp solution to change the height of the banner
 /*
@@ -1051,50 +1104,26 @@ const setup = () => {
 		}
 	})
 	window.swup.hooks.on('content:replace', () => {
-		// 只处理新的katex元素的滚动条，使用原生CSS滚动条
-		initCustomScrollbar();
-		
-		// 检查当前页面是否为文章页面（有TOC元素）
-		const tocWrapper = document.getElementById('toc-wrapper');
-		const isArticlePage = tocWrapper !== null;
-		
-		// 只在文章页面重新初始化 TOC 组件
-		if (isArticlePage) {
-			const tocElement = document.querySelector('table-of-contents');
-			if (tocElement && typeof (tocElement as any).init === 'function') {
-				setTimeout(() => {
-					(tocElement as any).init();
-				}, 100);
-			}
-			
-			// 重新初始化移动端 TOC 组件
-			if (typeof (window as any).mobileTOCInit === 'function') {
-				setTimeout(() => {
-					(window as any).mobileTOCInit();
-				}, 100);
-			}
-		}
-		
-		// 页面内容替换后重新执行翻译（仅在翻译已加载时）
-		setTimeout(() => {
-			if (siteConfig.translate?.enable && typeof (window as any).translate !== 'undefined') {
-				(window as any).translate.execute();
-			}
-		}, 100);
-		
-		// 重新初始化semifull模式的滚动检测
-		const navbar = document.getElementById('navbar')
-		if (navbar) {
-			const transparentMode = navbar.getAttribute('data-transparent-mode')
-			
-			if (transparentMode === 'semifull') {
-				// 重新调用初始化函数来重新绑定滚动事件
-				if (typeof (window as any).initSemifullScrollDetection === 'function') {
-					(window as any).initSemifullScrollDetection()
-				}
-			}
-		}
-	})
+            // 只处理新的katex元素的滚动条，使用原生CSS滚动条
+            initCustomScrollbar();
+            
+            // 检查当前页面是否为文章页面（有TOC元素）
+            const tocWrapper = document.getElementById('toc-wrapper');
+            const isArticlePage = tocWrapper !== null;
+            
+            // 只在文章页面重新初始化 TOC 组件
+            if (isArticlePage) {
+                const tocElement = document.querySelector('table-of-contents');
+                if (tocElement && typeof (tocElement as any).init === 'function') {
+                    setTimeout(() => {
+                        (tocElement as any).init();
+                    }, 100);
+                }
+            }
+
+            // 新增：通知页面脚本在 Swup 切换后重新初始化
+			emitPageLoaded();
+        })
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')
@@ -1181,18 +1210,8 @@ const setup = () => {
 		
 		// 检查当前页面是否为文章页面，如果是则触发自定义事件用于初始化评论系统
 		setTimeout(() => {
-			if (document.getElementById('tcomment')) {
-				// 触发自定义事件，通知评论系统页面已完全加载
-				const pageLoadedEvent = new CustomEvent('mizuki:page:loaded', {
-					detail: {
-						path: window.location.pathname,
-						timestamp: Date.now()
-					}
-				});
-				document.dispatchEvent(pageLoadedEvent);
-				console.log('Layout: 触发 mizuki:page:loaded 事件，路径:', window.location.pathname);
-			}
-		}, 300);
+			emitPageLoaded();
+		}, 150);
 	});
 	window.swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
 		setTimeout(() => {
@@ -1209,6 +1228,20 @@ const setup = () => {
         }, 200)
 	});
 }
+
+// 首次页面加载也派发一次，确保非 Swup 进入时页面脚本能初始化
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => {
+		emitPageLoaded();
+		handleGlobalPageLoaded();
+	}, { once: true });
+} else {
+	emitPageLoaded();
+	handleGlobalPageLoaded();
+}
+
+window.addEventListener('mizuki:page:loaded', handleGlobalPageLoaded);
+
 if (window?.swup?.hooks) {
 	setup()
 } else {

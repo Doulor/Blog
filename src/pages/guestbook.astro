@@ -136,7 +136,8 @@ const description = i18n(I18nKey.guestbookSubtitle);
 
 <script>
   // 客户端脚本用于处理时光胶囊留言功能
-  let guestbookInitialized = false;
+  let guestbookInitContainer = null;
+  let guestbookForceReinit = false;
 
   async function initializeGuestbook() {
     // 检查当前页面是否为留言页面
@@ -144,15 +145,25 @@ const description = i18n(I18nKey.guestbookSubtitle);
       return;
     }
 
-    // 防止重复初始化，但确保每次进入页面都会加载数据
-    if (guestbookInitialized) {
-      // 如果已经初始化过，只需重新加载留言
-      const loadMessages = window.loadMessagesFunc;
-      if (loadMessages) {
-        await loadMessages();
+    // 获取基础 DOM
+    const messagesContainer = document.getElementById('messages-container');
+    if (!messagesContainer) {
+      console.error('消息容器不存在');
+      guestbookForceReinit = true;
+      guestbookInitContainer = null;
+      return;
+    }
+
+    const needFullInit = guestbookForceReinit || messagesContainer !== guestbookInitContainer;
+    if (!needFullInit) {
+      if (typeof window.loadMessagesFunc === 'function') {
+        await window.loadMessagesFunc();
       }
       return;
     }
+
+    guestbookForceReinit = false;
+    guestbookInitContainer = messagesContainer;
 
     // 检查Supabase配置
     const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
@@ -171,21 +182,14 @@ const description = i18n(I18nKey.guestbookSubtitle);
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // 获取DOM元素
-    const messagesContainer = document.getElementById('messages-container');
+  // 获取DOM元素
     const triggerBtn = document.getElementById('trigger-btn');
     const overlayInput = document.getElementById('overlay-input');
     const closeBtn = document.getElementById('close-btn');
     const cancelBtn = document.getElementById('cancel-btn');
-    const submitBtn = document.getElementById('submit-btn');
-    const messageTextarea = document.getElementById('message-textarea');
-    const charCount = document.getElementById('char-count');
-
-    // 检查DOM元素是否存在
-    if (!messagesContainer) {
-      console.error('消息容器不存在');
-      return;
-    }
+  const submitBtn = document.getElementById('submit-btn');
+  const messageTextarea = document.getElementById('message-textarea');
+  const charCount = document.getElementById('char-count');
 
     // 字符计数功能
     messageTextarea.addEventListener('input', () => {
@@ -281,6 +285,8 @@ const description = i18n(I18nKey.guestbookSubtitle);
         }
       } catch (error) {
         console.error('获取留言失败:', error);
+        guestbookForceReinit = true;
+        guestbookInitContainer = null;
         const messagesContainer = document.getElementById('messages-container');
         if (messagesContainer) {
           messagesContainer.innerHTML = '<div class="text-center py-8 text-black/60 dark:text-white/60">加载留言失败</div>';
@@ -391,8 +397,6 @@ const description = i18n(I18nKey.guestbookSubtitle);
     // 初始化加载留言列表
     await loadMessages();
 
-    // 标记为已初始化
-    guestbookInitialized = true;
   }
 
   // 检查文档是否已加载
@@ -416,43 +420,51 @@ const description = i18n(I18nKey.guestbookSubtitle);
     }
   }
 
-  // 通用的页面内容更新检测函数
-  function checkAndInitializeGuestbook() {
-    // 检查当前是否在guestbook页面，并且内容容器是否存在
-    if (window.location.pathname.includes('/guestbook')) {
-      const messagesContainer = document.getElementById('messages-container');
-      if (messagesContainer) {
-        // 延迟执行确保DOM完全加载
-        setTimeout(() => {
-          initializeGuestbook();
-        }, 100);
-      }
+  function scheduleGuestbookInit(attempt = 0) {
+    if (!window.location.pathname.includes('/guestbook')) return;
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+      guestbookForceReinit = true;
+      setTimeout(() => {
+        initializeGuestbook();
+      }, 50);
+      return;
     }
+
+    if (attempt >= 5) {
+      guestbookForceReinit = true;
+      setTimeout(() => {
+        initializeGuestbook();
+      }, 200);
+      return;
+    }
+
+    setTimeout(() => scheduleGuestbookInit(attempt + 1), 100);
   }
 
   // 监听Swup页面切换事件，当导航到guestbook页面时重新初始化
   // 使用更全面的Swup事件监听
   if (typeof window !== 'undefined' && window.swup) {
     // 监听内容替换完成事件
-    window.swup.hooks.on('content:replace', checkAndInitializeGuestbook);
+    window.swup.hooks.on('content:replace', scheduleGuestbookInit);
 
     // 监听页面视图事件
-    window.swup.hooks.on('page:view', checkAndInitializeGuestbook);
+    window.swup.hooks.on('page:view', scheduleGuestbookInit);
 
     // 监听动画结束事件
-    window.swup.hooks.on('animation:in:end', checkAndInitializeGuestbook);
+    window.swup.hooks.on('animation:in:end', scheduleGuestbookInit);
 
     // 监听访问结束事件，这是Swup完成所有操作的最终事件
-    window.swup.hooks.on('visit:end', checkAndInitializeGuestbook);
+    window.swup.hooks.on('visit:end', scheduleGuestbookInit);
   } else {
     // 如果Swup不可用，使用传统的事件监听
-    document.addEventListener('swup:contentReplaced', checkAndInitializeGuestbook);
+    document.addEventListener('swup:contentReplaced', scheduleGuestbookInit);
   }
 
   // 还需要监听浏览器的popstate事件，以防用户使用浏览器的前进后退按钮
   window.addEventListener('popstate', function() {
     setTimeout(() => {
-      checkAndInitializeGuestbook();
+      scheduleGuestbookInit();
     }, 100);
   });
 
@@ -460,8 +472,11 @@ const description = i18n(I18nKey.guestbookSubtitle);
   document.addEventListener('visibilitychange', function() {
     if (!document.hidden && window.location.pathname.includes('/guestbook')) {
       setTimeout(() => {
-        checkAndInitializeGuestbook();
+        scheduleGuestbookInit();
       }, 100);
     }
   });
+
+  // 新增：统一的页面加载事件（Swup触发）
+  document.addEventListener('mizuki:page:loaded', scheduleGuestbookInit);
 </script>
