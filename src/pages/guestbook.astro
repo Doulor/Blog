@@ -20,7 +20,7 @@ const description = i18n(I18nKey.guestbookSubtitle);
         </p>
       </div>
 
-      <!-- 时光胶囊留言功能 -->
+      <!-- 时光胶囊留言板功能 -->
       <div class="space-y-8">
         <!-- 留言输入触发按钮 -->
         <div class="input-trigger text-center">
@@ -35,12 +35,21 @@ const description = i18n(I18nKey.guestbookSubtitle);
         <!-- 多条留言展示 -->
         <div>
           <div class="bg-white dark:bg-gray-800 rounded-lg border border-black/10 dark:border-white/10 p-6">
-            <h2 class="text-2xl font-semibold text-black/90 dark:text-white/90 mb-4">
-              时光胶囊留言
-            </h2>
+            <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
+              <h2 class="text-2xl font-semibold text-black/90 dark:text-white/90">
+                时光胶囊留言板
+              </h2>
+              <button
+                id="refresh-btn"
+                class="refresh-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-purple-200/80 dark:border-purple-500/50 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-800/50 transition-colors shadow-sm"
+              >
+                <span class="text-base">🔄</span>
+                <span>刷新留言</span>
+              </button>
+            </div>
             <div id="messages-container" class="space-y-4">
               <div class="text-center py-8 text-black/60 dark:text-white/60">
-                正在加载留言...
+                点击"刷新留言"按钮开始加载留言...
               </div>
             </div>
           </div>
@@ -97,7 +106,7 @@ const description = i18n(I18nKey.guestbookSubtitle);
     padding-top: 10vh !important;
   }
 
-  /* 时光胶囊留言卡片的额外样式 */
+  /* 时光胶囊留言板卡片的额外样式 */
   .message-card {
     transition: all 0.3s ease;
   }
@@ -132,10 +141,20 @@ const description = i18n(I18nKey.guestbookSubtitle);
     margin-top: 1px;
   }
 
+  .refresh-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .refresh-btn:focus-visible {
+    outline: 2px solid rgba(168, 85, 247, 0.5);
+    outline-offset: 2px;
+  }
+
 </style>
 
 <script>
-  // 客户端脚本用于处理时光胶囊留言功能
+  // 客户端脚本用于处理时光胶囊留言板功能
   let guestbookInitContainer = null;
   let guestbookForceReinit = false;
 
@@ -187,6 +206,7 @@ const description = i18n(I18nKey.guestbookSubtitle);
     const overlayInput = document.getElementById('overlay-input');
     const closeBtn = document.getElementById('close-btn');
     const cancelBtn = document.getElementById('cancel-btn');
+    const refreshBtn = document.getElementById('refresh-btn');
   const submitBtn = document.getElementById('submit-btn');
   const messageTextarea = document.getElementById('message-textarea');
   const charCount = document.getElementById('char-count');
@@ -387,6 +407,12 @@ const description = i18n(I18nKey.guestbookSubtitle);
     if (closeBtn) closeBtn.addEventListener('click', hideInput);
     if (cancelBtn) cancelBtn.addEventListener('click', hideInput);
     if (submitBtn) submitBtn.addEventListener('click', submitMessage);
+    if (refreshBtn) refreshBtn.addEventListener('click', () => {
+      refreshBtn.disabled = true;
+      refreshBtn.querySelector('span:last-child').textContent = '刷新中...';
+      // 等同于浏览器F5，强制刷新当前页面
+      window.location.reload();
+    });
 
     // 点击背景关闭输入框
     document.querySelector('.overlay-backdrop')?.addEventListener('click', hideInput);
