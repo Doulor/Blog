@@ -203,12 +203,6 @@ export const navBarConfig: NavBarConfig = {
 					external: true,
 					icon: "fa6-brands:discord",
 				},
-				{
-					name: "Post-editor",
-					url: "/my-editor/",
-					external: false,
-					icon: "mdi:file-edit",
-				},
 			],
 		},
 		{
