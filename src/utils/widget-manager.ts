@@ -33,6 +33,20 @@ export class WidgetManager {
 	}
 
 	/**
+	 * 对外公开：获取所有组件配置列表
+	 */
+	public get components(): WidgetComponentConfig[] {
+		return this.config.components;
+	}
+
+	/**
+	 * 对外公开：获取所有已启用的组件列表
+	 */
+	public get enabled(): WidgetComponentConfig[] {
+		return this.enabledComponents;
+	}
+
+	/**
 	 * 获取启用的组件列表
 	 */
 	private getEnabledComponents(): WidgetComponentConfig[] {
@@ -230,11 +244,9 @@ export class WidgetManager {
 	 * @param componentType 组件类型
 	 */
 	isSidebarComponent(componentType: WidgetComponentType): boolean {
-		// Pio 组件是全局组件，不在侧边栏中渲染
-		return componentType !== "pio";
+		return this.enabledComponents.some(c => c.type === componentType);
 	}
 }
-
 /**
  * 默认组件管理器实例
  */
@@ -247,23 +259,15 @@ export const widgetManager = new WidgetManager();
 export function getComponentConfig(
 	componentType: WidgetComponentType,
 ): WidgetComponentConfig | undefined {
-	return widgetManager.config.components.find((c) => c.type === componentType);
+	return widgetManager.components.find((c) => c.type === componentType);
 }
 
-/**
- * 工具函数：检查组件是否启用
- * @param componentType 组件类型
- */
+export function getEnabledComponentTypes(): WidgetComponentType[] {
+	return widgetManager.enabled.map((c) => c.type);
+}
 export function isComponentEnabled(
 	componentType: WidgetComponentType,
 ): boolean {
 	const config = getComponentConfig(componentType);
 	return config?.enable ?? false;
-}
-
-/**
- * 工具函数：获取所有启用的组件类型
- */
-export function getEnabledComponentTypes(): WidgetComponentType[] {
-	return widgetManager.enabledComponents.map((c) => c.type);
 }
