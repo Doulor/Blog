@@ -1,7 +1,7 @@
 ---
 title: "Minecraft_server.properties"
 published: 2025-11-04
-description: "我的世界服务器配置文件详情"
+description: "我的世界java版服务器配置文件详细介绍"
 tags: ["wiki"]
 category: "Minecraft"
 draft: false

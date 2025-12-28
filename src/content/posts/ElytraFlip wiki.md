@@ -1,7 +1,7 @@
 ---
 title: "ElytraFlip wiki"
 published: 2025-09-29
-description: "a minecraft plugin named ElytraFlip"
+description: "一个minecraft的java版服务端插件———鞘翅切换。可以用指令快速便捷的装备和取下鞘翅，可以添加在小游戏服务器或服务器大厅之中。\na minecraft plugin named ElytraFlip"
 tags: ["wiki"]
 category: "wiki"
 draft: false
