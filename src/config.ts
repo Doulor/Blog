@@ -287,6 +287,7 @@ export const profileConfig: ProfileConfig = {
 		websiteId: "18f32723-55a4-4451-ab4d-9fd259ac5516", // 你的Umami网站ID，用于页面访问追踪脚本
 		shareId: "E8lj5JdF2fPWSmVP", // 填入共享URL最后面那一串，用于在侧边栏和文章页显示统计数据，例如：https://cloud.umami.is/api/share/2dKQ5T0WrUn6AYtr 中的 '2dKQ5T0WrUn6AYtr'
 		region: "us", // Umami实例的区域，如 'eu' 或 'us'，用于获取统计数据
+		apiEndpoint: "https://cloud.umami.is", // Umami API 域名，可改为你的自建实例，如 https://umami.example.com
 	},
 };
 

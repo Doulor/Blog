@@ -133,6 +133,7 @@ export type ProfileConfig = {
 		websiteId?: string; // 用于Umami追踪脚本的网站ID
 		shareId: string; // 用于获取共享统计信息的ID
 		region: string; // Umami实例的区域
+		apiEndpoint?: string; // 自定义 Umami 实例域名，默认 https://cloud.umami.is
 	};
 };
 
