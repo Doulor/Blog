@@ -285,7 +285,7 @@ export const profileConfig: ProfileConfig = {
 	umami: {
 		enable: true, // 是否启用umami统计功能
 		websiteId: "18f32723-55a4-4451-ab4d-9fd259ac5516", // 你的Umami网站ID，用于页面访问追踪脚本
-		shareId: "", // 填入共享URL最后面那一串，用于在侧边栏和文章页显示统计数据，例如：https://cloud.umami.is/api/share/2dKQ5T0WrUn6AYtr 中的 '2dKQ5T0WrUn6AYtr'
+		shareId: "E8lj5JdF2fPWSmVP", // 填入共享URL最后面那一串，用于在侧边栏和文章页显示统计数据，例如：https://cloud.umami.is/api/share/2dKQ5T0WrUn6AYtr 中的 '2dKQ5T0WrUn6AYtr'
 		region: "eu", // Umami实例的区域，如 'eu' 或 'us'，用于获取统计数据
 	},
 };
