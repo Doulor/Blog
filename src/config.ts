@@ -312,7 +312,7 @@ export const commentConfig: CommentConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "公告内容", // 公告标题
-	content: "欢迎来到我的温暖角落。愿你在此稍作停留，感受一份宁静，带走一缕星光。", // 公告内容
+	content: "欢迎来到我的小博客，博客更新了留言板和访问统计功能,欢迎大家来留言:)", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
