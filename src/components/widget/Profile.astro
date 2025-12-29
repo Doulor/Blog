@@ -7,7 +7,6 @@ import ImageWrapper from "../misc/ImageWrapper.astro";
 const config = profileConfig;
 const umamiShareId = profileConfig.umami?.shareId || "";
 const umamiRegion = profileConfig.umami?.region || "eu";
-const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.umami.is").replace(/\/$/, "");
 ---
 <div class="card-base p-3">
     <a aria-label="Go to About Page" href={url('/about/')}
@@ -44,15 +43,16 @@ const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.uma
               浏览量：<span id="umami-pageviews">-</span>，
               访问次数：<span id="umami-visits">-</span>
             </div>
-            <script is:inline define:vars={{umamiShareId, umamiRegion, umamiApiEndpoint}}>
+            <script is:inline define:vars={{umamiShareId, umamiRegion}}>
               const fetchUmamiStats = async () => {
                 try {
                   const shareId = umamiShareId;
                   const region = umamiRegion;
-                  const apiEndpoint = umamiApiEndpoint;
-                  console.log('Profile shareId:', shareId, 'region:', region, 'endpoint:', apiEndpoint);
+                  // 使用 cloud.umami.is 作为 API 端点
+                  const apiEndpoint = 'cloud.umami.is';
+                  console.log('Profile shareId:', shareId, 'region:', region);
 
-                  const shareRes = await fetch(`${apiEndpoint}/api/share/${shareId}`);
+                  const shareRes = await fetch(`https://${apiEndpoint}/api/share/${shareId}`);
                   console.log('Profile shareRes status:', shareRes.status);
 
                   if (!shareRes.ok) {
@@ -65,7 +65,7 @@ const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.uma
                   const websiteId = shareData.websiteId || shareData.website_id || shareData.id;
                   console.log('Profile token:', token, 'websiteId:', websiteId);
 
-                  const url = `${apiEndpoint}/api/websites/${websiteId}/stats?` +
+                  const url = `https://${apiEndpoint}/api/websites/${websiteId}/stats?` +
                     new URLSearchParams({
                       startAt: '1753333200000',
                       endAt: Date.now(),

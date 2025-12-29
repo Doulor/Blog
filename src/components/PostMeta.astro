@@ -28,7 +28,6 @@ const homePaths = ["/", ...Array.from({ length: 20 }, (_, i) => `/${i + 1}/`)];
 const isHome = homePaths.includes(Astro.url.pathname);
 const umamiShareId = profileConfig.umami?.shareId || "";
 const umamiRegion = profileConfig.umami?.region || "eu";
-const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.umami.is").replace(/\/$/, "");
 ---
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
@@ -96,17 +95,18 @@ const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.uma
                             <span>访问次数：<span id="post-umami-visits">加载中...</span></span>
                     </div>
 
-                    <script is:inline define:vars={{umamiShareId, umamiRegion, umamiApiEndpoint}}>
+                    <script is:inline define:vars={{umamiShareId, umamiRegion}}>
                         const fetchUmamiStats = async () => {
                             try {
                                 const pathname = window.location.pathname;
                                 const shareId = umamiShareId;
                                 const region = umamiRegion;
-                                const apiEndpoint = umamiApiEndpoint;
-                                console.log('PostMeta shareId:', shareId, 'region:', region, 'endpoint:', apiEndpoint);
+                                // 使用 cloud.umami.is 作为 API 端点
+                                const apiEndpoint = 'cloud.umami.is';
+                                console.log('PostMeta shareId:', shareId, 'region:', region);
                                 console.log('PostMeta pathname:', pathname);
 
-                                const shareRes = await fetch(`${apiEndpoint}/api/share/${shareId}`);
+                                const shareRes = await fetch(`https://${apiEndpoint}/api/share/${shareId}`);
                                 console.log('PostMeta shareRes status:', shareRes.status);
 
                                 if (!shareRes.ok) {
@@ -119,7 +119,7 @@ const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.uma
                                 const websiteId = shareData.websiteId || shareData.website_id || shareData.id;
                                 console.log('PostMeta token:', token, 'websiteId:', websiteId);
 
-                                const url = `${apiEndpoint}/api/websites/${websiteId}/stats?` +
+                                const url = `https://${apiEndpoint}/api/websites/${websiteId}/stats?` +
                                     new URLSearchParams({
                                         startAt: '1753333200000',
                                         endAt: Date.now(),

@@ -45,7 +45,6 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
-const umamiScriptSrc = (profileConfig.umami?.apiEndpoint || "https://cloud.umami.is").replace(/\/$/, "") + "/script.js";
 
 // 获取导航栏透明模式配置
 const navbarTransparentMode =
@@ -327,7 +326,7 @@ const bannerOffset =
 		<!-- Umami Analytics 脚本 - 用于页面访问追踪 -->
 		{profileConfig.umami?.enable && profileConfig.umami?.websiteId && (
 			<script
-				src={umamiScriptSrc} // 你的Umami实例地址
+				src="https://cloud.umami.is/script.js" // 你的Umami实例地址
 				defer
 				data-website-id={profileConfig.umami.websiteId} // 这是你的网站ID，用于追踪
 			/>
