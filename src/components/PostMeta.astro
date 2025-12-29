@@ -143,8 +143,8 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                                 console.log('PostMeta stats data:', data);
 
                                 if (res.ok) {
-                                    const pageviews = data?.pageviews?.value ?? 'N/A';
-                                    const visits = data?.visits?.value ?? 'N/A';
+                                    const pageviews = data?.pageviews?.value ?? data?.pageviews ?? 'N/A';
+                                    const visits = data?.visits?.value ?? data?.visits ?? 'N/A';
                                     document.getElementById('post-umami-pageviews').textContent = pageviews;
                                     document.getElementById('post-umami-visits').textContent = visits;
                                 } else {
