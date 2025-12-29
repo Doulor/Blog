@@ -27,7 +27,7 @@ export const siteConfig: SiteConfig = {
 	lang: SITE_LANG,
 
 	themeColor: {
-		hue: 210, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
+		hue: 65, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 
@@ -125,7 +125,7 @@ export const siteConfig: SiteConfig = {
 		enable: true, // 启用目录功能
 		depth: 3, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
 	},
-	generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
+	generateOgImages: true, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
 	favicon: [
 		// 留空以使用默认 favicon
 		// {
@@ -281,11 +281,12 @@ export const profileConfig: ProfileConfig = {
 			url: "https://discord.gg/PtRr6usx6V",
 		},
 	],
-	// Umami统计部份，记得在layout插入Umami的head标签
+	// Umami统计配置
 	umami: {
-		enable: false, // 是否显示umami统计
-		shareId: "", //填入共享URL最后面那一串  比如：https://eu.umami.is/api/share/2dKQ5T0WrUn6AYtr 你就填入2dKQ5T0WrUn6AYtr
-		region: "eu", //Umami有两个区域，按需选择即可  比如：https://eu.umami.is 你就填入eu
+		enable: true, // 是否启用umami统计功能
+		websiteId: "18f32723-55a4-4451-ab4d-9fd259ac5516", // 你的Umami网站ID，用于页面访问追踪脚本
+		shareId: "", // 填入共享URL最后面那一串，用于在侧边栏和文章页显示统计数据，例如：https://cloud.umami.is/api/share/2dKQ5T0WrUn6AYtr 中的 '2dKQ5T0WrUn6AYtr'
+		region: "eu", // Umami实例的区域，如 'eu' 或 'us'，用于获取统计数据
 	},
 };
 

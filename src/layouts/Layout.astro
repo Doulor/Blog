@@ -323,6 +323,15 @@ const bannerOffset =
 		<!-- Pio 看板娘样式 -->
 		<link rel="stylesheet" href="/pio/static/pio.css" />
 
+		<!-- Umami Analytics 脚本 - 用于页面访问追踪 -->
+		{profileConfig.umami?.enable && profileConfig.umami?.websiteId && (
+			<script
+				src="https://cloud.umami.is/script.js" // 你的Umami实例地址
+				defer
+				data-website-id={profileConfig.umami.websiteId} // 这是你的网站ID，用于追踪
+			/>
+		)}
+
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
 
