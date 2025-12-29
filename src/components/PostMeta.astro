@@ -126,7 +126,7 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                                         endAt: Date.now(),
                                         unit: 'hour',
                                         timezone: 'Asia/Shanghai',
-                                        url: pathname,
+                                        url: decodeURIComponent(pathname),
                                         compare: 'false',
                                     });
                                 console.log('PostMeta statsUrl:', url);
