@@ -126,9 +126,9 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                                         endAt: Date.now(),
                                         unit: 'hour',
                                         timezone: 'Asia/Shanghai',
-                                        url: decodeURIComponent(pathname),
+                                        url: decodeURIComponent(pathname), // 这里的 key 应该是 url，但 Umami API 文档说是 path，测试发现 path 生效
                                         compare: 'false',
-                                    });
+                                    }).toString().replace('url=', 'path='); // 强制替换参数名为 path
                                 console.log('PostMeta statsUrl:', url);
 
                                 const res = await fetch(url, {
