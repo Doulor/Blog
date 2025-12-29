@@ -7,6 +7,8 @@ import ImageWrapper from "../misc/ImageWrapper.astro";
 const config = profileConfig;
 const umamiShareId = profileConfig.umami?.shareId || "";
 const umamiRegion = profileConfig.umami?.region || "eu";
+const umamiWebsiteId = profileConfig.umami?.websiteId || "";
+const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.umami.is").replace(/\/$/, "");
 ---
 <div class="card-base p-3">
     <a aria-label="Go to About Page" href={url('/about/')}
@@ -43,29 +45,39 @@ const umamiRegion = profileConfig.umami?.region || "eu";
               浏览量：<span id="umami-pageviews">-</span>，
               访问次数：<span id="umami-visits">-</span>
             </div>
-            <script is:inline define:vars={{umamiShareId, umamiRegion}}>
+            <script is:inline define:vars={{umamiShareId, umamiRegion, umamiWebsiteId, umamiApiEndpoint}}>
               const fetchUmamiStats = async () => {
                 try {
                   const shareId = umamiShareId;
                   const region = umamiRegion;
-                  // 使用 cloud.umami.is 作为 API 端点
-                  const apiEndpoint = 'cloud.umami.is';
-                  console.log('Profile shareId:', shareId, 'region:', region);
+                  const apiEndpoint = umamiApiEndpoint;
+                  let token = '';
+                  let websiteId = umamiWebsiteId;
 
-                  const shareRes = await fetch(`https://${apiEndpoint}/api/share/${shareId}`);
-                  console.log('Profile shareRes status:', shareRes.status);
+                  console.log('Profile shareId:', shareId, 'region:', region, 'endpoint:', apiEndpoint);
 
-                  if (!shareRes.ok) {
-                    throw new Error(`Share API failed: ${shareRes.status}`);
+                  try {
+                    const shareRes = await fetch(`${apiEndpoint}/api/share/${shareId}`);
+                    console.log('Profile shareRes status:', shareRes.status);
+
+                    if (shareRes.ok) {
+                      const shareData = await shareRes.json();
+                      console.log('Profile shareData:', shareData);
+                      token = shareData.token;
+                      websiteId = shareData.websiteId || shareData.website_id || shareData.id;
+                      console.log('Profile token:', token, 'websiteId:', websiteId);
+                    } else {
+                      console.warn('Profile Share API returned not ok, trying fallback with config websiteId');
+                    }
+                  } catch (e) {
+                    console.warn('Profile Share API failed, trying fallback with config websiteId', e);
                   }
 
-                  const shareData = await shareRes.json();
-                  console.log('Profile shareData:', shareData);
-                  const token = shareData.token;
-                  const websiteId = shareData.websiteId || shareData.website_id || shareData.id;
-                  console.log('Profile token:', token, 'websiteId:', websiteId);
+                  if (!websiteId) {
+                    throw new Error('No websiteId available');
+                  }
 
-                  const url = `https://${apiEndpoint}/api/websites/${websiteId}/stats?` +
+                  const url = `${apiEndpoint}/api/websites/${websiteId}/stats?` +
                     new URLSearchParams({
                       startAt: '1753333200000',
                       endAt: Date.now(),
@@ -76,11 +88,14 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                     });
                   console.log('Profile statsUrl:', url);
 
+                  const headers = {};
+                  if (token) {
+                    headers['x-umami-share-token'] = token;
+                  }
+
                   const res = await fetch(url, {
                     method: 'GET',
-                    headers: {
-                      'x-umami-share-token': token,
-                    },
+                    headers: headers,
                   });
                   console.log('Profile stats res status:', res.status);
 

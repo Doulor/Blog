@@ -28,6 +28,8 @@ const homePaths = ["/", ...Array.from({ length: 20 }, (_, i) => `/${i + 1}/`)];
 const isHome = homePaths.includes(Astro.url.pathname);
 const umamiShareId = profileConfig.umami?.shareId || "";
 const umamiRegion = profileConfig.umami?.region || "eu";
+const umamiWebsiteId = profileConfig.umami?.websiteId || "";
+const umamiApiEndpoint = (profileConfig.umami?.apiEndpoint || "https://cloud.umami.is").replace(/\/$/, "");
 ---
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
@@ -95,31 +97,41 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                             <span>访问次数：<span id="post-umami-visits">加载中...</span></span>
                     </div>
 
-                    <script is:inline define:vars={{umamiShareId, umamiRegion}}>
+                    <script is:inline define:vars={{umamiShareId, umamiRegion, umamiWebsiteId, umamiApiEndpoint}}>
                         const fetchUmamiStats = async () => {
                             try {
                                 const pathname = window.location.pathname;
                                 const shareId = umamiShareId;
                                 const region = umamiRegion;
-                                // 使用 cloud.umami.is 作为 API 端点
-                                const apiEndpoint = 'cloud.umami.is';
-                                console.log('PostMeta shareId:', shareId, 'region:', region);
+                                const apiEndpoint = umamiApiEndpoint;
+                                let token = '';
+                                let websiteId = umamiWebsiteId;
+
+                                console.log('PostMeta shareId:', shareId, 'region:', region, 'endpoint:', apiEndpoint);
                                 console.log('PostMeta pathname:', pathname);
 
-                                const shareRes = await fetch(`https://${apiEndpoint}/api/share/${shareId}`);
-                                console.log('PostMeta shareRes status:', shareRes.status);
+                                try {
+                                    const shareRes = await fetch(`${apiEndpoint}/api/share/${shareId}`);
+                                    console.log('PostMeta shareRes status:', shareRes.status);
 
-                                if (!shareRes.ok) {
-                                    throw new Error(`Share API failed: ${shareRes.status}`);
+                                    if (shareRes.ok) {
+                                        const shareData = await shareRes.json();
+                                        console.log('PostMeta shareData:', shareData);
+                                        token = shareData.token;
+                                        websiteId = shareData.websiteId || shareData.website_id || shareData.id;
+                                        console.log('PostMeta token:', token, 'websiteId:', websiteId);
+                                    } else {
+                                        console.warn('PostMeta Share API returned not ok, trying fallback with config websiteId');
+                                    }
+                                } catch (e) {
+                                    console.warn('PostMeta Share API failed, trying fallback with config websiteId', e);
                                 }
 
-                                const shareData = await shareRes.json();
-                                console.log('PostMeta shareData:', shareData);
-                                const token = shareData.token;
-                                const websiteId = shareData.websiteId || shareData.website_id || shareData.id;
-                                console.log('PostMeta token:', token, 'websiteId:', websiteId);
+                                if (!websiteId) {
+                                    throw new Error('No websiteId available');
+                                }
 
-                                const url = `https://${apiEndpoint}/api/websites/${websiteId}/stats?` +
+                                const url = `${apiEndpoint}/api/websites/${websiteId}/stats?` +
                                     new URLSearchParams({
                                         startAt: '1753333200000',
                                         endAt: Date.now(),
@@ -130,11 +142,14 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                                     });
                                 console.log('PostMeta statsUrl:', url);
 
+                                const headers = {};
+                                if (token) {
+                                    headers['x-umami-share-token'] = token;
+                                }
+
                                 const res = await fetch(url, {
                                     method: 'GET',
-                                    headers: {
-                                        'x-umami-share-token': token,
-                                    },
+                                    headers: headers,
                                 });
                                 console.log('PostMeta stats res status:', res.status);
 
