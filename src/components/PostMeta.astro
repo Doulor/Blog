@@ -101,23 +101,25 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                                 const pathname = window.location.pathname;
                                 const shareId = umamiShareId;
                                 const region = umamiRegion;
+                                // 使用 cloud.umami.is 作为 API 端点
+                                const apiEndpoint = 'cloud.umami.is';
                                 console.log('PostMeta shareId:', shareId, 'region:', region);
                                 console.log('PostMeta pathname:', pathname);
-                                
-                                const shareRes = await fetch(`https://${region}.umami.is/api/share/${shareId}`);
+
+                                const shareRes = await fetch(`https://${apiEndpoint}/api/share/${shareId}`);
                                 console.log('PostMeta shareRes status:', shareRes.status);
-                                
+
                                 if (!shareRes.ok) {
                                     throw new Error(`Share API failed: ${shareRes.status}`);
                                 }
-                                
+
                                 const shareData = await shareRes.json();
                                 console.log('PostMeta shareData:', shareData);
                                 const token = shareData.token;
                                 const websiteId = shareData.websiteId || shareData.website_id || shareData.id;
                                 console.log('PostMeta token:', token, 'websiteId:', websiteId);
-                                
-                                const url = `https://${region}.umami.is/api/websites/${websiteId}/stats?` +
+
+                                const url = `https://${apiEndpoint}/api/websites/${websiteId}/stats?` +
                                     new URLSearchParams({
                                         startAt: '1753333200000',
                                         endAt: Date.now(),
@@ -127,7 +129,7 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                                         compare: 'false',
                                     });
                                 console.log('PostMeta statsUrl:', url);
-                                
+
                                 const res = await fetch(url, {
                                     method: 'GET',
                                     headers: {
@@ -135,10 +137,10 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                                     },
                                 });
                                 console.log('PostMeta stats res status:', res.status);
-                                
+
                                 const data = await res.json();
                                 console.log('PostMeta stats data:', data);
-                                
+
                                 if (res.ok) {
                                     const pageviews = data?.pageviews?.value ?? 'N/A';
                                     const visits = data?.visits?.value ?? 'N/A';
