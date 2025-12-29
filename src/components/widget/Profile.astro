@@ -52,7 +52,8 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                   const apiEndpoint = 'cloud.umami.is';
                   console.log('Profile shareId:', shareId, 'region:', region);
 
-                  const shareRes = await fetch(`https://${apiEndpoint}/api/share/${shareId}`);
+                  // 构建正确的 API URL，包含区域信息
+                  const shareRes = await fetch(`https://${apiEndpoint}/analytics/${region}/api/share/${shareId}`);
                   console.log('Profile shareRes status:', shareRes.status);
 
                   if (!shareRes.ok) {
@@ -65,7 +66,7 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                   const websiteId = shareData.websiteId || shareData.website_id || shareData.id;
                   console.log('Profile token:', token, 'websiteId:', websiteId);
 
-                  const url = `https://${apiEndpoint}/api/websites/${websiteId}/stats?` +
+                  const url = `https://${apiEndpoint}/analytics/${region}/api/websites/${websiteId}/stats?` +
                     new URLSearchParams({
                       startAt: '1753333200000',
                       endAt: Date.now(),
