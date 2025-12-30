@@ -103,6 +103,9 @@ if (title) {
 let ogImageUrl: string | undefined;
 if (siteConfig.generateOgImages && postSlug) {
 	ogImageUrl = new URL(`/og/${postSlug}.png`, Astro.site).toString();
+} else {
+	// 为首页或其他页面设置默认分享卡片图片（使用站点图标或头像）
+	ogImageUrl = new URL(url("/favicon/icon.png"), Astro.site).toString();
 }
 
 const favicons: Favicon[] =
@@ -140,6 +143,7 @@ const bannerOffset =
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
 		{ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+		{ogImageUrl && <meta itemprop="image" content={ogImageUrl} />}
 		{
 			setOGTypeArticle ? (
 				<meta property="og:type" content="article" />
@@ -152,6 +156,7 @@ const bannerOffset =
 		<meta property="twitter:url" content={Astro.url}>
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
+		{ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
 
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
