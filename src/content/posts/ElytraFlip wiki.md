@@ -7,6 +7,8 @@ category: "wiki"
 draft: false
 ---
 
+::github{repo="Doulor/ElytraFlip"}
+
 # 汉语wiki
 
 **ElytraFlip**
