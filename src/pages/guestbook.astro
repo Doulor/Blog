@@ -355,7 +355,7 @@ const description = i18n(I18nKey.guestbookSubtitle);
           .from('messages')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(25);
 
         if (error) throw error;
 
