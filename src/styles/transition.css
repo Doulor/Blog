@@ -77,6 +77,23 @@ html.is-animating .transition-swup-fade {
     animation: fade-in-up 200ms ease-out forwards;
 }
 
+/*
+    Swup 导航时禁用首屏入场动画：Swup 的内容替换 + 客户端组件挂载会引发一次明显的闪动。
+    只保留“首次整页加载”的动画，Swup 往返不再让帖子卡片再次入场。
+*/
+html.mizuki-swup-nav .onload-animation {
+        opacity: 1 !important;
+        animation: none !important;
+}
+
+/* Home banner text often uses typewriter/transform animations; on Swup back-to-home it can look like it "rewinds". */
+html.mizuki-swup-nav .banner-text-overlay,
+html.mizuki-swup-nav .banner-title,
+html.mizuki-swup-nav .banner-subtitle {
+    animation: none !important;
+    transition: none !important;
+}
+
 .onload-animation-fade-in {
     opacity: 0;
     animation: fade-in 200ms ease-in forwards;
@@ -91,12 +108,22 @@ html.is-animating .transition-swup-fade {
     }
 }
 
-/* 渐进式动画延迟 */
-.onload-animation:nth-child(1) { animation-delay: 0ms; }
-.onload-animation:nth-child(2) { animation-delay: 50ms; }
-.onload-animation:nth-child(3) { animation-delay: 100ms; }
-.onload-animation:nth-child(4) { animation-delay: 150ms; }
-.onload-animation:nth-child(5) { animation-delay: 200ms; }
+/* Small utility for subtle component mount reveal */
+.animate-fade-in {
+    opacity: 0;
+    animation: fade-in 180ms ease-out forwards;
+}
+
+/*
+    注意：不要用 nth-child 给 .onload-animation 做“分段延迟”。
+    导航栏（如 #navbar）内部结构会因客户端组件加载/字体替换等产生微小重排，
+    nth-child 延迟会把一个整体拆成多段出现，导致动画割裂与按钮错位。
+*/
+
+/* 只给导航栏整体一个统一的轻微延迟（可选） */
+#navbar.onload-animation {
+        animation-delay: 50ms;
+}
 
 /* 特殊元素的动画 */
 .transition-slide-in {

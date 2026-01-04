@@ -13,8 +13,15 @@ const isBothSidebars = sidebarLayoutConfig.position === "both";
 
 function checkScreenSize() {
 	isSmallScreen = window.innerWidth < 1200;
+	// 小屏强制 list；离开小屏时恢复用户偏好（localStorage）
 	if (isSmallScreen) {
 		currentLayout = "list";
+		return;
+	}
+
+	const savedLayout = localStorage.getItem("postListLayout");
+	if (savedLayout && (savedLayout === "list" || savedLayout === "grid")) {
+		currentLayout = savedLayout;
 	}
 }
 
@@ -89,12 +96,11 @@ onMount(() => {
 		setTimeout(() => {
 			console.log("Swup event - syncing layout state");
 			const savedLayout = localStorage.getItem("postListLayout");
-			if (savedLayout && (savedLayout === "list" || savedLayout === "grid")) {
+			if (!isSmallScreen && savedLayout && (savedLayout === "list" || savedLayout === "grid")) {
 				currentLayout = savedLayout;
-			} else {
+			} else if (!isSmallScreen) {
 				// 如果没有保存的布局，使用默认布局
-				const defaultLayout = siteConfig.postListLayout.defaultMode;
-				currentLayout = defaultLayout;
+				currentLayout = siteConfig.postListLayout.defaultMode;
 			}
 		}, 200);
 	};
