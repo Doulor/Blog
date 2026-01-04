@@ -25,7 +25,7 @@ const initialLayoutClass =
   data-default-layout={defaultLayout}
   data-both-sidebars={isBothSidebars}
 >
-    {page.data.map((entry: CollectionEntry<"posts">) => (
+    {page.data.map((entry: CollectionEntry<"posts">, index: number) => (
         <PostCard
                 entry={entry}
                 title={entry.data.title}
@@ -40,6 +40,7 @@ const initialLayoutClass =
                 pinned={entry.data.pinned}
                 class:list="onload-animation"
                 style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
+                loading={index < 2 ? "eager" : "lazy"}
         ></PostCard>
     ))}
 </div>

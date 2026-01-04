@@ -22,6 +22,7 @@ interface Props {
 	draft: boolean;
 	pinned?: boolean;
 	style: string;
+	loading?: "eager" | "lazy";
 }
 const {
 	entry,
@@ -35,6 +36,7 @@ const {
 	description,
 	pinned,
 	style,
+	loading = "lazy",
 } = Astro.props;
 const className = Astro.props.class;
 
@@ -92,7 +94,7 @@ const { remarkPluginFrontmatter } = await entry.render();
             </Icon>
         </div>
         <ImageWrapper src={image} basePath={path.join("content/posts/", getDir(entry.id))} alt="Cover Image of the Post"
-                  class="w-full h-full">
+                  class="w-full h-full" loading={loading}>
         </ImageWrapper>
     </a>}
 

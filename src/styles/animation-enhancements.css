@@ -2,31 +2,31 @@
 
 /* 页面切换状态类 */
 html.is-leaving .transition-leaving {
-    transform: translateY(-1rem);
+    transform: translateY(-0.5rem);
     opacity: 0;
 }
 
 html.is-entering .transition-main {
-    transform: translateY(1.5rem);
+    transform: translateY(1rem);
     opacity: 0;
 }
 
 /* 离开动画类 */
 .animate-leave {
-    transform: translateY(-1rem) !important;
+    transform: translateY(-0.5rem) !important;
     opacity: 0 !important;
     transition: 
-        transform 250ms cubic-bezier(0.4, 0, 0.6, 1),
-        opacity 250ms cubic-bezier(0.4, 0, 0.6, 1) !important;
+        transform 200ms cubic-bezier(0.4, 0, 0.6, 1),
+        opacity 200ms cubic-bezier(0.4, 0, 0.6, 1) !important;
 }
 
 /* 增强的组件动画 */
 .enhanced-fade-in {
     opacity: 0;
-    transform: translateY(1.5rem) scale(0.98);
+    transform: translateY(1rem) scale(0.99);
     transition: 
-        opacity 350ms cubic-bezier(0.4, 0, 0.2, 1),
-        transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        opacity 250ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .enhanced-fade-in.animate {
@@ -37,10 +37,10 @@ html.is-entering .transition-main {
 /* 侧边栏动画 */
 .sidebar-animate {
     opacity: 0;
-    transform: translateX(-2rem);
+    transform: translateX(-1.5rem);
     transition: 
-        opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
-        transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-animate.animate {
@@ -51,10 +51,10 @@ html.is-entering .transition-main {
 /* 卡片动画 */
 .card-animate {
     opacity: 0;
-    transform: translateY(2rem) scale(0.95);
+    transform: translateY(1.5rem) scale(0.97);
     transition: 
-        opacity 400ms cubic-bezier(0.4, 0, 0.2, 1),
-        transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+        opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-animate.animate {
@@ -65,10 +65,10 @@ html.is-entering .transition-main {
 /* 文章内容动画 */
 .post-content-animate {
     opacity: 0;
-    transform: translateY(1rem);
+    transform: translateY(0.75rem);
     transition: 
-        opacity 320ms cubic-bezier(0.4, 0, 0.2, 1),
-        transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+        opacity 250ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .post-content-animate.animate {
@@ -79,10 +79,10 @@ html.is-entering .transition-main {
 /* 导航栏动画增强 */
 .navbar-animate {
     opacity: 0;
-    transform: translateY(-1rem);
+    transform: translateY(-0.75rem);
     transition: 
-        opacity 280ms cubic-bezier(0.4, 0, 0.2, 1),
-        transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navbar-animate.animate {
@@ -93,10 +93,10 @@ html.is-entering .transition-main {
 /* 页脚动画 */
 .footer-animate {
     opacity: 0;
-    transform: translateY(1rem);
+    transform: translateY(0.75rem);
     transition: 
-        opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
-        transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footer-animate.animate {
