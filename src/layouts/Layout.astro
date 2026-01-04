@@ -24,6 +24,7 @@ import { pathsEqual, url } from "../utils/url-utils";
 import "katex/dist/katex.css";
 import "../styles/mobile-navbar.css";
 import "../styles/wallpaper-navbar-transparent.css";
+import "../styles/main.css";
 
 interface Props {
 	title?: string;
@@ -128,7 +129,6 @@ const bannerOffset =
 
 <!DOCTYPE html>
 <html lang={siteLang} class="bg-[var(--page-bg)] text-[14px] md:text-[16px]"
-	  data-overlayscrollbars-initialize
 >
 	<head>
 
@@ -338,6 +338,18 @@ const bannerOffset =
 		)}
 
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
+
+		<!-- 防止刷新时原生滚动条短暂闪现：在 OverlayScrollbars 初始化完成前先隐藏滚动 -->
+		<style>
+			html:not(.os-init-done),
+			body:not(.os-init-done) {
+				overflow: hidden;
+			}
+			html.os-init-done,
+			body.os-init-done {
+				overflow: auto;
+			}
+		</style>
 
 
 
@@ -877,7 +889,27 @@ function loadHue() {
 }
 
 function initCustomScrollbar() {
-	// 完全禁用OverlayScrollbars的body初始化，避免导致页面重新加载
+	const bodyElement = document.querySelector('body');
+	if (!bodyElement) return;
+	OverlayScrollbars(
+		{
+			target: bodyElement,
+			cancel: {
+				nativeScrollbarsOverlaid: true,
+			}
+		}, {
+		scrollbars: {
+			theme: 'os-theme-dark',
+			autoHide: 'move',
+			autoHideDelay: 500,
+			autoHideSuspend: false,
+		},
+	});
+
+	// 防止刷新时原生滚动条短暂闪现：等 OverlayScrollbars 接管后再恢复滚动
+	document.documentElement.classList.add('os-init-done');
+	document.body.classList.add('os-init-done');
+
 	// 只处理katex元素的滚动条
 	const katexElements = document.querySelectorAll('.katex-display:not([data-scrollbar-initialized])') as NodeListOf<HTMLElement>;
 	katexElements.forEach(element => {
@@ -1463,9 +1495,11 @@ window.onresize = () => {
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', () => {
 		showBanner();
+		initCustomScrollbar();
 	});
 } else {
 	showBanner();
+	initCustomScrollbar();
 }
 
 </script>

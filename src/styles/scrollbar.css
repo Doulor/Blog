@@ -23,6 +23,33 @@
     }
 }
 
+/* 自定义 OverlayScrollbars 样式：极淡、悬停加深、不占空间 */
+.os-theme-dark {
+    --os-size: 6px;
+    --os-padding-perpendicular: 0;
+    --os-padding-axis: 0;
+    --os-track-border-radius: 0;
+    --os-handle-border-radius: 3px;
+    --os-handle-perpendicular-size: 100%;
+    --os-handle-perpendicular-size-hover: 100%;
+    --os-handle-interactive-area-offset: 0;
+    
+    /* 默认（浅色模式）下的颜色：黑色半透明 */
+    --os-handle-bg: rgba(0, 0, 0, 0.1);
+    --os-handle-bg-hover: rgba(0, 0, 0, 0.6);
+    --os-handle-bg-active: rgba(0, 0, 0, 0.8);
+    --os-track-bg: transparent;
+    --os-track-bg-hover: transparent;
+    --os-track-bg-active: transparent;
+}
+
+/* 暗色模式适配：当根元素有 dark 类时，修改 os-theme-dark 的变量 */
+:root.dark .os-theme-dark {
+    --os-handle-bg: rgba(255, 255, 255, 0.1);
+    --os-handle-bg-hover: rgba(255, 255, 255, 0.6);
+    --os-handle-bg-active: rgba(255, 255, 255, 0.8);
+}
+
 .os-scrollbar {
     &.scrollbar-auto {
         --os-handle-bg: var(--scrollbar-bg);
@@ -40,3 +67,4 @@
         --os-handle-bg-active: var(--scrollbar-bg-active-light);
     }
 }
+

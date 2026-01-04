@@ -7,6 +7,8 @@
 @import './animation-enhancements.css';
 /* 导入加密内容样式 */
 @import './encrypted-content.css';
+/* 导入 OverlayScrollbars 样式覆盖（必须在全局引入才能生效） */
+@import './scrollbar.css';
 
 /* 导入 ZenMaruGothic-Medium 字体 */
 @font-face {
@@ -31,6 +33,12 @@
 /* 确保平滑滚动 */
 html {
     scroll-behavior: smooth;
+    scrollbar-width: auto;
+    scrollbar-color: #000000 #f1f1f1;
+}
+
+:root.dark html {
+    scrollbar-color: #ffffff #1a1a1a;
 }
 
 /* 当启用 ZenMaruGothic-Medium 字体时应用为全局字体 */
@@ -371,4 +379,37 @@ html {
 /* 浅色模式：使用更浅的主题色且完全不透明 */
 :root:not(.dark) .custom-md spoiler {
   --_spoiler-mask: color-mix(in oklch, var(--primary) 55%, white 45%);
+}
+
+/* 全局自定义滚动条样式 - 初始隐藏以避免闪烁，后续由 OverlayScrollbars 接管 */
+::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    background: transparent;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border: none;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
+}
+
+/* 暗色模式适配 */
+:root.dark ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+:root.dark ::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
+
+:root.dark ::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
 }
