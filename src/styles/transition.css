@@ -74,22 +74,26 @@ html.is-animating .transition-swup-fade {
 /* 页面加载动画 - 更快响应 */
 .onload-animation {
     opacity: 0;
-    animation: fade-in-up 200ms ease-out forwards;
+    animation: fade-in-up 300ms ease-out forwards;
+    animation-delay: 50ms; /* 稍微延迟，避开主线程最繁忙的时刻，防止动画掉帧 */
+    animation-fill-mode: both; /* 确保延迟期间保持 opacity: 0 */
 }
 
 /*
     Swup 导航时禁用首屏入场动画：Swup 的内容替换 + 客户端组件挂载会引发一次明显的闪动。
     只保留“首次整页加载”的动画，Swup 往返不再让帖子卡片再次入场。
+    
+    修正：只在首页（帖子列表）禁用，文章详情页仍需要入场动画。
 */
-html.mizuki-swup-nav .onload-animation {
+html.mizuki-swup-nav[data-is-home="true"] .onload-animation {
         opacity: 1 !important;
         animation: none !important;
 }
 
 /* Home banner text often uses typewriter/transform animations; on Swup back-to-home it can look like it "rewinds". */
-html.mizuki-swup-nav .banner-text-overlay,
-html.mizuki-swup-nav .banner-title,
-html.mizuki-swup-nav .banner-subtitle {
+html.mizuki-swup-nav[data-is-home="true"] .banner-text-overlay,
+html.mizuki-swup-nav[data-is-home="true"] .banner-title,
+html.mizuki-swup-nav[data-is-home="true"] .banner-subtitle {
     animation: none !important;
     transition: none !important;
 }

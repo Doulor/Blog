@@ -49,8 +49,8 @@ let links: NavBarLink[] = navBarConfig.links.map(
         </div>
         <div class="flex items-center gap-1">
             <!-- Search Button Skeleton / Client Component -->
-            <div class="relative w-11 h-11">
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="relative w-11 h-11 lg:w-auto lg:min-w-[10rem]">
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none lg:hidden">
                     <button class="btn-plain scale-animation rounded-lg w-11 h-11 opacity-0">
                         <Icon name="material-symbols:search" class="text-[1.25rem]"></Icon>
                     </button>
