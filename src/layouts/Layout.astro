@@ -196,27 +196,6 @@ const bannerOffset =
 			offset = offset - offset % 4;
 			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
 		</script>
-
-		<!--
-			首帧稳定：用一个全局标记区分“首次整页加载”与“Swup 导航”。
-			帖子列表的 onload-animation 在 Swup 往返时会再次触发，容易造成明显闪动/割裂。
-			这里在首次加载时写入标记，后续 Swup 导航不再重复触发该类动画。
-		-->
-		<script is:inline>
-			(() => {
-				try {
-					// 首次加载：尚未标记过
-					if (!sessionStorage.getItem('mizuki:firstLoadDone')) {
-						sessionStorage.setItem('mizuki:firstLoadDone', '1');
-						document.documentElement.classList.add('mizuki-first-load');
-					} else {
-						document.documentElement.classList.add('mizuki-swup-nav');
-					}
-				} catch (_) {
-					// ignore
-				}
-			})();
-		</script>
 		<style define:vars={{
 			configHue,
 			'page-width': `${PAGE_WIDTH}rem`,

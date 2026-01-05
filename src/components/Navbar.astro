@@ -31,7 +31,7 @@ let links: NavBarLink[] = navBarConfig.links.map(
 	},
 );
 ---
-<div id="navbar" class="z-50" data-transparent-mode={navbarTransparentMode} data-is-home={isHomePage}>
+<div id="navbar" class="z-50 onload-animation" data-transparent-mode={navbarTransparentMode} data-is-home={isHomePage}>
     <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
     <div class:list={[
         className,
@@ -47,58 +47,18 @@ let links: NavBarLink[] = navBarConfig.links.map(
                 return <DropdownMenu link={l} />;
             })}
         </div>
-        <div class="flex items-center gap-1">
-            <!-- Search Button Skeleton / Client Component -->
-            <div class="relative w-11 h-11">
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <button class="btn-plain scale-animation rounded-lg w-11 h-11 opacity-0">
-                        <Icon name="material-symbols:search" class="text-[1.25rem]"></Icon>
-                    </button>
-                </div>
-                <Search client:only="svelte"></Search>
-            </div>
-
-            <!-- MobileTOC Skeleton / Client Component -->
-            <div class="relative w-11 h-11 md:hidden">
-                 <MobileTOC client:only="svelte"></MobileTOC>
-            </div>
-
-            <!-- Translate Button Skeleton / Client Component -->
-            <div class="relative w-11 h-11">
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <button class="btn-plain scale-animation rounded-lg w-11 h-11 opacity-0">
-                        <Icon name="material-symbols:translate" class="text-[1.25rem]"></Icon>
-                    </button>
-                </div>
-                <TranslateButton client:only="svelte"></TranslateButton>
-            </div>
-
+        <div class="flex">
+            <!--<SearchPanel client:load>-->
+            <Search client:only="svelte"></Search>
+            <MobileTOC client:only="svelte"></MobileTOC>
+            <TranslateButton client:only="svelte"></TranslateButton>
             {!siteConfig.themeColor.fixed && (
                     <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
                     </button>
             )}
-
-            <!-- Layout Switch Button Skeleton / Client Component -->
-            <div class="relative w-11 h-11">
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <button class="btn-plain scale-animation rounded-lg w-11 h-11 opacity-0">
-                        <Icon name="material-symbols:grid-view-rounded" class="text-[1.25rem]"></Icon>
-                    </button>
-                </div>
-                <LayoutSwitchButton client:only="svelte" currentLayout={siteConfig.postListLayout.defaultMode}></LayoutSwitchButton>
-            </div>
-
-            <!-- Light/Dark Switch Skeleton / Client Component -->
-            <div class="relative w-11 h-11">
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <button class="btn-plain scale-animation rounded-lg w-11 h-11 opacity-0">
-                        <Icon name="material-symbols:sunny-rounded" class="text-[1.25rem]"></Icon>
-                    </button>
-                </div>
-                <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
-            </div>
-
+            <LayoutSwitchButton client:only="svelte" currentLayout={siteConfig.postListLayout.defaultMode}></LayoutSwitchButton>
+            <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
             </button>
