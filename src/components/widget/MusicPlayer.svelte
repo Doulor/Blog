@@ -59,6 +59,16 @@ let currentSong = {
 	duration: 0,
 };
 
+// 首帧稳定：在真实歌单/歌曲加载前，不展示“示例歌曲”占位，避免进入页面出现错误内容后再跳变。
+let isReady = false;
+
+// 迷你播放器骨架（占位符）
+const MiniPlayerSkeleton = {
+    title: "Loading...",
+    artist: "Music Player",
+    cover: "/favicon/icon.png", // 使用默认图标作为占位封面
+};
+
 let playlist = [];
 let currentIndex = 0;
 let audio: HTMLAudioElement;
@@ -168,9 +178,10 @@ async function fetchMetingPlaylist() {
 				duration: dur,
 			};
 		});
-		if (playlist.length > 0) {
-			loadSong(playlist[0]);
-		}
+        if (playlist.length > 0) {
+            loadSong(playlist[0]);
+            isReady = true;
+        }
 		isLoading = false;
 	} catch (e) {
 		showErrorMessage("Meting 歌单获取失败");
@@ -395,6 +406,7 @@ onMount(() => {
 		playlist = [...localPlaylist];
 		if (playlist.length > 0) {
 			loadSong(playlist[0]);
+            isReady = true;
 		} else {
 			showErrorMessage("本地播放列表为空");
 		}
@@ -422,7 +434,8 @@ onDestroy(() => {
 </div>
 {/if}
 
-<div class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
+{#if isReady}
+<div class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out animate-fade-in"
      class:expanded={isExpanded}
      class:hidden-mode={isHidden}>
     <!-- 隐藏状态的小圆球 -->
@@ -686,6 +699,14 @@ onDestroy(() => {
         </div>
     {/if}
 </div>
+{:else}
+<!-- 首屏占位：避免展示“示例歌曲”再跳变。只渲染一个加载态小圆球，占位保持稳定。 -->
+<div class="music-player fixed bottom-4 right-4 z-50" aria-label="音乐播放器加载中">
+    <div class="orb-player w-12 h-12 bg-[var(--primary)] rounded-full shadow-lg flex items-center justify-center animate-fade-in">
+        <Icon icon="eos-icons:loading" class="text-white text-lg" />
+    </div>
+</div>
+{/if}
 
 <style>
 .orb-player {

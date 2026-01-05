@@ -41,9 +41,41 @@ const initialLayoutClass =
                 class:list="onload-animation"
                 style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
                 loading={index < 2 ? "eager" : "lazy"}
-        ></PostCard>
+      ></PostCard>
     ))}
 </div>
+
+<!--
+  提前在 DOM 构建完成后、正式脚本之前把用户偏好写入布局类，并抑制首次过渡，防止 list→grid 闪动。
+-->
+<script is:inline>
+  (() => {
+    try {
+      const el = document.getElementById('post-list-container');
+      if (!el) return;
+
+      const saved = localStorage.getItem('postListLayout');
+      const def = el.getAttribute('data-default-layout') || 'list';
+      const layout = (saved === 'grid' || saved === 'list') ? saved : def;
+
+      el.classList.remove('grid-mode', 'list-mode', 'grid', 'grid-cols-1', 'md:grid-cols-2', 'gap-6', 'flex', 'flex-col');
+
+      if (layout === 'grid') {
+        el.classList.add('grid-mode', 'grid', 'grid-cols-1', 'md:grid-cols-2', 'gap-6');
+      } else {
+        el.classList.add('list-mode', 'flex', 'flex-col');
+      }
+
+      el.classList.add('no-layout-transition');
+      requestAnimationFrame(() => {
+        el.classList.add('js-initialized');
+        el.classList.remove('no-layout-transition');
+      });
+    } catch (error) {
+      console.debug('inline layout sync aborted', error);
+    }
+  })();
+</script>
 
 <script>
   // 动态布局切换脚本
@@ -68,17 +100,8 @@ const initialLayoutClass =
 
       console.debug("Initializing layout:", { savedLayout, defaultLayout, currentLayout, isBothSidebars });
 
-      // 检查main-grid是否已经设置了正确的layout-mode，避免重复操作导致闪烁
-      const mainGrid = document.getElementById('main-grid');
-      if (mainGrid) {
-        const existingMode = mainGrid.getAttribute('data-layout-mode');
-        if (existingMode === currentLayout) {
-          console.debug("Layout already correct, skipping update to avoid flicker");
-          postListContainer.classList.add("js-initialized");
-          publishLayoutInit();
-          return;
-        }
-      }
+    // 注意：不要仅凭 main-grid 的 data-layout-mode 就提前 return。
+    // Swup 往返时，main-grid 可能遗留上一页/旧 DOM 的值，导致实际 post list 没被更新。
 
       // 移动端由CSS处理，桌面端才需要JavaScript初始化
       const isDesktop = window.innerWidth >= 769;
@@ -97,6 +120,12 @@ const initialLayoutClass =
   function updatePostListLayout(layout: string) {
     const postListContainer = document.getElementById("post-list-container");
     if (!postListContainer) return;
+
+  // 防止 Swup 回主页瞬间的“列表→网格”过渡割裂：首次应用时避免 transition
+  const disableTransitionOnce = !postListContainer.classList.contains('js-initialized');
+  if (disableTransitionOnce) {
+    postListContainer.classList.add('no-layout-transition');
+  }
 
     // 添加切换动画类
     postListContainer.classList.add("layout-switching");
@@ -143,6 +172,12 @@ const initialLayoutClass =
 
     // 添加初始化完成标记，用于移除闪烁保护
     postListContainer.classList.add("js-initialized");
+  if (disableTransitionOnce) {
+    // 下一帧恢复 transition（确保本次布局类已生效）
+    requestAnimationFrame(() => {
+      postListContainer.classList.remove('no-layout-transition');
+    });
+  }
 
     // 移除切换动画类
     setTimeout(() => {
@@ -289,6 +324,15 @@ const initialLayoutClass =
   /* 布局切换动画 */
   #post-list-container {
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Swup 回主页首帧：禁用过渡，避免出现先列表后网格的割裂动画 */
+  #post-list-container.no-layout-transition {
+    transition: none !important;
+  }
+  #post-list-container.no-layout-transition > :global(*) {
+    transition: none !important;
+    animation: none !important;
   }
 
   /* 文章卡片的过渡动画 */

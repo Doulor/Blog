@@ -26,6 +26,20 @@
 	font-display: swap;
 }
 
+/* 
+   Banner 标题防抖动：
+   强制给 banner 标题一个最小高度或行高约束，防止字体加载/swap 时的布局偏移 (CLS)。
+   同时配合 transition.css 里的 Swup 禁用动画，彻底消除回弹感。
+*/
+.banner-title {
+    line-height: 1.2;
+    min-height: 1.2em; 
+}
+.banner-subtitle {
+    line-height: 1.5;
+    min-height: 1.5em;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
