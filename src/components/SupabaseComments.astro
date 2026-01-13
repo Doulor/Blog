@@ -83,6 +83,13 @@ const { postSlug } = Astro.props;
       <i class="fas fa-sync-alt mr-1"></i> 加载评论中... 点击此处刷新页面
     </p>
   </div>
+
+  <!-- 加载更多按钮 -->
+  <div id="load-more-container" class="text-center mt-6 hidden">
+    <button id="load-more-btn" class="px-6 py-2 bg-white border border-gray-300 rounded-full text-gray-600 hover:text-blue-600 hover:border-blue-600 transition-all shadow-sm hover:shadow active:scale-95">
+      查看更多留言
+    </button>
+  </div>
 </div>
 
 <style>
@@ -236,6 +243,9 @@ const { postSlug } = Astro.props;
     const commentsList = document.getElementById('comments-list');
     const commentForm = document.getElementById('comment-form');
     const submitBtn = document.getElementById('submit-btn');
+    
+    // 全局引用，以便在此作用域外也能调用刷新
+    let loadComments = () => {};
 
     // 管理员登录交互
     adminEnterBtn.addEventListener('click', (e) => {
@@ -281,19 +291,86 @@ const { postSlug } = Astro.props;
       // 创建Supabase客户端
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+      // 分页状态
+      let currentOffset = 0;
+      const PAGE_SIZE = 5; // 用于测试，每页显示5条
+      const loadMoreContainer = document.getElementById('load-more-container');
+      const loadMoreBtn = document.getElementById('load-more-btn');
+
+      // 绑定加载更多事件
+      if (loadMoreBtn) {
+        // 使用 onclick 避免重复绑定
+        loadMoreBtn.onclick = () => loadComments(true);
+      }
+
+      // 绑定删除事件代理
+      if (commentsList && !commentsList.dataset.hasDeleteListener) {
+        commentsList.dataset.hasDeleteListener = 'true';
+        commentsList.addEventListener('click', async (e) => {
+          const btn = e.target.closest('.delete-button');
+          if (!btn) return;
+          
+          e.stopPropagation();
+
+          // 权限验证
+          if (!isAdmin) {
+            showToast('权限不足，无法删除评论');
+            return;
+          }
+
+          // 确认删除
+          if (confirm('确定要删除这条评论吗？')) {
+            try {
+              const { error } = await supabase
+                .from('comments')
+                .delete()
+                .eq('id', btn.dataset.commentId);
+
+              if (error) throw error;
+              showToast('评论已成功删除', false);
+              
+              // 从DOM移除去除动画效果
+              const item = btn.closest('.comment-item');
+              if (item) {
+                 item.style.opacity = '0';
+                 setTimeout(() => item.remove(), 300);
+              }
+            } catch (err) {
+              showToast(`删除失败: ${err.message}`);
+            }
+          }
+        });
+      }
+
       // 加载评论列表
-      async function loadComments() {
+      loadComments = async (isLoadMore = false) => {
         try {
+          // UI状态更新
+          if (!isLoadMore) {
+             currentOffset = 0; // 重置偏移量
+             if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+             // 仅当列表为空或之前失败时才显示加载中，避免刷新时的闪烁
+             if (commentsList && (!commentsList.children.length || commentsList.innerText.includes('加载失败'))) {
+                 commentsList.innerHTML = '<p class="text-gray-500 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> 加载中...</p>';
+             }
+          } else {
+             if (loadMoreBtn) {
+                 loadMoreBtn.disabled = true;
+                 loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+             }
+          }
+
           const { data, error } = await supabase
             .from('comments')
             .select('*')
             .eq('post_id', currentPostId)
-            .order('created_at', { ascending: true });
+            .order('created_at', { ascending: false }) // 按时间倒序（最新的在前）
+            .range(currentOffset, currentOffset + PAGE_SIZE - 1);
 
           if (error) throw error;
 
-          // 处理无评论情况
-          if (!data || data.length === 0) {
+          // 处理完全无数据（非加载更多）
+          if (!isLoadMore && (!data || data.length === 0)) {
             if (commentsList) {
               commentsList.innerHTML = '<p class="text-gray-500 text-center py-4">暂无评论，快来发表第一条评论吧～</p>';
             }
@@ -316,50 +393,46 @@ const { postSlug } = Astro.props;
             </div>
           `).join('');
 
-          if (commentsList) {
-            commentsList.innerHTML = commentsHtml;
+          if (isLoadMore) {
+             if (commentsList) commentsList.insertAdjacentHTML('beforeend', commentsHtml);
+             if (loadMoreBtn) {
+                 loadMoreBtn.disabled = false;
+                 loadMoreBtn.textContent = '查看更多留言';
+             }
+          } else {
+             if (commentsList) commentsList.innerHTML = commentsHtml;
           }
 
-          // 绑定删除按钮事件
-          document.querySelectorAll('.delete-button').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-              e.stopPropagation();
+          // 更新偏移量
+          currentOffset += data.length;
 
-              // 权限验证
-              if (!isAdmin) {
-                showToast('权限不足，无法删除评论');
-                return;
-              }
-
-              // 确认删除
-              if (confirm('确定要删除这条评论吗？')) {
-                try {
-                  const { error } = await supabase
-                    .from('comments')
-                    .delete()
-                    .eq('id', btn.dataset.commentId);
-
-                  if (error) throw error;
-                  showToast('评论已成功删除', false);
-                  loadComments(); // 刷新评论列表
-                } catch (err) {
-                  showToast(`删除失败: ${err.message}`);
-                }
-              }
-            });
-          });
+          // 处理“加载更多”按钮显隐
+          // 如果获取到的数据量少于PAGE_SIZE，说明没有更多了
+          if (data.length < PAGE_SIZE) {
+             if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+          } else {
+             if (loadMoreContainer) loadMoreContainer.classList.remove('hidden');
+          }
 
         } catch (err) {
           console.error('加载评论错误:', err);
-          if (commentsList) {
-            commentsList.innerHTML = `
-              <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
-                <i class="fas fa-exclamation-circle mr-1"></i> 加载失败，点击刷新
-              </p>
-            `;
+          if (!isLoadMore) {
+             if (commentsList) {
+                commentsList.innerHTML = `
+                  <p onclick="window.location.reload()" class="text-red-500 refresh-trigger">
+                    <i class="fas fa-exclamation-circle mr-1"></i> 加载失败，点击刷新
+                  </p>
+                `;
+             }
+          } else {
+             if (loadMoreBtn) {
+                 showToast('加载更多失败，请重试');
+                 loadMoreBtn.disabled = false;
+                 loadMoreBtn.textContent = '查看更多留言';
+             }
           }
         }
-      }
+      };
 
       // 首次加载评论
       loadComments();

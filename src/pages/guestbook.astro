@@ -54,6 +54,16 @@ const description = i18n(I18nKey.guestbookSubtitle);
                 点击"刷新留言"按钮开始加载留言...
               </div>
             </div>
+
+            <!-- 加载更多按钮 -->
+             <div id="load-more-btn-container" class="text-center mt-8 hidden">
+              <button
+                id="load-more-btn"
+                class="px-6 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:border-purple-300 dark:hover:border-purple-500 transition-all shadow-sm hover:shadow active:scale-95 text-sm font-medium"
+              >
+                查看更多留言
+              </button>
+            </div>
           </div>
         </div>
 
@@ -343,42 +353,95 @@ const description = i18n(I18nKey.guestbookSubtitle);
         <div class="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/3"></div>
       </div>
     `).join('');
+    
+    // 分页状态
+    let currentOffset = 0;
+    const PAGE_SIZE = 20; // 恢复默认显示数量20
+    const loadMoreContainer = document.getElementById('load-more-btn-container');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
+    // 加载更多按钮点击事件
+    if (loadMoreBtn) {
+       loadMoreBtn.onclick = () => loadMessages(true);
+    }
+
+    // 重置分页状态（用于完全刷新或重新提交留言后的重置）
+    function resetPagination() {
+        currentOffset = 0;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+    }
 
     // 加载留言时显示骨架屏
-    async function loadMessages() {
+    async function loadMessages(isLoadMore = false) {
       const messagesContainer = document.getElementById('messages-container');
-      if (messagesContainer) {
-        messagesContainer.innerHTML = skeletonHtml;
+      
+      if (!isLoadMore) {
+         resetPagination();
+         if (messagesContainer) {
+            messagesContainer.innerHTML = skeletonHtml;
+         }
+      } else {
+         if (loadMoreBtn) {
+             loadMoreBtn.disabled = true;
+             loadMoreBtn.textContent = '加载中...';
+         }
       }
+
       try {
         const { data, error } = await supabase
           .from('messages')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(25);
+          .range(currentOffset, currentOffset + PAGE_SIZE - 1); // 使用range分页
 
         if (error) throw error;
+        
+        // 如果是首次加载且无数据
+        if (!isLoadMore && (!data || data.length === 0)) {
+           renderEmptyMessage();
+           return;
+        }
 
         if (data && data.length > 0) {
-          renderMessages(data);
-        } else {
-          renderEmptyMessage();
+          renderMessages(data, isLoadMore);
+          currentOffset += data.length;
+          
+          // 判断是否还有更多数据
+          if (data.length < PAGE_SIZE) {
+             if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+          } else {
+             if (loadMoreContainer) loadMoreContainer.classList.remove('hidden');
+          }
+
+        } else if (isLoadMore) {
+           // 加载更多时发现没有更多数据了
+           if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         }
+
       } catch (error) {
         console.error('获取留言失败:', error);
-        guestbookForceReinit = true;
-        guestbookInitContainer = null;
-        const messagesContainer = document.getElementById('messages-container');
-        if (messagesContainer) {
-          messagesContainer.innerHTML = '<div class="text-center py-8 text-black/60 dark:text-white/60">加载留言失败</div>';
+        
+        if (!isLoadMore) {
+            guestbookForceReinit = true;
+            guestbookInitContainer = null;
+            if (messagesContainer) {
+              messagesContainer.innerHTML = '<div class="text-center py-8 text-black/60 dark:text-white/60">加载留言失败</div>';
+            }
+        } else {
+            alert('加载更多失败，请重试');
         }
+      } finally {
+         if (isLoadMore && loadMoreBtn) {
+             loadMoreBtn.disabled = false;
+             loadMoreBtn.textContent = '查看更多留言';
+         }
       }
     }
 
     // 渲染留言列表
-    function renderMessages(messages) {
+    function renderMessages(messages, isAppend = false) {
       if (!messages || messages.length === 0) {
-        renderEmptyMessage();
+        if (!isAppend) renderEmptyMessage();
         return;
       }
 
@@ -399,7 +462,11 @@ const description = i18n(I18nKey.guestbookSubtitle);
 
       const messagesContainer = document.getElementById('messages-container');
       if (messagesContainer) {
-        messagesContainer.innerHTML = messagesHtml;
+        if (isAppend) {
+            messagesContainer.insertAdjacentHTML('beforeend', messagesHtml);
+        } else {
+            messagesContainer.innerHTML = messagesHtml;
+        }
       }
     }
 
@@ -481,88 +548,80 @@ const description = i18n(I18nKey.guestbookSubtitle);
     window.loadMessagesFunc = loadMessages;
 
     // 初始化加载留言列表
-    await loadMessages();
+    // 使用 requestAnimationFrame 确保在浏览器重绘后执行，
+    // 这样可以避免在 Swup 过渡期间 DOM 状态不正确导致的问题
+    requestAnimationFrame(() => {
+        loadMessages();
+    });
 
   }
 
   // 检查文档是否已加载
+  // 增加对 popstate 事件的监听，处理浏览器后退按钮
+  const handleInitialLoad = () => {
+     if (window.location.pathname.includes('/guestbook')) {
+        setTimeout(initializeGuestbook, 100);
+     }
+  };
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.location.pathname.includes('/guestbook')) {
-        setTimeout(() => {
-          initializeGuestbook();
-        }, 50);
-      }
-    });
+    document.addEventListener('DOMContentLoaded', handleInitialLoad);
   } else {
-    // 如果文档已加载，且当前在guestbook页面，则初始化
-    if (window.location.pathname.includes('/guestbook')) {
-      // 使用requestAnimationFrame确保在浏览器渲染后执行
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          initializeGuestbook();
-        }, 10);
-      });
-    }
+    handleInitialLoad();
   }
+  
+  window.addEventListener('popstate', handleInitialLoad);
 
   function scheduleGuestbookInit(attempt = 0) {
     if (!window.location.pathname.includes('/guestbook')) return;
+    
+    // 强制重置初始化状态，确保Swup切换回来时能重新绑定
+    console.log(`Trying to init guestbook attempt: ${attempt}`);
+    guestbookForceReinit = true;
+    guestbookInitContainer = null;
+
     const messagesContainer = document.getElementById('messages-container');
+    
+    // 如果找到了容器，执行初始化
     if (messagesContainer) {
-      guestbookForceReinit = true;
       setTimeout(() => {
         initializeGuestbook();
       }, 50);
       return;
     }
 
-    if (attempt >= 5) {
-      guestbookForceReinit = true;
-      setTimeout(() => {
-        initializeGuestbook();
-      }, 200);
+    // 重试机制
+    if (attempt >= 20) { // 增加重试次数
       return;
     }
 
     setTimeout(() => scheduleGuestbookInit(attempt + 1), 100);
   }
 
-  // 监听Swup页面切换事件，当导航到guestbook页面时重新初始化
-  // 使用更全面的Swup事件监听
-  if (typeof window !== 'undefined' && window.swup) {
-    // 监听内容替换完成事件
-    window.swup.hooks.on('content:replace', scheduleGuestbookInit);
-
-    // 监听页面视图事件
-    window.swup.hooks.on('page:view', scheduleGuestbookInit);
-
-    // 监听动画结束事件
-    window.swup.hooks.on('animation:in:end', scheduleGuestbookInit);
-
-    // 监听访问结束事件，这是Swup完成所有操作的最终事件
-    window.swup.hooks.on('visit:end', scheduleGuestbookInit);
+  // 监听Swup页面切换事件
+  // 使用 content:replace 因为此时新内容已插入 DOM，但尚未显示
+  // 使用 page:view 确保页面已完全可见
+  
+  if (window.swup && window.swup.hooks) {
+    // 确保在内容替换后（即进入新页面）立即开始尝试寻找 DOM
+    window.swup.hooks.on('content:replace', () => {
+        console.log('Swup content:replace triggered');
+        scheduleGuestbookInit();
+    });
+    // 再次保障，在页面视图确认后检查
+    window.swup.hooks.on('page:view', () => {
+        console.log('Swup page:view triggered');
+        scheduleGuestbookInit();
+    });
   } else {
-    // 如果Swup不可用，使用传统的事件监听
-    document.addEventListener('swup:contentReplaced', scheduleGuestbookInit);
+      // 兼容非 Swup 环境或者 Swup 未加载
+      document.addEventListener('swup:content:replace', scheduleGuestbookInit);
+      document.addEventListener('swup:page:view', scheduleGuestbookInit);
   }
 
-  // 还需要监听浏览器的popstate事件，以防用户使用浏览器的前进后退按钮
-  window.addEventListener('popstate', function() {
-    setTimeout(() => {
-      scheduleGuestbookInit();
-    }, 100);
-  });
 
-  // 监听页面可见性变化，当页面变为可见时（如从其他标签页返回）重新检查
-  document.addEventListener('visibilitychange', function() {
-    if (!document.hidden && window.location.pathname.includes('/guestbook')) {
-      setTimeout(() => {
-        scheduleGuestbookInit();
-      }, 100);
-    }
+  // 针对本项目自定义事件
+  document.addEventListener('mizuki:page:loaded', () => {
+     scheduleGuestbookInit();
   });
-
-  // 新增：统一的页面加载事件（Swup触发）
-  document.addEventListener('mizuki:page:loaded', scheduleGuestbookInit);
 </script>
