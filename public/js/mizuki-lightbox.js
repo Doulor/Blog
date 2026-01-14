@@ -26,6 +26,10 @@
     dragStartTy: 0,
     imgNaturalW: 0,
     imgNaturalH: 0,
+
+    // gallery navigation
+    group: [], // Array<{ src: string, alt?: string, caption?: string }>
+    index: -1,
   };
 
   function normalizeSrc(raw) {
@@ -50,6 +54,8 @@
     root.innerHTML = `
       <div class="mizuki-lightbox__backdrop" data-lb-close></div>
       <figure class="mizuki-lightbox__panel" role="dialog" aria-modal="true" data-lb-close>
+        <button class="mizuki-lightbox__nav mizuki-lightbox__nav--prev" type="button" aria-label="上一张" data-lb-prev>‹</button>
+        <button class="mizuki-lightbox__nav mizuki-lightbox__nav--next" type="button" aria-label="下一张" data-lb-next>›</button>
         <button class="mizuki-lightbox__close" type="button" aria-label="关闭" data-lb-close>×</button>
         <img class="mizuki-lightbox__img" alt="" />
         <div class="mizuki-lightbox__caption" aria-live="polite"></div>
@@ -58,6 +64,75 @@
 
     document.body.appendChild(root);
     return root;
+  }
+
+  function setNavVisibility(root) {
+    const prev = root.querySelector('[data-lb-prev]');
+    const next = root.querySelector('[data-lb-next]');
+    const hasGroup = Array.isArray(state.group) && state.group.length > 1;
+    const canPrev = hasGroup && state.index > 0;
+    const canNext = hasGroup && state.index < state.group.length - 1;
+
+    if (prev instanceof HTMLButtonElement) {
+      prev.style.display = hasGroup ? '' : 'none';
+      prev.disabled = !canPrev;
+      prev.setAttribute('aria-disabled', String(!canPrev));
+    }
+    if (next instanceof HTMLButtonElement) {
+      next.style.display = hasGroup ? '' : 'none';
+      next.disabled = !canNext;
+      next.setAttribute('aria-disabled', String(!canNext));
+    }
+  }
+
+  function preload(src) {
+    if (!src) return;
+    const img = new Image();
+    img.decoding = 'async';
+    img.loading = 'eager';
+    img.src = src;
+  }
+
+  function renderCurrent() {
+    const root = document.getElementById('mizuki-lightbox');
+    if (!root) return;
+    const img = getImgEl(root);
+    const cap = root.querySelector('.mizuki-lightbox__caption');
+    if (!img || !(cap instanceof HTMLElement)) return;
+
+    const item = state.group[state.index];
+    if (!item) return;
+
+    img.alt = item.alt || '';
+    cap.textContent = item.caption || '';
+
+    img.removeAttribute('src');
+    img.removeAttribute('srcset');
+    resetTransform(root);
+    img.src = item.src;
+
+    // preload neighbors
+    preload(state.group[state.index - 1]?.src);
+    preload(state.group[state.index + 1]?.src);
+
+    setNavVisibility(root);
+
+    // 让导航按钮跟随图片两侧位置（图片加载/布局后再计算更准）
+    const settle = () => updateNavPosition(root);
+    if (img.complete) {
+      requestAnimationFrame(settle);
+    } else {
+      img.addEventListener('load', () => requestAnimationFrame(settle), { once: true });
+    }
+  }
+
+  function go(delta) {
+    if (!state.open) return;
+    if (!Array.isArray(state.group) || state.group.length === 0) return;
+    const next = clamp(state.index + delta, 0, state.group.length - 1);
+    if (next === state.index) return;
+    state.index = next;
+    renderCurrent();
   }
 
   function clamp(n, min, max) {
@@ -74,6 +149,21 @@
     if (!img) return;
     img.style.transform = `translate3d(${state.tx}px, ${state.ty}px, 0) scale(${state.scale})`;
     img.style.cursor = state.scale > 1 ? (state.dragging ? 'grabbing' : 'grab') : 'zoom-in';
+  }
+
+  function updateNavPosition(root) {
+    const img = getImgEl(root);
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    // 按钮距离图片边缘的间距
+    const gap = 80;
+    const prevLeft = Math.max(12, Math.round(rect.left - gap));
+    const nextRight = Math.max(12, Math.round(window.innerWidth - rect.right - gap));
+
+    root.style.setProperty('--mizuki-lb-prev-left', `${prevLeft}px`);
+    root.style.setProperty('--mizuki-lb-next-right', `${nextRight}px`);
   }
 
   function resetTransform(root) {
@@ -114,7 +204,7 @@
     applyTransform(root);
   }
 
-  function openLightbox({ src, alt, caption }) {
+  function openLightbox({ src, alt, caption, group, index }) {
     const root = ensureDom();
     const img = root.querySelector('.mizuki-lightbox__img');
     const cap = root.querySelector('.mizuki-lightbox__caption');
@@ -125,13 +215,16 @@
 
     state.open = true;
 
+  state.group = Array.isArray(group) && group.length ? group : [{ src, alt, caption }];
+  state.index = typeof index === 'number' && index >= 0 ? index : 0;
+
     // 初始化交互样式（避免首次打开没有 transform 属性）
     img.style.transformOrigin = 'center center';
     img.style.willChange = 'transform';
     img.style.transition = 'transform 120ms ease-out';
 
-    img.alt = alt || '';
-    cap.textContent = caption || '';
+  img.alt = '';
+  cap.textContent = '';
 
     // reset before set src to avoid flashing old content
     img.removeAttribute('src');
@@ -139,7 +232,7 @@
 
     resetTransform(root);
 
-    img.src = src;
+  renderCurrent();
 
     // 图片加载后再解锁 transition（减少“加载中跳动”）
     const onLoaded = () => {
@@ -156,6 +249,19 @@
     // Focus close button for accessibility
     const closeBtn = root.querySelector('.mizuki-lightbox__close');
     if (closeBtn instanceof HTMLButtonElement) closeBtn.focus();
+
+    // 初次打开时也更新一次按钮位置
+    requestAnimationFrame(() => updateNavPosition(root));
+
+    // 视口变化（以及旋转/缩放）时让按钮继续贴着图片
+    if (!window.__mizukiLightboxResizeBound__) {
+      window.__mizukiLightboxResizeBound__ = true;
+      window.addEventListener('resize', () => {
+        const r = document.getElementById('mizuki-lightbox');
+        if (!r || r.getAttribute('aria-hidden') === 'true') return;
+        updateNavPosition(r);
+      }, { passive: true });
+    }
   }
 
   function closeLightbox() {
@@ -165,6 +271,8 @@
     document.documentElement.classList.remove('mizuki-lightbox-open');
 
     state.open = false;
+  state.group = [];
+  state.index = -1;
 
     const img = root.querySelector('.mizuki-lightbox__img');
     if (img instanceof HTMLImageElement) {
@@ -184,6 +292,18 @@
     document.addEventListener('click', (e) => {
       const t = e.target;
       if (!(t instanceof Element)) return;
+
+      // Prev/Next
+      if (t.closest('[data-lb-prev]')) {
+        e.preventDefault();
+        go(-1);
+        return;
+      }
+      if (t.closest('[data-lb-next]')) {
+        e.preventDefault();
+        go(1);
+        return;
+      }
 
       // Close behaviors
       // 注意：panel 上也会带 data-lb-close，用于“点图片外边关闭”。
@@ -207,7 +327,25 @@
       const alt = img instanceof HTMLImageElement ? img.alt : '';
       const caption = trigger.getAttribute('data-lightbox-caption') || '';
 
-      openLightbox({ src, alt, caption });
+      // 收集同一组图片：优先找最近的容器（moment-images / markdown-content / 自定义容器都可）
+      const container = trigger.closest('.moment-images') || trigger.closest('.markdown-content') || trigger.parentElement;
+      const anchors = container ? Array.from(container.querySelectorAll('[data-lightbox-src]')) : [trigger];
+      const group = anchors
+        .map((el) => {
+          if (!(el instanceof Element)) return null;
+          const s = normalizeSrc(el.getAttribute('data-lightbox-src') || '');
+          if (!s) return null;
+          const im = el.querySelector('img');
+          return {
+            src: s,
+            alt: im instanceof HTMLImageElement ? im.alt : '',
+            caption: el.getAttribute('data-lightbox-caption') || '',
+          };
+        })
+        .filter(Boolean);
+
+      const index = Math.max(0, anchors.indexOf(trigger));
+      openLightbox({ src, alt, caption, group, index });
     }, true);
 
     // Mouse wheel to zoom (only when open).
@@ -314,7 +452,10 @@
 
     // Esc to close
     document.addEventListener('keydown', (e) => {
+      if (!state.open) return;
       if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') go(-1);
+      if (e.key === 'ArrowRight') go(1);
     });
 
     // Swup content replaced: no-op (delegated handler still works), but ensure overlay exists
