@@ -222,6 +222,10 @@ function formatDate(dateInput: string | Date): string {
 
 <script is:inline>
   (function () {
+    // 避免 Swup 往返后重复绑定导致点击逻辑异常
+    if (window.__mizukiDiaryCardNavBound__) return;
+    window.__mizukiDiaryCardNavBound__ = true;
+
     function shouldIgnore(e) {
       const t = e.target;
       if (!(t instanceof Element)) return false;
@@ -239,7 +243,14 @@ function formatDate(dateInput: string | Date): string {
       const card = t.closest('.moment-item[data-href]');
       if (!card) return;
       const href = card.getAttribute('data-href');
-      if (href) window.location.href = href;
+      if (!href) return;
+
+      // Swup 场景下优先用 swup.navigate，避免 history/缓存状态导致的“返回后无法进入”
+      if (window.swup && typeof window.swup.navigate === 'function') {
+        window.swup.navigate(href);
+      } else {
+        window.location.href = href;
+      }
     }
 
     function handleCardKeydown(e) {
@@ -249,7 +260,12 @@ function formatDate(dateInput: string | Date): string {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         const href = card.getAttribute('data-href');
-        if (href) window.location.href = href;
+        if (!href) return;
+        if (window.swup && typeof window.swup.navigate === 'function') {
+          window.swup.navigate(href);
+        } else {
+          window.location.href = href;
+        }
       }
     }
 
