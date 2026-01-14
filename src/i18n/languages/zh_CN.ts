@@ -63,7 +63,7 @@ export const zh_CN: Translation = {
 	[Key.diaryCount]: "条短文",
 	[Key.diaryImage]: "图片",
 	[Key.diaryReply]: "回复",
-	[Key.diaryTips]: "只展示最近30条日记",
+	[Key.diaryTips]: "默认显示最近20条日记，可以手动点击按钮加载更多。",
 	[Key.diaryMinutesAgo]: "分钟前",
 	[Key.diaryHoursAgo]: "小时前",
 	[Key.diaryDaysAgo]: "天前",

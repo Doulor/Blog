@@ -25,6 +25,9 @@ function normalizeImage(url: string): string {
 const diaries = await getCollection('diary')
   .then(items => items.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()));
 
+// 默认显示条数（查看更多按钮逐步追加）
+const DIARY_PAGE_SIZE = 20;
+
 // 相对时间格式化函数
 function formatTime(dateInput: string | Date): string {
   const date = new Date(dateInput);
@@ -80,13 +83,19 @@ function formatDate(dateInput: string | Date): string {
 
         <!-- 短文列表 -->
         <div class="moments-timeline">
-          <div class="timeline-list space-y-4">
-            {diaries.map(diary => {
+          <div id="diary-list" class="timeline-list space-y-4">
+            {diaries.map((diary, index) => {
               const dateObj = new Date(diary.data.date);
               const dateIso = dateObj.toISOString();
               return (
-              <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all">
-                <a href={`/diary/${diary.slug}/`} class="block">
+              <div
+                class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all cursor-pointer"
+                data-index={index}
+                data-href={`/diary/${diary.slug}/`}
+                role="link"
+                tabindex="0"
+                aria-label={`打开日记：${diary.data.title || diary.slug}`}
+              >
                   <div class="moment-content">
                     {/* 新增：日记标题（保持原有设计语言） */}
                     {diary.data.title && (
@@ -108,25 +117,29 @@ function formatDate(dateInput: string | Date): string {
                           const external = isExternalUrl(normalized);
                           const displaySrc = external ? normalized : `/images/diary/${normalized}`;
                           return (
-                          <div
-                            class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform"
+                          <a
+                            href={displaySrc}
+                            class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform block"
                             data-lightbox-src={displaySrc}
-                            data-lightbox-alt={i18n(I18nKey.diaryImage)}
+                            aria-label={i18n(I18nKey.diaryImage)}
                           >
                             <img
                               src={displaySrc}
                               alt={i18n(I18nKey.diaryImage)}
                               class="w-full h-full object-cover"
                               loading="lazy"
+                              decoding="async"
                             />
-                            <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
-                          </div>
+                            <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                          </a>
                           );
                         })}
                       </div>
                     )}
+
+                    {/* 已实现卡片整块可点击跳转，不再需要单独的“打开日记”按钮 */}
+
                   </div>
-                </a>
                 
                 <hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4" />
                 
@@ -145,6 +158,17 @@ function formatDate(dateInput: string | Date): string {
           </div>
         </div>
 
+        <!-- 查看更多日记按钮 -->
+        <div id="diary-load-more-container" class="text-center mt-8">
+          <button
+            id="diary-load-more"
+            type="button"
+            class="px-6 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:border-purple-300 dark:hover:border-purple-500 transition-all shadow-sm hover:shadow active:scale-95 text-sm font-medium"
+          >
+            查看更多日记
+          </button>
+        </div>
+
         {/* 底部提示 */}
         <div class="moments-tips text-center mt-6 md:mt-8 lg:mt-10 text-75 text-xs md:text-sm lg:text-base italic">
           {i18n(I18nKey.diaryTips)}
@@ -154,7 +178,85 @@ function formatDate(dateInput: string | Date): string {
   </div>
 </MainGridLayout>
 
-<script is:inline src="/js/lightbox.js"></script>
+<script is:inline>
+  (function () {
+    const PAGE_SIZE = Number({DIARY_PAGE_SIZE});
+    const list = document.getElementById('diary-list');
+    const btn = document.getElementById('diary-load-more');
+    const container = document.getElementById('diary-load-more-container');
+    if (!list || !btn || !container) return;
+
+    const items = Array.from(list.querySelectorAll('.moment-item'));
+    let visible = 0;
+
+    function applyVisibility() {
+      items.forEach((el, idx) => {
+        el.style.display = idx < visible ? '' : 'none';
+      });
+
+      if (visible >= items.length) {
+        container.style.display = 'none';
+      } else {
+        container.style.display = '';
+      }
+    }
+
+    function showMore() {
+      visible = Math.min(items.length, visible + PAGE_SIZE);
+      applyVisibility();
+    }
+
+    // 初始显示 20 条
+    visible = Math.min(items.length, PAGE_SIZE);
+    applyVisibility();
+
+    btn.addEventListener('click', showMore);
+
+    // swup 切换回来时兜底重置
+    document.addEventListener('swup:contentReplaced', () => {
+      visible = Math.min(items.length, PAGE_SIZE);
+      applyVisibility();
+    });
+  })();
+</script>
+
+<script is:inline>
+  (function () {
+    function shouldIgnore(e) {
+      const t = e.target;
+      if (!(t instanceof Element)) return false;
+  // 点击图片/灯箱触发器时不跳转
+  if (t.closest('[data-lightbox-src], .moment-images img')) return true;
+      // 点击任何链接/按钮/表单控件时保留其默认行为
+      if (t.closest('a, button, input, textarea, select, summary')) return true;
+      return false;
+    }
+
+    function handleCardClick(e) {
+      if (shouldIgnore(e)) return;
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      const card = t.closest('.moment-item[data-href]');
+      if (!card) return;
+      const href = card.getAttribute('data-href');
+      if (href) window.location.href = href;
+    }
+
+    function handleCardKeydown(e) {
+      if (!(e.target instanceof Element)) return;
+      const card = e.target.closest('.moment-item[data-href]');
+      if (!card) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const href = card.getAttribute('data-href');
+        if (href) window.location.href = href;
+      }
+    }
+
+    document.addEventListener('click', handleCardClick);
+    document.addEventListener('keydown', handleCardKeydown);
+  })();
+</script>
 
 <style>
   /* 保留原始所有样式 */

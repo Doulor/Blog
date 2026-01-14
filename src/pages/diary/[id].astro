@@ -123,10 +123,11 @@ const diaryDateIso = diaryDate.toISOString();
               const normalized = normalizeImage(image);
               const external = isExternalUrl(normalized);
               return (
-                <div 
-                  class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer"
+                <a
+                  class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer block"
+                  href={external ? normalized : join(diaryBasePath, normalized)}
                   data-lightbox-src={external ? normalized : join(diaryBasePath, normalized)}
-                  data-lightbox-alt={`${diary.data.title} - ${index + 1}`}
+                  aria-label={`${diary.data.title} - ${index + 1}`}
                 >
                   {external ? (
                     <img
@@ -143,8 +144,8 @@ const diaryDateIso = diaryDate.toISOString();
                       basePath={diaryBasePath}
                     />
                   )}
-                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                </div>
+                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                </a>
               );
             })}
           </div>
@@ -154,29 +155,3 @@ const diaryDateIso = diaryDate.toISOString();
   </div>
 </MainGridLayout>
 
-<script is:inline src="/js/lightbox.js"></script>
-<script>
-  // 为 Markdown 内容中的图片动态添加 data-lightbox-src
-  function setupMarkdownLightbox() {
-    const markdownContent = document.querySelector('.markdown-content');
-    if (!markdownContent) return;
-
-    const images = markdownContent.querySelectorAll('img');
-    images.forEach(img => {
-      // 如果父元素已经是灯箱触发器，则跳过
-      if (img.closest('[data-lightbox-src]')) return;
-
-      // 为图片本身或其最近的父链接添加属性
-      const parentLink = img.closest('a');
-      const targetEl = parentLink || img;
-
-      if (!targetEl.hasAttribute('data-lightbox-src')) {
-        targetEl.setAttribute('data-lightbox-src', img.src);
-        targetEl.setAttribute('data-lightbox-alt', img.alt);
-      }
-    });
-  }
-
-  document.addEventListener('astro:page-load', setupMarkdownLightbox);
-  document.addEventListener('astro:after-swap', setupMarkdownLightbox);
-</script>
