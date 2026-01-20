@@ -1570,6 +1570,24 @@ if (document.readyState === 'loading') {
 		touch-action: none;
   }
 
+	#mizuki-lightbox .mizuki-lightbox__video {
+		width: min(96vw, 1100px);
+		height: min(86vh, 660px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	#mizuki-lightbox .mizuki-lightbox__video-player,
+	#mizuki-lightbox .mizuki-lightbox__video-frame {
+		width: 100%;
+		height: 100%;
+		border-radius: 14px;
+		background: #000;
+		box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+		border: none;
+	}
+
   #mizuki-lightbox .mizuki-lightbox__close {
     position: absolute;
     top: 14px;

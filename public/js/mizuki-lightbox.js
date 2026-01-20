@@ -28,9 +28,14 @@
     imgNaturalH: 0,
 
     // gallery navigation
-    group: [], // Array<{ src: string, alt?: string, caption?: string }>
+    group: [], // Array<{ src: string, alt?: string, caption?: string, type?: string }>
     index: -1,
   };
+
+  function isDirectVideoUrl(url) {
+    if (!url) return false;
+    return /\.(mp4|webm|ogg)(\?|#|$)/i.test(String(url));
+  }
 
   function normalizeSrc(raw) {
     if (!raw) return '';
@@ -58,6 +63,7 @@
         <button class="mizuki-lightbox__nav mizuki-lightbox__nav--next" type="button" aria-label="下一张" data-lb-next>›</button>
         <button class="mizuki-lightbox__close" type="button" aria-label="关闭" data-lb-close>×</button>
         <img class="mizuki-lightbox__img" alt="" />
+        <div class="mizuki-lightbox__video" hidden></div>
         <div class="mizuki-lightbox__caption" aria-live="polite"></div>
       </figure>
     `;
@@ -106,6 +112,19 @@
     img.alt = item.alt || '';
     cap.textContent = item.caption || '';
 
+    const isVideo = item.type === 'video';
+    clearVideo(root);
+
+    if (isVideo) {
+      img.style.display = 'none';
+      resetTransform(root);
+      renderVideo(root, item.src);
+      setNavVisibility(root);
+      requestAnimationFrame(() => updateNavPosition(root));
+      return;
+    }
+
+    img.style.display = '';
     img.removeAttribute('src');
     img.removeAttribute('srcset');
     resetTransform(root);
@@ -144,6 +163,43 @@
     return img instanceof HTMLImageElement ? img : null;
   }
 
+  function getVideoBox(root) {
+    const box = root.querySelector('.mizuki-lightbox__video');
+    return box instanceof HTMLElement ? box : null;
+  }
+
+  function clearVideo(root) {
+    const box = getVideoBox(root);
+    if (!box) return;
+    box.innerHTML = '';
+    box.hidden = true;
+  }
+
+  function renderVideo(root, src) {
+    const box = getVideoBox(root);
+    if (!box) return;
+    box.hidden = false;
+    box.innerHTML = '';
+
+    if (isDirectVideoUrl(src)) {
+      const video = document.createElement('video');
+      video.src = src;
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      video.className = 'mizuki-lightbox__video-player';
+      box.appendChild(video);
+    } else {
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.className = 'mizuki-lightbox__video-frame';
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'no-referrer-when-downgrade';
+      box.appendChild(iframe);
+    }
+  }
+
   function applyTransform(root) {
     const img = getImgEl(root);
     if (!img) return;
@@ -153,8 +209,10 @@
 
   function updateNavPosition(root) {
     const img = getImgEl(root);
-    if (!img) return;
-    const rect = img.getBoundingClientRect();
+    const videoBox = getVideoBox(root);
+    const targetEl = videoBox && !videoBox.hidden ? videoBox : img;
+    if (!targetEl) return;
+    const rect = targetEl.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
 
     // 按钮距离图片边缘的间距
@@ -204,7 +262,7 @@
     applyTransform(root);
   }
 
-  function openLightbox({ src, alt, caption, group, index }) {
+  function openLightbox({ src, alt, caption, group, index, type }) {
     const root = ensureDom();
     const img = root.querySelector('.mizuki-lightbox__img');
     const cap = root.querySelector('.mizuki-lightbox__caption');
@@ -215,7 +273,7 @@
 
     state.open = true;
 
-  state.group = Array.isArray(group) && group.length ? group : [{ src, alt, caption }];
+  state.group = Array.isArray(group) && group.length ? group : [{ src, alt, caption, type: type || 'image' }];
   state.index = typeof index === 'number' && index >= 0 ? index : 0;
 
     // 初始化交互样式（避免首次打开没有 transform 属性）
@@ -279,7 +337,10 @@
       img.removeAttribute('src');
       img.removeAttribute('srcset');
       img.style.transform = '';
+      img.style.display = '';
     }
+
+    clearVideo(root);
 
     resetTransform(root);
   }
@@ -309,6 +370,7 @@
       // 注意：panel 上也会带 data-lb-close，用于“点图片外边关闭”。
       // 但点击图片本身不应关闭。
       if (t.closest('[data-lb-close]') && !t.closest('.mizuki-lightbox__img')) {
+        if (t.closest('.mizuki-lightbox__video')) return;
         e.preventDefault();
         closeLightbox();
         return;
@@ -340,12 +402,14 @@
             src: s,
             alt: im instanceof HTMLImageElement ? im.alt : '',
             caption: el.getAttribute('data-lightbox-caption') || '',
+            type: el.getAttribute('data-lightbox-type') || 'image',
           };
         })
         .filter(Boolean);
 
       const index = Math.max(0, anchors.indexOf(trigger));
-      openLightbox({ src, alt, caption, group, index });
+      const type = trigger.getAttribute('data-lightbox-type') || 'image';
+      openLightbox({ src, alt, caption, group, index, type });
     }, true);
 
     // Mouse wheel to zoom (only when open).
@@ -355,8 +419,8 @@
       const root = document.getElementById('mizuki-lightbox');
       if (!root || root.getAttribute('aria-hidden') === 'true') return;
 
-      const img = getImgEl(root);
-      if (!img) return;
+  const img = getImgEl(root);
+  if (!img || img.style.display === 'none') return;
 
       // 如果滚轮事件不是发生在灯箱内，就不处理
       const target = e.target;
@@ -391,8 +455,8 @@
 
       const t = e.target;
       if (!(t instanceof Element)) return;
-      const img = getImgEl(root);
-      if (!img) return;
+  const img = getImgEl(root);
+  if (!img || img.style.display === 'none') return;
       if (t !== img && !t.closest('.mizuki-lightbox__img')) return;
 
       state.dragging = true;

@@ -236,25 +236,25 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
             <div class="flex items-center space-x-3 mb-3 pt-1">
               <input type="checkbox" id="diaryUseImage" name="diaryUseImage"
                 class="w-5 h-5 text-[var(--primary)] border-2 border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)] focus:ring-offset-0 cursor-pointer transition-all duration-200 hover:scale-110">
-              <label for="diaryUseImage" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加图片</label>
+              <label for="diaryUseImage" class="text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none cursor-pointer">添加图片或视频</label>
             </div>
             <div id="diaryImageSection" class="hidden pl-7 space-y-3 fade-in">
-              <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">图片类型</label>
+              <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">媒体类型</label>
               <div class="grid grid-cols-2 gap-4 mb-4">
                 <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
                   <input type="radio" name="diaryImageType" value="local" checked
                     class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
                   <div>
-                    <div class="font-medium text-neutral-700 dark:text-neutral-300">本地图片</div>
-                    <div class="text-xs text-neutral-500 dark:text-neutral-400">使用本地图片文件</div>
+                    <div class="font-medium text-neutral-700 dark:text-neutral-300">本地媒体</div>
+                    <div class="text-xs text-neutral-500 dark:text-neutral-400">使用本地媒体文件</div>
                   </div>
                 </label>
                 <label class="flex items-center space-x-3 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-smooth">
                   <input type="radio" name="diaryImageType" value="r2"
                     class="w-4 h-4 text-[var(--accent)] border-neutral-300 focus:ring-[var(--accent)]">
                   <div>
-                    <div class="font-medium text-neutral-700 dark:text-neutral-300">R2图片</div>
-                    <div class="text-xs text-neutral-500 dark:text-neutral-400">从R2存储获取图片</div>
+                    <div class="font-medium text-neutral-700 dark:text-neutral-300">R2媒体</div>
+                    <div class="text-xs text-neutral-500 dark:text-neutral-400">从R2存储获取媒体</div>
                   </div>
                 </label>
               </div>
@@ -284,13 +284,13 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
                 </div>
               </div>
 
-              <!-- 本地图片输入区域 -->
+              <!-- 本地媒体输入区域 -->
               <div id="localDiaryImageSection">
-                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">图片文件名或外部链接</label>
+                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">媒体文件名或外部链接</label>
                 <div id="diaryImagesContainer" class="space-y-2">
                 </div>
                 <button type="button" id="addImageBtn" class="text-sm bg-[var(--secondary)]/20 hover:bg-[var(--secondary)] text-[var(--secondary)] hover:text-white px-4 py-2 rounded-lg transition-smooth flex items-center border border-[var(--secondary)]/30 hover:border-[var(--secondary)] mt-2">
-                  <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加图片
+                  <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加媒体
                 </button>
               </div>
             </div>
@@ -788,19 +788,76 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
     }
   });
 
+  // 让日记图片输入区支持拖拽排序（鼠标/触摸）
+  function initDiaryImageSortable() {
+    const container = document.getElementById('diaryImagesContainer');
+    if (!container || container.dataset.sortInit === 'true') return;
+    container.dataset.sortInit = 'true';
+
+    let draggingItem = null;
+    let startY = 0;
+
+    container.addEventListener('pointerdown', (e) => {
+      const handle = e.target.closest('.drag-handle');
+      if (!handle) return;
+      const item = handle.closest('.diary-image-input');
+      if (!item) return;
+      e.preventDefault();
+      draggingItem = item;
+      startY = e.clientY;
+      item.classList.add('dragging');
+      item.style.pointerEvents = 'none';
+      item.style.transform = 'translate3d(0, 0, 0)';
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!draggingItem) return;
+      const deltaY = e.clientY - startY;
+      draggingItem.style.transform = `translate3d(0, ${deltaY}px, 0)`;
+      const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+      const target = elementUnder?.closest('.diary-image-input');
+      if (!target || target === draggingItem) return;
+      const rect = target.getBoundingClientRect();
+      const after = (e.clientY - rect.top) > rect.height / 2;
+      container.insertBefore(draggingItem, after ? target.nextSibling : target);
+    });
+
+    const finishDrag = () => {
+      if (!draggingItem) return;
+      draggingItem.classList.remove('dragging');
+      draggingItem.style.pointerEvents = '';
+  draggingItem.style.transform = '';
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+      draggingItem = null;
+      const activeForm = document.querySelector('.form-content:not(.hidden)');
+      if (activeForm) {
+        const formType = activeForm.id.replace('Form', '');
+        generateMarkdown(formType);
+      }
+    };
+
+    window.addEventListener('pointerup', finishDrag);
+    window.addEventListener('pointercancel', finishDrag);
+  }
+
   // 添加日记图片输入框的函数
-  function addDiaryImageInput() {
+  function addDiaryImageInput(value = '') {
     const container = document.getElementById('diaryImagesContainer');
     const inputDiv = document.createElement('div');
     inputDiv.className = 'diary-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
     inputDiv.innerHTML = `
-        <input type="text" name="diaryImage[]" placeholder="图片文件名或外部链接"
+        <span class="drag-handle" title="拖动排序" aria-hidden="true">⋮⋮</span>
+        <input type="text" name="diaryImage[]" value="${value}" placeholder="媒体文件名或外部链接"
             class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
         <button type="button" class="remove-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
             <span class="text-xl font-bold">🗑</span>
         </button>
     `;
     container.appendChild(inputDiv);
+    initDiaryImageSortable();
 
     // 添加输入事件监听器来实时更新内容
     const inputField = inputDiv.querySelector('input');
@@ -856,42 +913,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 
   // 处理日记添加图片功能
   document.getElementById('addImageBtn').addEventListener('click', function() {
-    const container = document.getElementById('diaryImagesContainer');
-    const inputDiv = document.createElement('div');
-    inputDiv.className = 'diary-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
-    inputDiv.innerHTML = `
-        <input type="text" name="diaryImage[]" placeholder="图片文件名或外部链接"
-            class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
-        <button type="button" class="remove-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
-            <span class="text-xl font-bold">🗑</span>
-        </button>
-    `;
-    container.appendChild(inputDiv);
-
-    // 添加输入事件监听器来实时更新内容
-    const inputField = inputDiv.querySelector('input');
-    inputField.addEventListener('input', function() {
-      const activeForm = document.querySelector('.form-content:not(.hidden)');
-      if (activeForm) {
-        const formType = activeForm.id.replace('Form', '');
-        generateMarkdown(formType);
-      }
-    });
-
-    // 添加删除功能
-    inputDiv.querySelector('.remove-image').addEventListener('click', function() {
-      const item = this.parentElement;
-      item.classList.add('fade-out');
-      setTimeout(() => {
-        item.remove();
-        // 删除后更新生成的内容
-        const activeForm = document.querySelector('.form-content:not(.hidden)');
-        if (activeForm) {
-          const formType = activeForm.id.replace('Form', '');
-          generateMarkdown(formType);
-        }
-      }, 300);
-    });
+    addDiaryImageInput();
   });
 
   // 为单选按钮添加监听
@@ -1154,43 +1176,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
       container.innerHTML = '';
 
       // 添加从R2获取到的图片链接
-      imageUrls.forEach(url => {
-        const inputDiv = document.createElement('div');
-        inputDiv.className = 'diary-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
-        inputDiv.innerHTML = `
-            <input type="text" name="diaryImage[]" value="${url}" placeholder="图片链接"
-                class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
-            <button type="button" class="remove-diary-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
-                <span class="text-xl font-bold">×</span>
-            </button>
-        `;
-        container.appendChild(inputDiv);
-
-        // 添加输入事件监听器来实时更新内容
-        const inputField = inputDiv.querySelector('input');
-        inputField.addEventListener('input', function() {
-          const activeForm = document.querySelector('.form-content:not(.hidden)');
-          if (activeForm) {
-            const formType = activeForm.id.replace('Form', '');
-            generateMarkdown(formType);
-          }
-        });
-
-        // 添加删除功能
-        inputDiv.querySelector('.remove-diary-image').addEventListener('click', function() {
-          const item = this.parentElement;
-          item.classList.add('fade-out');
-          setTimeout(() => {
-            item.remove();
-            // 删除后更新生成的内容
-            const activeForm = document.querySelector('.form-content:not(.hidden)');
-            if (activeForm) {
-              const formType = activeForm.id.replace('Form', '');
-              generateMarkdown(formType);
-            }
-          }, 300);
-        });
-      });
+      imageUrls.forEach(url => addDiaryImageInput(url));
 
       // 更新预览
       const activeForm = document.querySelector('.form-content:not(.hidden)');
@@ -1908,5 +1894,27 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
 
   .dark .image-input-container:hover {
     border-color: var(--primary);
+  }
+
+  .drag-handle {
+    cursor: grab !important;
+    user-select: none;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--primary);
+    padding: 0 6px;
+    touch-action: none;
+  }
+
+  .diary-image-input {
+    transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+  }
+
+  .diary-image-input.dragging {
+    opacity: 0.75;
+    transform: scale(0.99);
+    background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+    transition: none;
   }
 </style>

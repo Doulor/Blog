@@ -24,6 +24,10 @@ function normalizeImage(url: string): string {
   return match ? match[1] : url.trim();
 }
 
+function isDirectVideoUrl(url: string): boolean {
+  return /\.(mp4|webm|ogg)(\?|#|$)/i.test(url);
+}
+
 // 绝对时间格式化（沿用列表页逻辑）
 function formatDate(dateInput: string | Date): string {
   const date = new Date(dateInput);
@@ -67,6 +71,7 @@ export async function getStaticPaths() {
 const { diary } = Astro.props;
 const { Content, headings } = await diary.render();
 const gallery = diary.data.images || [];
+const videos = diary.data.videos || [];
 const description =
 	diary.data.description ||
 	diary.data.excerpt ||
@@ -145,6 +150,53 @@ const diaryDateIso = diaryDate.toISOString();
                     />
                   )}
                   <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {videos.length > 0 && (
+        <section class="space-y-3 mt-6">
+          <div class="flex items-center gap-2 text-75 text-sm font-semibold">
+            <span>🎬</span>
+            <span>视频</span>
+            <span class="text-xs text-60">({videos.length})</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {videos.map((video: string, index: number) => {
+              const normalized = normalizeImage(video);
+              const external = isExternalUrl(normalized);
+              const src = external ? normalized : join(diaryBasePath, normalized);
+              const direct = isDirectVideoUrl(src);
+              return (
+                <a
+                  class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer block"
+                  href={src}
+                  data-lightbox-src={src}
+                  data-lightbox-type="video"
+                  aria-label={`${diary.data.title} - video ${index + 1}`}
+                >
+                  {direct ? (
+                    <video
+                      src={src}
+                      preload="metadata"
+                      muted
+                      playsinline
+                      class="w-full h-full object-cover"
+                    ></video>
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center bg-black/40 text-white text-sm">
+                      外链视频
+                    </div>
+                  )}
+                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-12 h-12 rounded-full bg-black/55 text-white flex items-center justify-center text-xl shadow-lg">
+                      ▶
+                    </div>
+                  </div>
                 </a>
               );
             })}
