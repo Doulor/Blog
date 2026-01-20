@@ -67,58 +67,6 @@
     root = document.createElement('div');
     root.id = 'mizuki-lightbox';
     root.setAttribute('aria-hidden', 'true');
-    // Inject styles for fixed navigation buttons
-    const style = document.createElement('style');
-    style.textContent = `
-      #mizuki-lightbox .mizuki-lightbox__nav {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 1001; /* Ensure above image */
-        margin: 0;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        cursor: pointer;
-        transition: background 0.2s, opacity 0.2s;
-      }
-      #mizuki-lightbox .mizuki-lightbox__nav:hover {
-        background: rgba(0, 0, 0, 0.7);
-      }
-      #mizuki-lightbox .mizuki-lightbox__nav:disabled {
-        opacity: 0.2;
-        cursor: not-allowed;
-      }
-      #mizuki-lightbox .mizuki-lightbox__nav--prev {
-        left: 20px;
-      }
-      #mizuki-lightbox .mizuki-lightbox__nav--next {
-        right: 20px;
-      }
-      /* Adjust for mobile if needed */
-      @media (max-width: 768px) {
-        #mizuki-lightbox .mizuki-lightbox__nav {
-          width: 40px;
-          height: 40px;
-          font-size: 20px;
-        }
-        #mizuki-lightbox .mizuki-lightbox__nav--prev {
-          left: 10px;
-        }
-        #mizuki-lightbox .mizuki-lightbox__nav--next {
-          right: 10px;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
     root.innerHTML = `
       <div class="mizuki-lightbox__backdrop" data-lb-close></div>
       <figure class="mizuki-lightbox__panel" role="dialog" aria-modal="true" data-lb-close>
