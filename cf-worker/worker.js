@@ -49,6 +49,14 @@ export default {
     // Set CORS headers for the actual response
     headers.set("Access-Control-Allow-Origin", "*");
     headers.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    headers.set("Accept-Ranges", "bytes");
+
+    // Ensure Content-Type is set correctly
+    if (!headers.has("content-type")) {
+      if (key.endsWith(".mp4")) headers.set("content-type", "video/mp4");
+      else if (key.endsWith(".webm")) headers.set("content-type", "video/webm");
+      else if (key.endsWith(".ogg")) headers.set("content-type", "video/ogg");
+    }
     
     // Handle Range responses
     if (range && object.range) {
