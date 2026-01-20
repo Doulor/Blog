@@ -34,7 +34,18 @@
 
   function isDirectVideoUrl(url) {
     if (!url) return false;
-    return /\.(mp4|webm|ogg)(\?|#|$)/i.test(String(url));
+    return /\.(mp4|webm|ogg|mov|m4v|m3u8|mpd)(\?|#|$)/i.test(String(url));
+  }
+
+  function getVideoMimeType(url) {
+    const src = String(url || '').split('?')[0].split('#')[0].toLowerCase();
+    if (src.endsWith('.mp4') || src.endsWith('.m4v')) return 'video/mp4';
+    if (src.endsWith('.webm')) return 'video/webm';
+    if (src.endsWith('.ogg')) return 'video/ogg';
+    if (src.endsWith('.mov')) return 'video/quicktime';
+    if (src.endsWith('.m3u8')) return 'application/x-mpegURL';
+    if (src.endsWith('.mpd')) return 'application/dash+xml';
+    return '';
   }
 
   function normalizeSrc(raw) {
@@ -183,11 +194,15 @@
 
     if (isDirectVideoUrl(src)) {
       const video = document.createElement('video');
-      video.src = src;
       video.controls = true;
       video.playsInline = true;
       video.preload = 'metadata';
       video.className = 'mizuki-lightbox__video-player';
+      const source = document.createElement('source');
+      source.src = src;
+      const mime = getVideoMimeType(src);
+      if (mime) source.type = mime;
+      video.appendChild(source);
       box.appendChild(video);
     } else {
       const iframe = document.createElement('iframe');
@@ -398,17 +413,18 @@
           const s = normalizeSrc(el.getAttribute('data-lightbox-src') || '');
           if (!s) return null;
           const im = el.querySelector('img');
+          const inferredType = el.getAttribute('data-lightbox-type') || (isDirectVideoUrl(s) ? 'video' : 'image');
           return {
             src: s,
             alt: im instanceof HTMLImageElement ? im.alt : '',
             caption: el.getAttribute('data-lightbox-caption') || '',
-            type: el.getAttribute('data-lightbox-type') || 'image',
+            type: inferredType,
           };
         })
         .filter(Boolean);
 
       const index = Math.max(0, anchors.indexOf(trigger));
-      const type = trigger.getAttribute('data-lightbox-type') || 'image';
+  const type = trigger.getAttribute('data-lightbox-type') || (isDirectVideoUrl(src) ? 'video' : 'image');
       openLightbox({ src, alt, caption, group, index, type });
     }, true);
 

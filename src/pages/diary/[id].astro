@@ -25,7 +25,26 @@ function normalizeImage(url: string): string {
 }
 
 function isDirectVideoUrl(url: string): boolean {
-  return /\.(mp4|webm|ogg)(\?|#|$)/i.test(url);
+  return /\.(mp4|webm|ogg|mov|m4v|m3u8|mpd)(\?|#|$)/i.test(url);
+}
+
+function isImageUrl(url: string): boolean {
+  return /\.(png|jpe?g|gif|webp|avif|svg|bmp)(\?|#|$)/i.test(url);
+}
+
+function isVideoUrl(url: string): boolean {
+  return !isImageUrl(url);
+}
+
+function getVideoMimeType(url: string): string {
+  const src = url.split('?')[0].split('#')[0].toLowerCase();
+  if (src.endsWith('.mp4') || src.endsWith('.m4v')) return 'video/mp4';
+  if (src.endsWith('.webm')) return 'video/webm';
+  if (src.endsWith('.ogg')) return 'video/ogg';
+  if (src.endsWith('.mov')) return 'video/quicktime';
+  if (src.endsWith('.m3u8')) return 'application/x-mpegURL';
+  if (src.endsWith('.mpd')) return 'application/dash+xml';
+  return '';
 }
 
 // 绝对时间格式化（沿用列表页逻辑）
@@ -70,8 +89,13 @@ export async function getStaticPaths() {
 
 const { diary } = Astro.props;
 const { Content, headings } = await diary.render();
-const gallery = diary.data.images || [];
-const videos = diary.data.videos || [];
+const rawImages = diary.data.images || [];
+const rawVideos = diary.data.videos || [];
+const gallery = rawImages.filter((item) => isImageUrl(normalizeImage(item)));
+const videos = [
+  ...rawVideos,
+  ...rawImages.filter((item) => !isImageUrl(normalizeImage(item))),
+];
 const description =
 	diary.data.description ||
 	diary.data.excerpt ||
@@ -180,12 +204,14 @@ const diaryDateIso = diaryDate.toISOString();
                 >
                   {direct ? (
                     <video
-                      src={src}
                       preload="metadata"
-                      muted
+                      controls
                       playsinline
+                      crossorigin="anonymous"
                       class="w-full h-full object-cover"
-                    ></video>
+                    >
+                      <source src={src} type={getVideoMimeType(src)} />
+                    </video>
                   ) : (
                     <div class="w-full h-full flex items-center justify-center bg-black/40 text-white text-sm">
                       外链视频

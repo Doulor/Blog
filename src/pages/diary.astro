@@ -21,6 +21,10 @@ function normalizeImage(url: string): string {
   return match ? match[1] : url.trim();
 }
 
+function isImageUrl(url: string): boolean {
+  return /\.(png|jpe?g|gif|webp|avif|svg|bmp)(\?|#|$)/i.test(url);
+}
+
 // 获取实际日记数据并按日期排序
 const diaries = await getCollection('diary')
   .then(items => items.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()));
@@ -111,7 +115,7 @@ function formatDate(dateInput: string | Date): string {
 
                     {/* 处理图片显示 */}
                     {diary.data.images && diary.data.images.length > 0 && (() => {
-                      const images = diary.data.images || [];
+                      const images = (diary.data.images || []).filter((item) => isImageUrl(normalizeImage(item)));
                       const previewImages = images.slice(0, 3);
                       const remaining = images.length - previewImages.length;
                       return (
