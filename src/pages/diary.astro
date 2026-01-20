@@ -110,32 +110,43 @@ function formatDate(dateInput: string | Date): string {
                     </p>
 
                     {/* 处理图片显示 */}
-                    {diary.data.images && diary.data.images.length > 0 && (
-                      <div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
-                        {diary.data.images.map((image) => {
-                          const normalized = normalizeImage(image);
-                          const external = isExternalUrl(normalized);
-                          const displaySrc = external ? normalized : `/images/diary/${normalized}`;
-                          return (
-                          <a
-                            href={displaySrc}
-                            class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform block"
-                            data-lightbox-src={displaySrc}
-                            aria-label={i18n(I18nKey.diaryImage)}
-                          >
-                            <img
-                              src={displaySrc}
-                              alt={i18n(I18nKey.diaryImage)}
-                              class="w-full h-full object-cover"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                            <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
-                          </a>
-                          );
-                        })}
-                      </div>
-                    )}
+                    {diary.data.images && diary.data.images.length > 0 && (() => {
+                      const images = diary.data.images || [];
+                      const previewImages = images.slice(0, 3);
+                      const remaining = images.length - previewImages.length;
+                      return (
+                        <div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
+                          {previewImages.map((image, imageIndex) => {
+                            const normalized = normalizeImage(image);
+                            const external = isExternalUrl(normalized);
+                            const displaySrc = external ? normalized : `/images/diary/${normalized}`;
+                            const showMore = remaining > 0 && imageIndex === previewImages.length - 1;
+                            return (
+                              <a
+                                href={displaySrc}
+                                class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform block"
+                                data-lightbox-src={displaySrc}
+                                aria-label={i18n(I18nKey.diaryImage)}
+                              >
+                                <img
+                                  src={displaySrc}
+                                  alt={i18n(I18nKey.diaryImage)}
+                                  class="w-full h-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                                <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                                {showMore && (
+                                  <div class="absolute inset-0 bg-black/45 flex items-center justify-center text-white text-lg font-semibold">
+                                    +{remaining}
+                                  </div>
+                                )}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
 
                     {/* 已实现卡片整块可点击跳转，不再需要单独的“打开日记”按钮 */}
 
