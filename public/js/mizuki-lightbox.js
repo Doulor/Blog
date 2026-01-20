@@ -249,20 +249,13 @@
       video.controls = true;
       video.playsInline = true;
       video.preload = 'metadata';
-      video.crossOrigin = 'anonymous'; // Important for CORS
       video.className = 'mizuki-lightbox__video-player';
-      
-      // Add source element
       const source = document.createElement('source');
       source.src = src;
       const mime = getVideoMimeType(src);
       if (mime) source.type = mime;
-      
       video.appendChild(source);
       box.appendChild(video);
-      
-      // Auto-load to reveal poster/metadata
-      video.load();
     } else {
       const iframe = document.createElement('iframe');
       iframe.src = src;
