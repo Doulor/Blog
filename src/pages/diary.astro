@@ -30,7 +30,7 @@ const diaries = await getCollection('diary')
   .then(items => items.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()));
 
 // 默认显示条数（查看更多按钮逐步追加）
-const DIARY_PAGE_SIZE = 20;
+const DIARY_PAGE_SIZE = 10;
 
 // 相对时间格式化函数
 function formatTime(dateInput: string | Date): string {
@@ -142,7 +142,7 @@ function formatDate(dateInput: string | Date): string {
                                     decoding="async"
                                   />
                                   <div class="absolute inset-0 bg-black/45 flex items-center justify-center text-white text-lg font-semibold">
-                                    +{remaining}
+                                    +{remaining + 1}
                                   </div>
                                 </a>
                               );
