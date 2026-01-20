@@ -193,9 +193,8 @@ function formatDate(dateInput: string | Date): string {
   </div>
 </MainGridLayout>
 
-<script is:inline>
+<script is:inline define:vars={{ PAGE_SIZE: DIARY_PAGE_SIZE }}>
   (function () {
-    const PAGE_SIZE = Number({DIARY_PAGE_SIZE});
     const list = document.getElementById('diary-list');
     const btn = document.getElementById('diary-load-more');
     const container = document.getElementById('diary-load-more-container');
