@@ -116,15 +116,38 @@ function formatDate(dateInput: string | Date): string {
                     {/* 处理图片显示 */}
                     {diary.data.images && diary.data.images.length > 0 && (() => {
                       const images = (diary.data.images || []).filter((item) => isImageUrl(normalizeImage(item)));
-                      const previewImages = images.slice(0, 3);
+                      const previewImages = images.slice(0, 4);
                       const remaining = images.length - previewImages.length;
                       return (
-                        <div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
+                        <div class="moment-images grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
                           {previewImages.map((image, imageIndex) => {
                             const normalized = normalizeImage(image);
                             const external = isExternalUrl(normalized);
                             const displaySrc = external ? normalized : `/images/diary/${normalized}`;
                             const showMore = remaining > 0 && imageIndex === previewImages.length - 1;
+                            const diaryHref = `/diary/${diary.slug}/`;
+
+                            if (showMore) {
+                              return (
+                                <a
+                                  href={diaryHref}
+                                  class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform block"
+                                  aria-label={i18n(I18nKey.diaryTitle)}
+                                >
+                                  <img
+                                    src={displaySrc}
+                                    alt={i18n(I18nKey.diaryImage)}
+                                    class="w-full h-full object-cover"
+                                    loading="lazy"
+                                    decoding="async"
+                                  />
+                                  <div class="absolute inset-0 bg-black/45 flex items-center justify-center text-white text-lg font-semibold">
+                                    +{remaining}
+                                  </div>
+                                </a>
+                              );
+                            }
+
                             return (
                               <a
                                 href={displaySrc}
@@ -140,11 +163,6 @@ function formatDate(dateInput: string | Date): string {
                                   decoding="async"
                                 />
                                 <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
-                                {showMore && (
-                                  <div class="absolute inset-0 bg-black/45 flex items-center justify-center text-white text-lg font-semibold">
-                                    +{remaining}
-                                  </div>
-                                )}
                               </a>
                             );
                           })}
@@ -400,9 +418,9 @@ function formatDate(dateInput: string | Date): string {
     }
     
     .moment-images {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 0.75rem;
-      max-width: 500px;
+      max-width: none;
     }
     
     .moment-text {
@@ -430,8 +448,8 @@ function formatDate(dateInput: string | Date): string {
     }
     
     .moment-images {
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      max-width: 600px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      max-width: none;
       gap: 1rem;
     }
     

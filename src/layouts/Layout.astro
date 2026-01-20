@@ -1553,12 +1553,13 @@ if (document.readyState === 'loading') {
     position: absolute;
     inset: 0;
     margin: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: 18px;
-  }
-
-  #mizuki-lightbox .mizuki-lightbox__img {
+    padding-top: 6vh; /* 视觉修正：稍微往下移一点，使其看起来更居中 */
+  }  #mizuki-lightbox .mizuki-lightbox__img {
     max-width: min(96vw, 1100px);
     max-height: 86vh;
     width: auto;
@@ -1604,7 +1605,7 @@ if (document.readyState === 'loading') {
   }
 
 	#mizuki-lightbox .mizuki-lightbox__nav {
-		position: absolute;
+		position: fixed;
 		top: 50%;
 		transform: translateY(-50%);
 			width: 56px;
@@ -1639,20 +1640,24 @@ if (document.readyState === 'loading') {
 	}
 
 	#mizuki-lightbox .mizuki-lightbox__nav--prev {
-			left: var(--mizuki-lb-prev-left, 14px);
+			left: 16px;
 	}
 
 	#mizuki-lightbox .mizuki-lightbox__nav--next {
-			right: var(--mizuki-lb-next-right, 14px);
+			right: 16px;
 	}
 
-  #mizuki-lightbox .mizuki-lightbox__caption {
-    margin-top: 10px;
-    max-width: min(96vw, 1100px);
-    color: rgba(255,255,255,0.85);
-    font-size: 13px;
-    text-align: center;
-  }
+	#mizuki-lightbox .mizuki-lightbox__caption {
+		position: absolute;
+		left: 50%;
+		bottom: 18px;
+		transform: translateX(-50%);
+		margin-top: 0;
+		max-width: min(96vw, 1100px);
+		color: rgba(255,255,255,0.85);
+		font-size: 13px;
+		text-align: center;
+	}
 
   .mizuki-lightbox-open {
     overflow: hidden;
