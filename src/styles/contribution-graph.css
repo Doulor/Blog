@@ -2,16 +2,31 @@
 
 .contrib {
 	--cg-gap: 0.25rem;
-	--cg-cell: 0.72rem;
+	/* Slightly bigger cells so patterns are readable */
+	--cg-cell: 0.9rem;
 	--cg-radius: 0.25rem;
 	--cg-outline: color-mix(in oklch, var(--line-divider) 65%, transparent);
 
+	/* Kind tint (used by pattern overlays) */
+	--cg-kind-post: var(--primary);
+	--cg-kind-diary: oklch(0.72 0.13 200);
+	--cg-kind-album: oklch(0.74 0.14 120);
+
 	/* Levels: use --primary hue but keep subtle in both themes */
-	--cg-0: color-mix(in oklch, var(--btn-regular-bg) 86%, var(--card-bg) 14%);
-	--cg-1: color-mix(in oklch, var(--primary) 18%, var(--btn-regular-bg) 82%);
-	--cg-2: color-mix(in oklch, var(--primary) 32%, var(--btn-regular-bg) 68%);
-	--cg-3: color-mix(in oklch, var(--primary) 48%, var(--btn-regular-bg) 52%);
-	--cg-4: color-mix(in oklch, var(--primary) 68%, var(--btn-regular-bg) 32%);
+	/* Increase contrast between levels so "少→多" is obvious. */
+	--cg-0: color-mix(in oklch, var(--btn-regular-bg) 92%, var(--card-bg) 8%);
+	--cg-1: color-mix(in oklch, var(--primary) 22%, var(--btn-regular-bg) 78%);
+	--cg-2: color-mix(in oklch, var(--primary) 42%, var(--btn-regular-bg) 58%);
+	--cg-3: color-mix(in oklch, var(--primary) 62%, var(--btn-regular-bg) 38%);
+	--cg-4: color-mix(in oklch, var(--primary) 82%, var(--btn-regular-bg) 18%);
+}
+
+/* On narrow screens, keep it compact */
+@media (max-width: 420px) {
+	.contrib {
+		--cg-cell: 0.78rem;
+		--cg-gap: 0.22rem;
+	}
 }
 
 .contrib__header {
@@ -52,6 +67,52 @@
 	align-items: start;
 }
 
+.contrib__chart {
+	display: grid;
+	grid-template-columns: 2.25rem 1fr;
+	gap: 0.5rem;
+	align-items: start;
+}
+
+.contrib__yaxis {
+	display: grid;
+	grid-template-rows: repeat(7, var(--cg-cell));
+	gap: var(--cg-gap);
+	padding-top: 1.25rem; /* align with x-axis */
+}
+
+.contrib__ylabel,
+.contrib__yspacer {
+	font-size: 0.72rem;
+	line-height: var(--cg-cell);
+	color: color-mix(in oklch, var(--content-meta) 85%, transparent);
+	text-align: right;
+}
+
+.contrib__yspacer { opacity: 0; }
+
+.contrib__main {
+	min-width: 0;
+}
+
+.contrib__xaxis {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: min-content;
+	gap: var(--cg-gap);
+	margin: 0 0 0.25rem;
+}
+
+.contrib__xlabel {
+	width: calc(var(--cg-cell));
+	font-size: 0.72rem;
+	line-height: 1;
+	color: color-mix(in oklch, var(--content-meta) 85%, transparent);
+	text-align: left;
+	white-space: nowrap;
+	transform: translateX(-0.05rem);
+}
+
 .contrib__week {
 	display: grid;
 	grid-template-rows: repeat(7, var(--cg-cell));
@@ -67,6 +128,7 @@
 	outline-offset: -1px;
 	background: var(--cg-0);
 	transition: transform 120ms ease, outline-color 120ms ease, filter 120ms ease;
+	position: relative;
 }
 
 .contrib__cell.level-0 { background: var(--cg-0); }
@@ -75,10 +137,140 @@
 .contrib__cell.level-3 { background: var(--cg-3); }
 .contrib__cell.level-4 { background: var(--cg-4); }
 
-/* Kind hint: small corner marker using outline-shadow-ish approach */
-.contrib__cell.is-post { box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--primary) 55%, transparent); }
-.contrib__cell.is-diary { box-shadow: inset 0 0 0 1px color-mix(in oklch, oklch(0.72 0.13 200) 65%, transparent); }
-.contrib__cell.is-album { box-shadow: inset 0 0 0 1px color-mix(in oklch, oklch(0.74 0.14 120) 65%, transparent); }
+/* 更明显的类型区分：用角标“图案叠加”而不是仅边框颜色 */
+.contrib__cell::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	/* Important: make patterns readable on both light/dark backgrounds */
+	opacity: 1;
+}
+
+/* Post: full-cell dotted pattern */
+.contrib__cell.is-post::after {
+	--cg-kind: var(--cg-kind-post);
+	background:
+		radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.9) 0 1.25px, transparent 1.35px),
+		radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.35) 0 1.25px, transparent 1.35px);
+	background-size: 7px 7px;
+	/* colored tint layer */
+	background-image:
+		radial-gradient(circle at 25% 25%, color-mix(in oklch, var(--cg-kind) 88%, transparent) 0 1.7px, transparent 1.85px),
+		radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.45) 0 1.2px, transparent 1.35px),
+		radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.22) 0 1.2px, transparent 1.35px);
+	background-size: 9px 9px;
+	mix-blend-mode: normal;
+}
+
+/* Diary: full-cell horizontal lines */
+.contrib__cell.is-diary::after {
+	--cg-kind: var(--cg-kind-diary);
+	background:
+		repeating-linear-gradient(
+			0deg,
+			rgba(255, 255, 255, 0.68) 0 2px,
+			transparent 2px 7px
+		),
+		repeating-linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0.26) 0 2px,
+			transparent 2px 9px
+		);
+	/* colored tint layer */
+	background-image:
+		repeating-linear-gradient(
+			0deg,
+			color-mix(in oklch, var(--cg-kind) 86%, transparent) 0 3px,
+			transparent 3px 8px
+		),
+		repeating-linear-gradient(
+			0deg,
+			rgba(255, 255, 255, 0.25) 0 2px,
+			transparent 2px 9px
+		),
+		repeating-linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0.16) 0 2px,
+			transparent 2px 12px
+		);
+	mix-blend-mode: normal;
+}
+
+/* 自定义 tooltip（替换浏览器原生 title 的 1s 延迟与风格不一致问题） */
+.contrib__tooltip {
+	position: fixed;
+	/* High enough to beat any card/overlay stacking in the blog */
+	z-index: 9999;
+	max-width: min(22rem, calc(100vw - 2rem));
+	padding: 0.6rem 0.7rem;
+	border-radius: 0.75rem;
+	background: color-mix(in oklch, var(--float-panel-bg) 92%, transparent);
+	border: 1px solid color-mix(in oklch, var(--line-divider) 75%, transparent);
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+	backdrop-filter: blur(10px);
+	color: color-mix(in oklch, var(--content-meta) 10%, black);
+	white-space: pre-wrap;
+	pointer-events: none;
+	transform: translateZ(0);
+}
+
+:root.dark .contrib__tooltip {
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+
+.contrib__tooltip-title {
+	font-weight: 700;
+	font-size: 0.9rem;
+	color: color-mix(in oklch, var(--primary) 40%, white);
+	margin-bottom: 0.35rem;
+}
+
+.contrib__tooltip-body {
+	font-size: 0.78rem;
+	line-height: 1.35;
+	color: color-mix(in oklch, var(--content-meta) 85%, transparent);
+}
+
+/* Album: full-cell diagonal lines */
+.contrib__cell.is-album::after {
+	--cg-kind: var(--cg-kind-album);
+	background:
+		repeating-linear-gradient(
+			45deg,
+			rgba(255, 255, 255, 0.68) 0 2px,
+			transparent 2px 7px
+		),
+		repeating-linear-gradient(
+			45deg,
+			rgba(0, 0, 0, 0.26) 0 2px,
+			transparent 2px 9px
+		);
+	/* colored tint layer */
+	background-image:
+		repeating-linear-gradient(
+			45deg,
+			color-mix(in oklch, var(--cg-kind) 86%, transparent) 0 3px,
+			transparent 3px 8px
+		),
+		repeating-linear-gradient(
+			45deg,
+			rgba(255, 255, 255, 0.25) 0 2px,
+			transparent 2px 9px
+		),
+		repeating-linear-gradient(
+			45deg,
+			rgba(0, 0, 0, 0.16) 0 2px,
+			transparent 2px 12px
+		);
+	mix-blend-mode: normal;
+}
+
+/* 图例过滤：隐藏对应角标图案，但保留 level 强度 */
+.contrib__cell.hide-post.is-post::after { background: none !important; mix-blend-mode: normal; }
+.contrib__cell.hide-diary.is-diary::after { background: none !important; mix-blend-mode: normal; }
+.contrib__cell.hide-album.is-album::after { background: none !important; mix-blend-mode: normal; }
 
 .contrib__cell:hover {
 	transform: translateY(-1px);
@@ -112,6 +304,27 @@
 	flex-wrap: wrap;
 }
 
+.contrib__kind {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--cg-outline);
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	transition: background 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.contrib__kind:hover {
+	background: color-mix(in oklch, var(--btn-plain-bg-hover) 85%, transparent);
+}
+
+.contrib__kind.is-off {
+	opacity: 0.45;
+}
+
 .contrib__dot {
 	width: 0.5rem;
 	height: 0.5rem;
@@ -129,5 +342,8 @@
 @media (max-width: 640px) {
 	.contrib {
 		--cg-cell: 0.66rem;
+	}
+	.contrib__chart {
+		grid-template-columns: 1.9rem 1fr;
 	}
 }
