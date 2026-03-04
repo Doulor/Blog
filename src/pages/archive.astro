@@ -1,5 +1,6 @@
 ---
 import ArchivePanel from "@components/ArchivePanel.svelte";
+import ContributionGraph from "@components/misc/ContributionGraph.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
@@ -9,6 +10,7 @@ const sortedPostsList = await getSortedPostsList();
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)}>
+    <ContributionGraph title="写作热力图" days={365} showLegend={true} showSummary={true} />
     <ArchivePanel sortedPosts={sortedPostsList} client:only="svelte"></ArchivePanel>
 </MainGridLayout>
 

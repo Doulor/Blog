@@ -1,6 +1,7 @@
 ---
 
 import { getEntry, render } from "astro:content";
+import ContributionGraph from "@components/misc/ContributionGraph.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -15,6 +16,7 @@ if (!aboutPost) {
 const { Content } = await render(aboutPost);
 ---
 <MainGridLayout title={i18n(I18nKey.about)} description={i18n(I18nKey.about)}>
+    <ContributionGraph title="过去一年创作" days={365} showLegend={true} showSummary={true} class="mb-4" />
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
         <div class="card-base z-10 px-9 py-6 relative w-full ">
             <Markdown class="mt-2">

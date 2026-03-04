@@ -40,11 +40,28 @@ const diaryCollection = defineCollection({
 		pinned: z.boolean().optional().default(false),
 	}),
 });
+
+const albumsCollection = defineCollection({
+	schema: z.object({
+		title: z.string().optional().default(""),
+		description: z.string().optional().default(""),
+		date: z.union([z.string(), z.coerce.date()]).optional(),
+		location: z.string().optional().default(""),
+		tags: z.array(z.string()).optional().default([]),
+		layout: z.string().optional().default("grid"),
+		columns: z.number().int().min(1).max(6).optional().default(3),
+		hidden: z.boolean().optional().default(false),
+		mode: z.enum(["local", "external"]).optional(),
+		cover: z.string().optional(),
+		photos: z.array(z.any()).optional(),
+	}),
+});
 const specCollection = defineCollection({
 	schema: z.object({}),
 });
 export const collections = {
 	posts: postsCollection,
 	diary: diaryCollection,
+	albums: albumsCollection,
 	spec: specCollection,
 };

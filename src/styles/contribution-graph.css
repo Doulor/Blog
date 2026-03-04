@@ -1,0 +1,133 @@
+/* GitHub-like contribution graph (adapted to theme variables) */
+
+.contrib {
+	--cg-gap: 0.25rem;
+	--cg-cell: 0.72rem;
+	--cg-radius: 0.25rem;
+	--cg-outline: color-mix(in oklch, var(--line-divider) 65%, transparent);
+
+	/* Levels: use --primary hue but keep subtle in both themes */
+	--cg-0: color-mix(in oklch, var(--btn-regular-bg) 86%, var(--card-bg) 14%);
+	--cg-1: color-mix(in oklch, var(--primary) 18%, var(--btn-regular-bg) 82%);
+	--cg-2: color-mix(in oklch, var(--primary) 32%, var(--btn-regular-bg) 68%);
+	--cg-3: color-mix(in oklch, var(--primary) 48%, var(--btn-regular-bg) 52%);
+	--cg-4: color-mix(in oklch, var(--primary) 68%, var(--btn-regular-bg) 32%);
+}
+
+.contrib__header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.75rem;
+}
+
+.contrib__summary {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.contrib__pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.15rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--cg-outline);
+	background: color-mix(in oklch, var(--card-bg) 75%, transparent);
+	font-size: 0.85em;
+	line-height: 1.25;
+}
+
+.contrib__grid {
+	overflow-x: auto;
+	padding: 0.25rem 0.125rem;
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: min-content;
+	gap: var(--cg-gap);
+	align-items: start;
+}
+
+.contrib__week {
+	display: grid;
+	grid-template-rows: repeat(7, var(--cg-cell));
+	gap: var(--cg-gap);
+}
+
+.contrib__cell {
+	width: var(--cg-cell);
+	height: var(--cg-cell);
+	display: inline-block;
+	border-radius: var(--cg-radius);
+	outline: 1px solid var(--cg-outline);
+	outline-offset: -1px;
+	background: var(--cg-0);
+	transition: transform 120ms ease, outline-color 120ms ease, filter 120ms ease;
+}
+
+.contrib__cell.level-0 { background: var(--cg-0); }
+.contrib__cell.level-1 { background: var(--cg-1); }
+.contrib__cell.level-2 { background: var(--cg-2); }
+.contrib__cell.level-3 { background: var(--cg-3); }
+.contrib__cell.level-4 { background: var(--cg-4); }
+
+/* Kind hint: small corner marker using outline-shadow-ish approach */
+.contrib__cell.is-post { box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--primary) 55%, transparent); }
+.contrib__cell.is-diary { box-shadow: inset 0 0 0 1px color-mix(in oklch, oklch(0.72 0.13 200) 65%, transparent); }
+.contrib__cell.is-album { box-shadow: inset 0 0 0 1px color-mix(in oklch, oklch(0.74 0.14 120) 65%, transparent); }
+
+.contrib__cell:hover {
+	transform: translateY(-1px);
+	outline-color: color-mix(in oklch, var(--primary) 55%, var(--cg-outline));
+	filter: saturate(1.05);
+}
+
+.contrib__cell:active {
+	transform: translateY(0);
+}
+
+.contrib__legend {
+	margin-top: 0.85rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.contrib__legend-levels {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cg-gap);
+}
+
+.contrib__legend-kinds {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.contrib__dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 999px;
+	display: inline-block;
+	outline: 1px solid var(--cg-outline);
+	outline-offset: -1px;
+	background: var(--cg-0);
+}
+
+.contrib__dot.is-post { background: color-mix(in oklch, var(--primary) 70%, var(--btn-regular-bg)); }
+.contrib__dot.is-diary { background: color-mix(in oklch, oklch(0.72 0.13 200) 70%, var(--btn-regular-bg)); }
+.contrib__dot.is-album { background: color-mix(in oklch, oklch(0.74 0.14 120) 70%, var(--btn-regular-bg)); }
+
+@media (max-width: 640px) {
+	.contrib {
+		--cg-cell: 0.66rem;
+	}
+}

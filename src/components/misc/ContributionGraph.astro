@@ -1,0 +1,169 @@
+---
+import { getCollection } from "astro:content";
+import { buildContributionGraph, type ContributionItem } from "@utils/contribution-graph";
+import { getPostUrlBySlug } from "@utils/url-utils";
+import { scanAlbums } from "@utils/album-scanner";
+
+type Props = {
+	title?: string;
+	days?: number;
+	class?: string;
+	showLegend?: boolean;
+	showSummary?: boolean;
+	weekStart?: 0 | 1;
+};
+
+const {
+	title = "写作热力图",
+	days = 365,
+	class: className = "",
+	showLegend = true,
+	showSummary = true,
+	weekStart = 0,
+} = Astro.props;
+
+// posts
+const posts = await getCollection("posts", ({ data }) => {
+	return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+// diary
+const diaries = await getCollection("diary");
+
+// albums (from helper that already supports hidden/external/local)
+const albums = await scanAlbums();
+
+const items: ContributionItem[] = [];
+
+for (const p of posts) {
+	items.push({
+		kind: "post",
+		date: new Date(p.data.published),
+		slug: p.slug,
+		title: p.data.title,
+	});
+}
+
+for (const d of diaries) {
+	items.push({
+		kind: "diary",
+		date: new Date((d.data as any).date),
+		slug: d.slug,
+		title: (d.data as any).title ?? d.slug,
+	});
+}
+
+for (const a of albums) {
+	items.push({
+		kind: "album",
+		date: new Date(a.date),
+		slug: a.id,
+		title: a.title,
+	});
+}
+
+const graph = buildContributionGraph(items, { days, weekStart });
+
+function titleForDay(iso: string, day: (typeof graph.days)[number]) {
+	const parts: string[] = [];
+	parts.push(`${iso}`);
+	parts.push(`总计: ${day.count}`);
+	if (day.kinds.post) parts.push(`帖子: ${day.kinds.post}`);
+	if (day.kinds.diary) parts.push(`日记: ${day.kinds.diary}`);
+	if (day.kinds.album) parts.push(`相册: ${day.kinds.album}`);
+	return parts.join("\n");
+}
+
+function dominanceClass(day: (typeof graph.days)[number]) {
+	const p = day.kinds.post ?? 0;
+	const d = day.kinds.diary ?? 0;
+	const a = day.kinds.album ?? 0;
+	if (day.count === 0) return "";
+	if (p >= d && p >= a) return "is-post";
+	if (d >= p && d >= a) return "is-diary";
+	return "is-album";
+}
+
+function dayLink(day: (typeof graph.days)[number]) {
+	// 选择一个“主导类型”作为点击跳转（不强行做弹层，避免引入额外依赖）
+	const p = day.kinds.post ?? 0;
+	const d = day.kinds.diary ?? 0;
+	const a = day.kinds.album ?? 0;
+	if (day.count === 0) return undefined;
+	if (p >= d && p >= a) {
+		// 找到当天任意一篇文章
+		const post = items.find((it) => it.kind === "post" && it.date && it.date.toDateString() === day.date.toDateString());
+		return post?.slug ? getPostUrlBySlug(post.slug) : "/archive/";
+	}
+	if (d >= p && d >= a) {
+		const diary = items.find((it) => it.kind === "diary" && it.date.toDateString() === day.date.toDateString());
+		return diary?.slug ? `/diary/${diary.slug}/` : "/diary/";
+	}
+	const album = items.find((it) => it.kind === "album" && it.date.toDateString() === day.date.toDateString());
+	return album?.slug ? `/albums/${album.slug}/` : "/albums/";
+}
+---
+
+<section class={`contrib card-base px-6 md:px-8 py-6 ${className}`.trim()} aria-label={title}>
+	<div class="contrib__header">
+		<h2 class="contrib__title text-lg md:text-xl font-bold text-90">{title}</h2>
+		{showSummary && (
+			<div class="contrib__summary text-75 text-sm md:text-base">
+				过去 {days} 天：
+				<span class="contrib__pill is-post" title="帖子">帖子 {graph.totals.posts}</span>
+				<span class="contrib__pill is-diary" title="日记">日记 {graph.totals.diaries}</span>
+				<span class="contrib__pill is-album" title="相册">相册 {graph.totals.albums}</span>
+			</div>
+		)}
+	</div>
+
+	<div class="contrib__grid" role="img" aria-label={`写作热力图：从 ${graph.from.toLocaleDateString()} 到 ${graph.to.toLocaleDateString()}`}">
+		<!-- GitHub 风格：列=周，行=星期 -->
+		{graph.weeks.map((week) => (
+			<div class="contrib__week" aria-hidden="true">
+				{week.map((day) => {
+					const dom = dominanceClass(day);
+					const href = dayLink(day);
+					const cls = `contrib__cell level-${day.level} ${dom}`.trim();
+					const titleText = titleForDay(day.iso, day);
+					return href ? (
+						<a
+							href={href}
+							class={cls}
+							data-iso={day.iso}
+							title={titleText}
+							aria-label={titleText}
+						></a>
+					) : (
+						<span
+							class={cls}
+							data-iso={day.iso}
+							title={titleText}
+							aria-label={titleText}
+						></span>
+					);
+				})}
+			</div>
+		))}
+	</div>
+
+	{showLegend && (
+		<div class="contrib__legend">
+			<div class="contrib__legend-left text-50 text-xs">少</div>
+			<div class="contrib__legend-levels" aria-hidden="true">
+				<span class="contrib__cell level-0"></span>
+				<span class="contrib__cell level-1"></span>
+				<span class="contrib__cell level-2"></span>
+				<span class="contrib__cell level-3"></span>
+				<span class="contrib__cell level-4"></span>
+			</div>
+			<div class="contrib__legend-right text-50 text-xs">多</div>
+
+			<div class="contrib__legend-kinds text-50 text-xs">
+				<span class="contrib__kind"><span class="contrib__dot is-post"></span>帖子</span>
+				<span class="contrib__kind"><span class="contrib__dot is-diary"></span>日记</span>
+				<span class="contrib__kind"><span class="contrib__dot is-album"></span>相册</span>
+			</div>
+		</div>
+	)}
+</section>

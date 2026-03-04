@@ -9,6 +9,8 @@
 @import './encrypted-content.css';
 /* 导入 OverlayScrollbars 样式覆盖（必须在全局引入才能生效） */
 @import './scrollbar.css';
+/* 导入写作热力图（GitHub Contribution Graph）样式 */
+@import './contribution-graph.css';
 
 /* 导入 ZenMaruGothic-Medium 字体 */
 @font-face {
