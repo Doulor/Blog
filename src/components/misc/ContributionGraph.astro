@@ -1,0 +1,392 @@
+---
+import { getCollection } from "astro:content";
+import { buildContributionGraph, type ContributionItem } from "@utils/contribution-graph";
+import { getPostUrlBySlug } from "@utils/url-utils";
+import { scanAlbums } from "@utils/album-scanner";
+
+type Props = {
+	title?: string;
+	days?: number;
+	class?: string;
+	showLegend?: boolean;
+	showSummary?: boolean;
+	weekStart?: 0 | 1;
+};
+
+const {
+	title = "写作热力图",
+	days = 365,
+	class: className = "",
+	showLegend = true,
+	showSummary = true,
+	weekStart = 0,
+} = Astro.props;
+
+// posts
+const posts = await getCollection("posts", ({ data }) => {
+	return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+// diary
+const diaries = await getCollection("diary");
+
+// albums (from helper that already supports hidden/external/local)
+const albums = await scanAlbums();
+
+const items: ContributionItem[] = [];
+
+for (const p of posts) {
+	items.push({
+		kind: "post",
+		date: new Date(p.data.published),
+		slug: p.slug,
+		title: p.data.title,
+	});
+}
+
+for (const d of diaries) {
+	items.push({
+		kind: "diary",
+		date: new Date((d.data as any).date),
+		slug: d.slug,
+		title: (d.data as any).title ?? d.slug,
+	});
+}
+
+for (const a of albums) {
+	items.push({
+		kind: "album",
+		date: new Date(a.date),
+		slug: a.id,
+		title: a.title,
+	});
+}
+
+const graph = buildContributionGraph(items, { days, weekStart });
+
+const weekdayLabels = weekStart === 1
+	? ["一", "二", "三", "四", "五", "六", "日"]
+	: ["日", "一", "二", "三", "四", "五", "六"];
+
+function monthShort(d: Date) {
+	return `${d.getMonth() + 1}月`;
+}
+
+type MonthLabel = { index: number; text: string };
+const monthLabels: MonthLabel[] = [];
+// 以每列(周)的第一天作为标记基准，月份变化时放一个标签
+for (let wi = 0; wi < graph.weeks.length; wi++) {
+	const first = graph.weeks[wi]?.[0];
+	if (!first) continue;
+	const prevFirst = wi > 0 ? graph.weeks[wi - 1]?.[0] : undefined;
+	if (!prevFirst || prevFirst.date.getMonth() !== first.date.getMonth()) {
+		monthLabels.push({ index: wi, text: monthShort(first.date) });
+	}
+}
+
+function titleForDay(iso: string, day: (typeof graph.days)[number]) {
+	const parts: string[] = [];
+	parts.push(`${iso}`);
+	parts.push(`总计: ${day.count}`);
+	if (day.kinds.post) parts.push(`帖子: ${day.kinds.post}`);
+	if (day.kinds.diary) parts.push(`日记: ${day.kinds.diary}`);
+	if (day.kinds.album) parts.push(`相册: ${day.kinds.album}`);
+	return parts.join("\n");
+}
+
+function titlesForDay(day: (typeof graph.days)[number]) {
+	if (day.count === 0) return "";
+	const sameDay = (d: Date) => d.toDateString() === day.date.toDateString();
+	const posts = items.filter((it) => it.kind === "post" && sameDay(it.date)).map((it) => it.title).filter(Boolean) as string[];
+	const diaries = items.filter((it) => it.kind === "diary" && sameDay(it.date)).map((it) => it.title).filter(Boolean) as string[];
+	const albums = items.filter((it) => it.kind === "album" && sameDay(it.date)).map((it) => it.title).filter(Boolean) as string[];
+	const lines: string[] = [];
+	if (posts.length) {
+		lines.push("帖子：");
+		for (const t of posts.slice(0, 6)) lines.push(`- ${t}`);
+		if (posts.length > 6) lines.push(`- …以及 ${posts.length - 6} 篇`);
+	}
+	if (diaries.length) {
+		lines.push("日记：");
+		for (const t of diaries.slice(0, 6)) lines.push(`- ${t}`);
+		if (diaries.length > 6) lines.push(`- …以及 ${diaries.length - 6} 条`);
+	}
+	if (albums.length) {
+		lines.push("相册：");
+		for (const t of albums.slice(0, 6)) lines.push(`- ${t}`);
+		if (albums.length > 6) lines.push(`- …以及 ${albums.length - 6} 个`);
+	}
+	return lines.join("\n");
+}
+
+function dominanceClass(day: (typeof graph.days)[number]) {
+	const p = day.kinds.post ?? 0;
+	const d = day.kinds.diary ?? 0;
+	const a = day.kinds.album ?? 0;
+	if (day.count === 0) return "";
+	if (p >= d && p >= a) return "is-post";
+	if (d >= p && d >= a) return "is-diary";
+	return "is-album";
+}
+
+function dayLink(day: (typeof graph.days)[number]) {
+	// 选择一个“主导类型”作为点击跳转（不强行做弹层，避免引入额外依赖）
+	const p = day.kinds.post ?? 0;
+	const d = day.kinds.diary ?? 0;
+	const a = day.kinds.album ?? 0;
+	if (day.count === 0) return undefined;
+	if (p >= d && p >= a) {
+		// 找到当天任意一篇文章
+		const post = items.find((it) => it.kind === "post" && it.date && it.date.toDateString() === day.date.toDateString());
+		return post?.slug ? getPostUrlBySlug(post.slug) : "/archive/";
+	}
+	if (d >= p && d >= a) {
+		const diary = items.find((it) => it.kind === "diary" && it.date.toDateString() === day.date.toDateString());
+		return diary?.slug ? `/diary/${diary.slug}/` : "/diary/";
+	}
+	const album = items.find((it) => it.kind === "album" && it.date.toDateString() === day.date.toDateString());
+	return album?.slug ? `/albums/${album.slug}/` : "/albums/";
+}
+---
+
+<section class={`contrib card-base px-6 md:px-8 py-6 ${className}`.trim()} aria-label={title}>
+	<div class="contrib__header">
+		<h2 class="contrib__title text-lg md:text-xl font-bold text-90">{title}</h2>
+		{showSummary && (
+			<div class="contrib__summary text-75 text-sm md:text-base">
+				过去 {days} 天：
+				<span class="contrib__pill is-post" title="帖子">帖子 {graph.totals.posts}</span>
+				<span class="contrib__pill is-diary" title="日记">日记 {graph.totals.diaries}</span>
+				<span class="contrib__pill is-album" title="相册">相册 {graph.totals.albums}</span>
+			</div>
+		)}
+	</div>
+
+	<!-- axes wrapper -->
+	<div class="contrib__chart" role="img" aria-label={`写作热力图：从 ${graph.from.toLocaleDateString()} 到 ${graph.to.toLocaleDateString()}`}>
+		<div class="contrib__yaxis" aria-hidden="true">
+			<!-- GitHub 常见显示：只标注周一/周三/周五，简洁且不挤 -->
+			<div class="contrib__yspacer"></div>
+			<div class="contrib__ylabel">{weekdayLabels[(weekStart === 1 ? 0 : 1) % 7]}</div>
+			<div class="contrib__yspacer"></div>
+			<div class="contrib__ylabel">{weekdayLabels[(weekStart === 1 ? 2 : 3) % 7]}</div>
+			<div class="contrib__yspacer"></div>
+			<div class="contrib__ylabel">{weekdayLabels[(weekStart === 1 ? 4 : 5) % 7]}</div>
+		</div>
+
+		<div class="contrib__main">
+			<div class="contrib__xaxis" aria-hidden="true">
+				{Array.from({ length: graph.weeks.length }).map((_, wi) => {
+					const label = monthLabels.find((m) => m.index === wi);
+					return (
+						<div class="contrib__xlabel" data-week={wi}>{label ? label.text : ""}</div>
+					);
+				})}
+			</div>
+
+			<div class="contrib__grid" aria-hidden="true">
+				<!-- 列=周，行=星期 -->
+				{graph.weeks.map((week) => (
+					<div class="contrib__week">
+						{week.map((day) => {
+							const p = day.kinds.post ?? 0;
+							const d = day.kinds.diary ?? 0;
+							const a = day.kinds.album ?? 0;
+							const href = dayLink(day);
+							const cls = `contrib__cell level-${day.level} ${dominanceClass(day)}`.trim();
+							const titleText = titleForDay(day.iso, day);
+							const detailText = titlesForDay(day);
+							const mergedTitle = detailText ? `${titleText}\n\n${detailText}` : titleText;
+							return href ? (
+								<a
+									href={href}
+									class={cls}
+									data-iso={day.iso}
+									data-post={p}
+									data-diary={d}
+									data-album={a}
+									data-tooltip={mergedTitle}
+									aria-label={mergedTitle}
+								></a>
+							) : (
+								<span
+									class={cls}
+									data-iso={day.iso}
+									data-post={p}
+									data-diary={d}
+									data-album={a}
+									data-tooltip={mergedTitle}
+									aria-label={mergedTitle}
+								></span>
+							);
+						})}
+					</div>
+				))}
+			</div>
+		</div>
+	</div>
+
+	{showLegend && (
+		<div class="contrib__legend" data-contrib-legend>
+			<div class="contrib__legend-left text-50 text-xs">少</div>
+			<div class="contrib__legend-levels" aria-hidden="true">
+				<span class="contrib__cell level-0"></span>
+				<span class="contrib__cell level-1"></span>
+				<span class="contrib__cell level-2"></span>
+				<span class="contrib__cell level-3"></span>
+				<span class="contrib__cell level-4"></span>
+			</div>
+			<div class="contrib__legend-right text-50 text-xs">多</div>
+
+			<div class="contrib__legend-kinds text-50 text-xs" aria-label="类型筛选(可点击切换显示)">
+				<button type="button" class="contrib__kind is-post" data-kind-toggle="post" aria-pressed="true" title="点击切换：帖子">
+					<span class="contrib__dot is-post"></span>
+					帖子
+				</button>
+				<button type="button" class="contrib__kind is-diary" data-kind-toggle="diary" aria-pressed="true" title="点击切换：日记">
+					<span class="contrib__dot is-diary"></span>
+					日记
+				</button>
+				<button type="button" class="contrib__kind is-album" data-kind-toggle="album" aria-pressed="true" title="点击切换：相册">
+					<span class="contrib__dot is-album"></span>
+					相册
+				</button>
+			</div>
+		</div>
+	)}
+</section>
+
+<script is:inline>
+	(function () {
+		const root = document.currentScript?.previousElementSibling;
+		if (!(root instanceof HTMLElement)) return;
+
+		// Build one tooltip per graph for instant hover (no native title delay)
+		const tip = document.createElement('div');
+		tip.className = 'contrib__tooltip';
+		tip.setAttribute('role', 'tooltip');
+		tip.style.display = 'none';
+		const tipTitle = document.createElement('div');
+		tipTitle.className = 'contrib__tooltip-title';
+		const tipBody = document.createElement('div');
+		tipBody.className = 'contrib__tooltip-body';
+		tip.appendChild(tipTitle);
+		tip.appendChild(tipBody);
+		// Append to body so it won't be clipped by any overflow hidden ancestors.
+		// (The blog layout uses overflow-hidden in a few wrappers.)
+		document.body.appendChild(tip);
+
+		// Clean up on navigation/unload (Astro + swup-like transitions)
+		window.addEventListener('pagehide', () => {
+			try { tip.remove(); } catch {}
+		});
+
+		let activeEl = null;
+		let lastPointer = { x: 0, y: 0 };
+		function showTip(el) {
+			const text = el.getAttribute('data-tooltip') || '';
+			if (!text) return;
+			const lines = text.split(/\n/);
+			tipTitle.textContent = lines[0] || '';
+			// keep formatting for lists
+			tipBody.textContent = lines.slice(1).join('\n').trim();
+			tip.style.display = 'block';
+			positionTip(el);
+			activeEl = el;
+		}
+		function hideTip() {
+			tip.style.display = 'none';
+			activeEl = null;
+		}
+		function positionTip(el) {
+			const c = el.getBoundingClientRect();
+			const offset = 12;
+			// measure after content set
+			const w = tip.offsetWidth;
+			const h = tip.offsetHeight;
+			const vw = document.documentElement.clientWidth;
+			const vh = document.documentElement.clientHeight;
+
+			// Prefer: pointer right-top (avoid covering the active cell)
+			let left = lastPointer.x + offset;
+			let top = lastPointer.y - offset - h;
+
+			// If pointer not available for some reason, fall back to cell right-top
+			if (!Number.isFinite(left) || !Number.isFinite(top)) {
+				left = c.right + offset;
+				top = c.top - h - offset;
+			}
+
+			// Clamp horizontally; if overflow right, place to the left of pointer/cell
+			if (left + w > vw - 8) {
+				left = Math.max(8, (lastPointer.x || c.left) - offset - w);
+			}
+			// Clamp vertically; if overflow top, place below pointer/cell
+			if (top < 8) {
+				top = Math.min(vh - h - 8, (lastPointer.y || c.bottom) + offset);
+			}
+			// Final clamp
+			left = Math.max(8, Math.min(left, vw - w - 8));
+			top = Math.max(8, Math.min(top, vh - h - 8));
+
+			tip.style.left = `${left}px`;
+			tip.style.top = `${top}px`;
+		}
+
+		// Event delegation: hover any cell with data-tooltip
+		root.addEventListener('pointerover', (e) => {
+			const el = e.target && e.target.closest ? e.target.closest('[data-tooltip]') : null;
+			if (!(el instanceof HTMLElement) || !root.contains(el)) return;
+			showTip(el);
+		});
+		root.addEventListener('pointerout', (e) => {
+			const related = e.relatedTarget;
+			if (related instanceof Node && tip.contains(related)) return;
+			// hide when leaving cell area
+			const el = e.target && e.target.closest ? e.target.closest('[data-tooltip]') : null;
+			if (el && activeEl === el) hideTip();
+		});
+		root.addEventListener('pointermove', (e) => {
+			lastPointer.x = e.clientX;
+			lastPointer.y = e.clientY;
+			if (activeEl) positionTip(activeEl);
+		});
+		window.addEventListener('scroll', () => {
+			if (activeEl) positionTip(activeEl);
+		}, { passive: true });
+
+		const toggles = root.querySelectorAll('[data-kind-toggle]');
+		const enabled = { post: true, diary: true, album: true };
+
+		function applyFilter() {
+			root.dataset.showPost = enabled.post ? '1' : '0';
+			root.dataset.showDiary = enabled.diary ? '1' : '0';
+			root.dataset.showAlbum = enabled.album ? '1' : '0';
+
+			const cells = root.querySelectorAll('.contrib__cell');
+			cells.forEach((el) => {
+				if (!(el instanceof HTMLElement)) return;
+				const p = Number(el.dataset.post || '0');
+				const d = Number(el.dataset.diary || '0');
+				const a = Number(el.dataset.album || '0');
+				// 根据开关决定是否显示角标图案；强度(level)仍按总频率保留
+				el.classList.toggle('hide-post', !enabled.post || p === 0);
+				el.classList.toggle('hide-diary', !enabled.diary || d === 0);
+				el.classList.toggle('hide-album', !enabled.album || a === 0);
+			});
+		}
+
+		toggles.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const kind = btn.getAttribute('data-kind-toggle');
+				if (!kind || !(kind in enabled)) return;
+				enabled[kind] = !enabled[kind];
+				btn.setAttribute('aria-pressed', enabled[kind] ? 'true' : 'false');
+				btn.classList.toggle('is-off', !enabled[kind]);
+				applyFilter();
+			});
+		});
+
+		applyFilter();
+	})();
+</script>
