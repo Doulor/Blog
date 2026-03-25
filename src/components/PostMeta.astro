@@ -100,61 +100,66 @@ const umamiRegion = profileConfig.umami?.region || "eu";
                             try {
                                 const pathname = window.location.pathname;
                                 const shareId = umamiShareId;
-                                const region = umamiRegion;
-                                // 使用 cloud.umami.is 作为 API 端点
-                                const apiEndpoint = 'cloud.umami.is';
-                                console.log('PostMeta shareId:', shareId, 'region:', region);
-                                console.log('PostMeta pathname:', pathname);
+                                const initialRegion = umamiRegion;
+                                // 优先尝试配置的区域，失败则尝试另一区域 (US/EU)
+                                const regions = initialRegion === 'eu' ? ['eu', 'us'] : ['us', 'eu'];
+                                
+                                let token = null;
+                                let websiteId = null;
+                                let successRegion = null;
 
-                                // 构建正确的 API URL，包含区域信息
-                                const shareRes = await fetch(`https://${apiEndpoint}/analytics/${region}/api/share/${shareId}`);
-                                console.log('PostMeta shareRes status:', shareRes.status);
-
-                                if (!shareRes.ok) {
-                                    throw new Error(`Share API failed: ${shareRes.status}`);
+                                // 1. 获取 Share Token
+                                for (const region of regions) {
+                                    try {
+                                        const endpoint = region === 'eu' ? 'api.eu.umami.is' : 'api.umami.is';
+                                        const shareRes = await fetch(`https://${endpoint}/v1/share/${shareId}`);
+                                        if (shareRes.ok) {
+                                            const shareData = await shareRes.json();
+                                            token = shareData.token;
+                                            websiteId = shareData.websiteId || shareData.website_id || shareData.id;
+                                            successRegion = region;
+                                            break;
+                                        }
+                                    } catch (e) {
+                                        console.warn(`Umami share fetch failed for ${region}:`, e);
+                                    }
                                 }
 
-                                const shareData = await shareRes.json();
-                                console.log('PostMeta shareData:', shareData);
-                                const token = shareData.token;
-                                const websiteId = shareData.websiteId || shareData.website_id || shareData.id;
-                                console.log('PostMeta token:', token, 'websiteId:', websiteId);
+                                if (!token || !websiteId) {
+                                    throw new Error('Unable to fetch Umami share token (check shareId and region)');
+                                }
 
-                                const url = `https://${apiEndpoint}/analytics/${region}/api/websites/${websiteId}/stats?` +
+                                // 2. 获取统计数据
+                                const apiEndpoint = successRegion === 'eu' ? 'api.eu.umami.is' : 'api.umami.is';
+                                const statsUrl = `https://${apiEndpoint}/v1/websites/${websiteId}/stats?` +
                                     new URLSearchParams({
-                                        startAt: '1753333200000',
-                                        endAt: Date.now(),
-                                        unit: 'hour',
-                                        timezone: 'Asia/Shanghai',
-                                        url: decodeURIComponent(pathname), // 这里的 key 应该是 url，但 Umami API 文档说是 path，测试发现 path 生效
-                                        compare: 'false',
-                                    }).toString().replace('url=', 'path='); // 强制替换参数名为 path
-                                console.log('PostMeta statsUrl:', url);
+                                        startAt: '0',
+                                        endAt: Date.now().toString(),
+                                        url: pathname, 
+                                    }).toString();
 
-                                const res = await fetch(url, {
+                                const res = await fetch(statsUrl, {
                                     method: 'GET',
                                     headers: {
                                         'x-umami-share-token': token,
                                     },
                                 });
-                                console.log('PostMeta stats res status:', res.status);
-
-                                const data = await res.json();
-                                console.log('PostMeta stats data:', data);
 
                                 if (res.ok) {
-                                    const pageviews = data?.pageviews?.value ?? data?.pageviews ?? 'N/A';
-                                    const visits = data?.visits?.value ?? data?.visits ?? 'N/A';
+                                    const data = await res.json();
+                                    // 兼容不同版本的返回格式
+                                    const pageviews = data?.pageviews?.value ?? data?.pageviews ?? 0;
+                                    const visits = data?.visits?.value ?? data?.visits ?? 0;
                                     document.getElementById('post-umami-pageviews').textContent = pageviews;
                                     document.getElementById('post-umami-visits').textContent = visits;
                                 } else {
-                                    document.getElementById('post-umami-pageviews').textContent = 'N/A';
-                                    document.getElementById('post-umami-visits').textContent = 'N/A';
+                                    throw new Error(`Stats API failed: ${res.status}`);
                                 }
+
                             } catch (error) {
                                 console.error('PostMeta Umami stats error:', error);
-                                document.getElementById('post-umami-pageviews').textContent = 'Error';
-                                document.getElementById('post-umami-visits').textContent = 'Error';
+                                document.getElementById('post-umami-pageviews').textContent = 'N/A';
+                                document.getElementById('post-umami-visits').textContent = 'N/A';
                             }
                         };
                         fetchUmamiStats();

@@ -360,6 +360,7 @@ function formatTime(seconds: number): string {
 	return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
+<<<<<<< Updated upstream
 function handleAudioEvents() {
 	if (!audio) return;
 	audio.addEventListener("play", () => {
@@ -412,6 +413,77 @@ onMount(() => {
 		}
 	}
 });
+=======
+function updateProgress() {
+	if (!audio) return;
+	currentTime = audio.currentTime;
+}
+
+function updateDuration() {
+	if (!audio) return;
+	duration = audio.duration;
+}
+
+function playNext() {
+	if (isRepeating === 1) {
+		if (audio) {
+			audio.currentTime = 0;
+			audio.play();
+		}
+	} else {
+		nextSong();
+	}
+}
+
+function handleAudioEvents() {
+	if (!audio) return;
+	audio.addEventListener("timeupdate", updateProgress);
+	audio.addEventListener("ended", playNext);
+	audio.addEventListener("loadedmetadata", updateDuration);
+	audio.addEventListener("error", (e) => {
+		hasError = true;
+		errorMessage = "Audio playback error";
+		console.error("Audio playback error:", e);
+	});
+	audio.addEventListener("play", () => {
+		isPlaying = true;
+	});
+	audio.addEventListener("pause", () => {
+		isPlaying = false;
+	});
+	audio.addEventListener("waiting", () => {
+		isLoading = true;
+	});
+	audio.addEventListener("playing", () => {
+		isLoading = false;
+		isPlaying = true;
+	});
+}
+
+onMount(() => {
+        // PERF: Make music player init non-blocking for better initial page render or Swup navigation
+        const initializePlayer = () => {
+                audio = new Audio();
+                audio.volume = volume;
+                handleAudioEvents();
+                if (!musicPlayerConfig.enable) {
+                        return;
+                }
+                if (mode === "meting") {
+                        fetchMetingPlaylist();
+                } else {
+                        // 浣跨敤鏈湴鎾斁鍒楄〃锛屼笉鍙战€佷换浣旳PI璇锋眰
+                        playlist = [...localPlaylist];
+                        if (playlist.length > 0) {
+                                loadSong(playlist[0]);
+              isReady = true;
+                        } else {
+                                hasError = true;
+                                errorMessage = "Local playlist is empty";
+                        }
+                }
+        };
+>>>>>>> Stashed changes
 
 onDestroy(() => {
 	if (audio) {

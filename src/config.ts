@@ -21,7 +21,7 @@ import { getTranslateLanguageFromConfig } from "./utils/language-utils";
 const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
 
 export const siteConfig: SiteConfig = {
-	title: "Doulorの博客",
+	title: "Doulorの小世界",
 	subtitle: "",
 
 	lang: SITE_LANG,
@@ -95,7 +95,7 @@ export const siteConfig: SiteConfig = {
 
 		homeText: {
 			enable: true, // 在主页显示自定义文本
-			title: "DoulorのBlog", // 主页横幅主标题
+			title: "DoulorのWorldlet", // 主页横幅主标题
 
 			subtitle: [
 				"茶已温妥，风携清宁",
@@ -113,8 +113,8 @@ export const siteConfig: SiteConfig = {
 		credit: {
 			enable: false, // 显示横幅图片来源文本
 
-			text: "Describe", // 要显示的来源文本
-			url: "", // （可选）原始艺术品或艺术家页面的 URL 链接
+			text: "描述", // 要显示的来源文本
+			url: "www.doulor.cn", // （可选）原始艺术品或艺术家页面的 URL 链接
 		},
 
 		navbar: {
@@ -283,7 +283,7 @@ export const profileConfig: ProfileConfig = {
 	],
 	// Umami统计配置
 	umami: {
-		enable: true, // 是否启用umami统计功能
+		enable: false, // 是否启用umami统计功能
 		websiteId: "18f32723-55a4-4451-ab4d-9fd259ac5516", // 你的Umami网站ID，用于页面访问追踪脚本
 		shareId: "6Nu7icZdUvuVj152", // 填入共享URL最后面那一串，用于在侧边栏和文章页显示统计数据，例如：https://cloud.umami.is/api/share/2dKQ5T0WrUn6AYtr 中的 '2dKQ5T0WrUn6AYtr'
 		region: "us", // Umami实例的区域，如 'eu' 或 'us'，用于获取统计数据
@@ -312,7 +312,7 @@ export const commentConfig: CommentConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "公告内容", // 公告标题
-	content: "欢迎来到我的小博客，博客更新了留言板和访问统计功能,欢迎大家来留言:)", // 公告内容
+	content: "欢迎来到我的小世界，小世界更新了帖子，日记与相册的分享功能，个人创作墙等新功能，优化了目录显示，优化了性能。", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
