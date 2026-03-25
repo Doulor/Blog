@@ -361,59 +361,52 @@ function formatTime(seconds: number): string {
 }
 
 function handleAudioEvents() {
-	if (!audio) return;
-	audio.addEventListener("play", () => {
-		isPlaying = true;
-	});
-	audio.addEventListener("pause", () => {
-		isPlaying = false;
-	});
-	audio.addEventListener("timeupdate", () => {
-		currentTime = audio.currentTime;
-	});
-	audio.addEventListener("ended", () => {
-		if (isRepeating === 1) {
-			audio.currentTime = 0;
-			audio.play().catch(() => {});
-		} else if (
-			isRepeating === 2 ||
-			currentIndex < playlist.length - 1 ||
-			isShuffled
-		) {
-			nextSong();
-		} else {
-			isPlaying = false;
-		}
-	});
-	audio.addEventListener("error", (event) => {
-		isLoading = false;
-	});
-	audio.addEventListener("stalled", () => {});
-	audio.addEventListener("waiting", () => {});
-}
+        if (!audio) return;
+        audio.addEventListener("timeupdate", updateProgress);
+        audio.addEventListener("ended", playNext);
+        audio.addEventListener("loadedmetadata", updateDuration);
+        audio.addEventListener("error", (e) => {
+                hasError = true;
+                errorMessage = "Audio playback error";
+                console.error("Audio playback error:", e);
+        });
+        audio.addEventListener("playing", () => {});
+        audio.addEventListener("pause", () => {});
+        audio.addEventListener("waiting", () => {});
+  }
 
-onMount(() => {
-	audio = new Audio();
-	audio.volume = volume;
-	handleAudioEvents();
-	if (!musicPlayerConfig.enable) {
-		return;
-	}
-	if (mode === "meting") {
-		fetchMetingPlaylist();
-	} else {
-		// 使用本地播放列表，不发送任何API请求
-		playlist = [...localPlaylist];
-		if (playlist.length > 0) {
-			loadSong(playlist[0]);
-            isReady = true;
-		} else {
-			showErrorMessage("本地播放列表为空");
-		}
-	}
-});
+  onMount(() => {
+        // PERF: Make music player init non-blocking for better initial page render or Swup navigation
+        const initializePlayer = () => {
+                audio = new Audio();
+                audio.volume = volume;
+                handleAudioEvents();
+                if (!musicPlayerConfig.enable) {
+                        return;
+                }
+                if (mode === "meting") {
+                        fetchMetingPlaylist();
+                } else {
+                        // 浣跨敤鏈湴鎾斁鍒楄〃锛屼笉鍙战€佷换浣旳PI璇锋眰
+                        playlist = [...localPlaylist];
+                        if (playlist.length > 0) {
+                                loadSong(playlist[0]);
+              isReady = true;
+                        } else {
+                                hasError = true;
+                                errorMessage = "Local playlist is empty";
+                        }
+                }
+        };
 
-onDestroy(() => {
+        if (window.requestIdleCallback) {
+                window.requestIdleCallback(initializePlayer, { timeout: 2000 });
+        } else {
+                setTimeout(initializePlayer, 500);
+        }
+  });
+
+  onDestroy(() => {
 	if (audio) {
 		audio.pause();
 		audio.src = "";

@@ -389,18 +389,12 @@ const transparentClass = shouldEnableTransparency
         </div>
 
         <BackToTop></BackToTop>
-    </div>
-</div>
 
-<!-- The things that should be under the banner, only the TOC for now -->
-<div class="absolute w-full z-0 hidden xl:block">
-    <div class="relative max-w-[var(--page-width)] mx-auto">
         <!-- TOC component -->
-        {siteConfig.toc.enable && <div id="toc-wrapper" class:list={["hidden lg:block transition absolute top-0 w-[var(--toc-width)] items-center",
-            sidebarLayoutConfig.position === "right" ? "-left-[var(--toc-width)]" : "-right-[var(--toc-width)]",
-            {"toc-hide": siteConfig.banner.enable}]}
-        >
-            <div id="toc-inner-wrapper" class="fixed top-14 w-[var(--toc-width)] h-[calc(100vh_-_20rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
+        {siteConfig.toc.enable && <div id="toc-wrapper" class:list={["pointer-events-auto hidden lg:block transition absolute top-0 h-full w-[var(--toc-width)] items-center",
+            sidebarLayoutConfig.position === "right" ? "-left-[var(--toc-width)] toc-wrapper-left" : "-right-[var(--toc-width)] toc-wrapper-right"
+        ]}>
+            <div id="toc-inner-wrapper" class="sticky top-[1rem] w-[var(--toc-width)] h-[calc(100vh_-_20rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
                 <div id="toc" class="w-full h-full transition-swup-fade ">
                     <div class="h-8 w-full"></div>
                     <TOC headings={headings}></TOC>
