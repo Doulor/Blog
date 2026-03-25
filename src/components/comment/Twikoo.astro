@@ -80,3 +80,214 @@ const config = {
     }
   });
 </script>
+
+<style is:global>
+  /* Twikoo 美化样式 */
+  :root {
+    --twikoo-primary: var(--primary);
+    --twikoo-text: var(--content-text);
+    --twikoo-meta: var(--content-meta);
+    --twikoo-bg: var(--card-bg);
+    --twikoo-border: var(--line-divider);
+    --twikoo-input-bg: var(--btn-regular-bg);
+    --twikoo-hover-bg: var(--btn-plain-bg-hover);
+  }
+
+  /* 容器 */
+  #tcomment {
+    font-family: inherit;
+  }
+
+  /* 评论区输入框 */
+  .tk-input {
+    background: transparent !important;
+  }
+  
+  .tk-meta-input {
+    background: transparent !important;
+  }
+
+  .el-input__inner,
+  .el-textarea__inner {
+    background-color: var(--twikoo-input-bg) !important;
+    border: 1px solid transparent !important;
+    color: var(--twikoo-text) !important;
+    border-radius: 0.75rem !important; /* 12px */
+    transition: all 0.2s ease !important;
+  }
+
+  .el-input__inner:focus,
+  .el-textarea__inner:focus {
+    background-color: var(--twikoo-bg) !important;
+    border-color: var(--twikoo-primary) !important;
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 59, 130, 246), 0.2) !important;
+  }
+
+  /* 按钮样式 */
+  .tk-submit {
+    background-color: var(--twikoo-primary) !important;
+    color: white !important;
+    border-radius: 0.75rem !important;
+    border: none !important;
+    transition: transform 0.1s active, opacity 0.2s !important;
+    font-weight: 500 !important;
+  }
+
+  .tk-submit:hover {
+    opacity: 0.9;
+  }
+  
+  .tk-submit:active {
+    transform: scale(0.95);
+  }
+  
+  .tk-cancel {
+    color: var(--twikoo-meta) !important;
+  }
+  
+  /* 预览按钮 */
+  .tk-preview {
+    color: var(--twikoo-primary) !important;
+  }
+
+  /* 头像 */
+  .tk-avatar {
+    border-radius: 50% !important;
+    border: 2px solid var(--twikoo-bg) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  }
+  
+  .tk-avatar img {
+    border-radius: 50% !important;
+  }
+
+  /* 评论列表 */
+  .tk-comment {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .tk-content {
+    background: var(--twikoo-input-bg);
+    padding: 1rem;
+    border-radius: 1rem;
+    margin-top: 0.5rem;
+    color: var(--twikoo-text) !important;
+    box-shadow: none !important;
+    border: 1px solid transparent;
+  }
+  
+  /* 评论元信息 */
+  .tk-nick {
+    color: var(--twikoo-text) !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+  }
+  
+  .tk-nick[href]:hover {
+    color: var(--twikoo-primary) !important;
+  }
+  
+  .tk-time {
+    color: var(--twikoo-meta) !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* 徽章样式 */
+  .tk-tag {
+    border-radius: 0.5rem !important;
+    font-size: 0.75rem !important;
+    padding: 0.125rem 0.5rem !important;
+    border: none !important;
+  }
+  
+  .tk-tag-green {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    color: #10B981 !important;
+  }
+  
+  .tk-tag-red {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    color: #EF4444 !important;
+  }
+  
+  .tk-tag-yellow {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    color: #F59E0B !important;
+  }
+
+  /* 交互按钮 (回复/点赞) */
+  .tk-action-icon {
+    color: var(--twikoo-meta) !important;
+    cursor: pointer;
+  }
+  
+  .tk-action-icon:hover {
+    color: var(--twikoo-primary) !important;
+  }
+  
+  .tk-action-count {
+    color: var(--twikoo-meta) !important;
+  }
+
+  /* 加载更多按钮 */
+  .tk-expand {
+    background-color: var(--twikoo-input-bg) !important;
+    color: var(--twikoo-text) !important;
+    border-radius: 2rem !important;
+    padding: 0.5rem 1.5rem !important;
+    border: 1px solid transparent !important;
+    transition: all 0.2s !important;
+  }
+  
+  .tk-expand:hover {
+    background-color: var(--twikoo-hover-bg) !important;
+    color: var(--twikoo-primary) !important;
+  }
+  
+  /* OWO 表情面板 */
+  .OwO .OwO-body {
+    background-color: var(--twikoo-bg) !important;
+    border-color: var(--twikoo-border) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  }
+  
+  .OwO .OwO-body .OwO-bar {
+    border-top: 1px solid var(--twikoo-border) !important;
+  }
+  
+  .OwO .OwO-body .OwO-bar .OwO-packages li:hover {
+    background-color: var(--twikoo-hover-bg) !important;
+  }
+  
+  .OwO .OwO-body .OwO-items .OwO-item:hover {
+    background-color: var(--twikoo-hover-bg) !important;
+    border-radius: 0.5rem !important;
+  }
+
+  /* 管理面板链接 */
+  .tk-admin-config .el-input__inner {
+    border-color: var(--twikoo-border) !important;
+  }
+
+  /* 隐藏 Powered by */
+  .tk-footer {
+    opacity: 0.6;
+    font-size: 0.8rem;
+    margin-top: 2rem;
+  }
+  
+  /* 深色模式下的特定调整 */
+  :root.dark .el-input__inner,
+  :root.dark .el-textarea__inner {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+  
+  :root.dark .tk-content {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  :root.dark .tk-expand {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+</style>

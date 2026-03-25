@@ -7,147 +7,130 @@ const { postSlug } = Astro.props;
 ---
 
 <!-- 评论区容器 -->
-<div class="max-w-3xl mx-auto px-4 mb-12" data-post-slug={postSlug} id="comments-container">
+<div class="w-full mb-12" data-post-slug={postSlug} id="comments-container">
   <!-- 引入Font Awesome图标 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- 评论表单 -->
-  <div class="border border-gray-200 rounded-xl p-6 mb-6 bg-white shadow-sm">
-    <form id="comment-form">
-      <div class="mb-4">
-        <label for="nickname" class="block mb-2 text-sm font-medium text-gray-700">昵称 *</label>
-        <input 
-          type="text" 
-          id="nickname" 
-          required 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-        >
+  <div class="bg-[var(--card-bg)] rounded-[var(--radius-large)] p-6 md:px-9 mb-6 shadow-sm border border-[var(--line-color)]">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+        <i class="fa-solid fa-comments text-[var(--primary)]"></i>
+        评论
+      </h3>
+    </div>
+
+    <form id="comment-form" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary)] transition-colors">
+            <i class="fas fa-user"></i>
+          </div>
+          <input 
+            type="text" 
+            id="nickname" 
+            required 
+            placeholder="昵称 *"
+            class="w-full pl-10 pr-4 py-3 bg-[var(--page-bg)] border-none rounded-xl focus:ring-2 focus:ring-[var(--primary)] transition-all placeholder-gray-400"
+          >
+        </div>
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary)] transition-colors">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <input 
+            type="email" 
+            id="email" 
+            placeholder="邮箱 (可选, 保密)"
+            class="w-full pl-10 pr-4 py-3 bg-[var(--page-bg)] border-none rounded-xl focus:ring-2 focus:ring-[var(--primary)] transition-all placeholder-gray-400"
+          >
+        </div>
       </div>
-      <div class="mb-4">
-        <label for="email" class="block mb-2 text-sm font-medium text-gray-700">邮箱（可选）</label>
-        <input 
-          type="email" 
-          id="email" 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-        >
-      </div>
-      <div class="mb-6">
-        <label for="content" class="block mb-2 text-sm font-medium text-gray-700">评论内容 *</label>
+      
+      <div class="relative group">
+        <div class="absolute top-3 left-3 pointer-events-none text-gray-400 group-focus-within:text-[var(--primary)] transition-colors">
+          <i class="fas fa-pen"></i>
+        </div>
         <textarea 
           id="content" 
           required 
           rows="4" 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          placeholder="写下你的评论..."
+          class="w-full pl-10 pr-4 py-3 bg-[var(--page-bg)] border-none rounded-xl focus:ring-2 focus:ring-[var(--primary)] transition-all placeholder-gray-400 resize-none"
         ></textarea>
       </div>
       
-      <!-- 提交按钮 + 右侧提示文字 -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center justify-between pt-2">
+        <div class="text-xs text-gray-400 px-1">
+          <i class="fas fa-info-circle mr-1"></i> 评论审核后显示
+        </div>
         <button 
           type="submit" 
           id="submit-btn"
-          class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow transition-all hover:bg-blue-700 hover:shadow-md active:scale-95"
+          class="px-8 py-2.5 bg-[var(--primary)] text-white rounded-xl font-medium shadow-lg shadow-[var(--primary)]/20 hover:shadow-[var(--primary)]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
         >
-          提交评论
+          发布
         </button>
-        <div class="text-sm text-gray-500">
-          Tip:若评论未正常显示请刷新， 提交后若未显示成功请重新提交.
-        </div>
       </div>
     </form>
   </div>
 
-  <!-- 管理员登录区域 -->
-  <div class="mb-6">
-    <button type="button" id="admin-enter" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-      <i class="fas fa-lock mr-1"></i> 管理员登录
-    </button>
-    <div id="admin-login" class="hidden mt-2 p-3 border border-gray-200 rounded-lg bg-white shadow-sm">
-      <input 
-        type="password" 
-        id="admin-password" 
-        placeholder="请输入管理员密码" 
-        class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-      >
-      <button type="button" id="admin-login-btn" class="mt-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 transition">
-        登录
-      </button>
-      <div id="admin-status" class="mt-2 text-xs text-gray-500"></div>
+  <!-- 评论列表 -->
+  <div id="comments-list" class="space-y-6">
+    <!-- 加载状态 -->
+    <div class="text-center py-8 text-gray-400 cursor-pointer hover:text-[var(--primary)] transition-colors" onclick="window.location.reload()">
+      <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+      <p class="text-sm">正在加载评论...</p>
     </div>
   </div>
 
-  <!-- 评论列表 -->
-  <div id="comments-list" class="space-y-4 bg-gray-50 p-6 rounded-xl">
-    <!-- 加载状态：直接用inline onclick调用浏览器原生刷新 -->
-    <p onclick="window.location.reload()" class="text-gray-500 cursor-pointer hover:text-blue-600 transition-all hover:underline active:scale-95">
-      <i class="fas fa-sync-alt mr-1"></i> 加载评论中... 点击此处刷新页面
-    </p>
-  </div>
-
   <!-- 加载更多按钮 -->
-  <div id="load-more-container" class="text-center mt-6 hidden">
-    <button id="load-more-btn" class="px-6 py-2 bg-white border border-gray-300 rounded-full text-gray-600 hover:text-blue-600 hover:border-blue-600 transition-all shadow-sm hover:shadow active:scale-95">
-      查看更多留言
+  <div id="load-more-container" class="text-center mt-8 hidden">
+    <button id="load-more-btn" class="px-6 py-2 bg-[var(--card-bg)] border border-[var(--line-color)] rounded-full text-sm text-gray-600 dark:text-gray-400 hover:text-[var(--primary)] hover:border-[var(--primary)] transition-all shadow-sm">
+      查看更多评论
     </button>
   </div>
 </div>
 
 <style>
-  /* 评论项基础样式 */
-  .comment-item {
-    border: 1px solid #e5e7eb;
-    border-radius: 0.75rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background: #fff;
-    transition: all 0.2s ease; /* hover动画过渡 */
-  }
-  
-  .comment-item:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px); /* 轻微上浮增强交互感 */
+  /* Smooth Fade In Animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  /* 删除按钮样式 */
-  .delete-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #9ca3af;  /* 默认浅灰色 */
-    font-size: 1.2rem;
-    padding: 0.25rem;
-    opacity: 0.6;    /* 降低默认不透明度 */
-    transition: all 0.2s ease; /* 淡入/颜色变化过渡 */
-    margin-left: 1rem; /* 与评论内容保持间距 */
-  }
-  
-  /* 鼠标悬浮删除按钮时，增强显示效果 */
-  .delete-button:hover {
-    color: #ef4444;  /* hover时变红 */
-    opacity: 1;      /* hover时完全显示 */
-    transform: scale(1.1); /* 轻微放大 */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
   }
 
-  /* 提示消息样式 */
+  /* Toast Notification */
   .toast {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 24px;
+    border-radius: 12px;
     color: white;
-    font-size: 0.875rem;
-    z-index: 1000;
-    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: 0 8px 16px -4px rgba(0,0,0,0.1);
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1), fadeOut 0.3s ease 2.7s forwards;
+    backdrop-filter: blur(8px);
   }
   
   .toast.error {
-    background-color: #ef4444;
+    background: rgba(239, 68, 68, 0.9);
   }
   
   .toast.success {
-    background-color: #10b981;
+    background: rgba(16, 185, 129, 0.9);
   }
   
   @keyframes slideIn {
@@ -157,22 +140,12 @@ const { postSlug } = Astro.props;
   
   @keyframes fadeOut {
     from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(20px); opacity: 0; }
   }
 
-  /* 刷新提示统一样式 */
-  .refresh-trigger {
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .refresh-trigger:hover {
-    color: #2563eb;
-    text-decoration: underline;
-  }
-  
-  .refresh-trigger:active {
-    transform: scale(0.95);
+  /* Scrollbar for admin panel if needed */
+  #admin-login input::-ms-reveal {
+    display: none;
   }
 </style>
 
@@ -219,11 +192,6 @@ const { postSlug } = Astro.props;
       return;
     }
 
-    // 管理员状态
-    let isAdmin = false;
-    // 管理员密码（通过环境变量配置）
-    const ADMIN_PASSWORD = import.meta.env.PUBLIC_ADMIN_PASSWORD || 'admin123';
-
     // 显示提示消息
     function showToast(message, isError = true) {
       const toast = document.createElement('div');
@@ -236,42 +204,12 @@ const { postSlug } = Astro.props;
     }
 
     // 获取DOM元素
-    const adminEnterBtn = document.getElementById('admin-enter');
-    const adminLoginBox = document.getElementById('admin-login');
-    const adminPasswordInput = document.getElementById('admin-password');
-    const adminLoginBtn = document.getElementById('admin-login-btn');
     const commentsList = document.getElementById('comments-list');
     const commentForm = document.getElementById('comment-form');
     const submitBtn = document.getElementById('submit-btn');
     
     // 全局引用，以便在此作用域外也能调用刷新
     let loadComments = () => {};
-
-    // 管理员登录交互
-    adminEnterBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      adminLoginBox.classList.toggle('hidden');
-      if (!adminLoginBox.classList.contains('hidden')) {
-        adminPasswordInput.focus();
-      }
-    });
-
-    // 管理员登录验证
-    adminLoginBtn.addEventListener('click', () => {
-      const password = adminPasswordInput.value.trim();
-      if (password === ADMIN_PASSWORD) {
-        isAdmin = true;
-        document.getElementById('admin-status').textContent = '✅ 管理员登录成功';
-        document.getElementById('admin-status').style.color = 'green';
-        showToast('管理员登录成功', false);
-        adminPasswordInput.value = '';
-        loadComments(); // 刷新评论列表
-      } else {
-        isAdmin = false;
-        document.getElementById('admin-status').textContent = '❌ 密码错误';
-        document.getElementById('admin-status').style.color = 'red';
-      }
-    });
 
     // 获取当前文章ID
     const currentPostId = document.getElementById('comments-container')?.dataset.postSlug || '';
@@ -301,45 +239,6 @@ const { postSlug } = Astro.props;
       if (loadMoreBtn) {
         // 使用 onclick 避免重复绑定
         loadMoreBtn.onclick = () => loadComments(true);
-      }
-
-      // 绑定删除事件代理
-      if (commentsList && !commentsList.dataset.hasDeleteListener) {
-        commentsList.dataset.hasDeleteListener = 'true';
-        commentsList.addEventListener('click', async (e) => {
-          const btn = e.target.closest('.delete-button');
-          if (!btn) return;
-          
-          e.stopPropagation();
-
-          // 权限验证
-          if (!isAdmin) {
-            showToast('权限不足，无法删除评论');
-            return;
-          }
-
-          // 确认删除
-          if (confirm('确定要删除这条评论吗？')) {
-            try {
-              const { error } = await supabase
-                .from('comments')
-                .delete()
-                .eq('id', btn.dataset.commentId);
-
-              if (error) throw error;
-              showToast('评论已成功删除', false);
-              
-              // 从DOM移除去除动画效果
-              const item = btn.closest('.comment-item');
-              if (item) {
-                 item.style.opacity = '0';
-                 setTimeout(() => item.remove(), 300);
-              }
-            } catch (err) {
-              showToast(`删除失败: ${err.message}`);
-            }
-          }
-        });
       }
 
       // 加载评论列表
@@ -378,20 +277,35 @@ const { postSlug } = Astro.props;
           }
 
           // 渲染评论列表
-          const commentsHtml = data.map(comment => `
-            <div class="comment-item">
-              <div class="flex flex-wrap gap-2 mb-2">
-                <span class="font-semibold text-lg">${comment.nickname}</span>
-                <span class="text-gray-500 text-sm">${new Date(comment.created_at).toLocaleString()}</span>
-              </div>
-              <div class="flex items-center">
-                <div class="flex-1 text-gray-800">${comment.content}</div>
-                <button type="button" class="delete-button" data-comment-id="${comment.id}" title="删除评论">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
+          const commentsHtml = data.map(comment => {
+            const date = new Date(comment.created_at).toLocaleString();
+            const avatarChar = comment.nickname ? comment.nickname.charAt(0).toUpperCase() : '?';
+            // Simple deterministic color generation
+            const colors = ['bg-red-400', 'bg-orange-400', 'bg-amber-400', 'bg-green-400', 'bg-cyan-400', 'bg-blue-400', 'bg-indigo-400', 'bg-violet-400', 'bg-pink-400'];
+            const colorIndex = (comment.nickname || '').charCodeAt(0) % colors.length;
+            const bgClass = colors[colorIndex];
+
+            return `
+            <div class="comment-item group relative bg-[var(--card-bg)] rounded-2xl p-5 mb-4 border border-[var(--line-color)] hover:border-[var(--primary)]/30 hover:shadow-lg hover:shadow-[var(--primary)]/5 transition-all duration-300 animate-fade-in-up">
+              <div class="flex gap-4">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 rounded-xl ${bgClass} text-white flex items-center justify-center font-bold text-lg shadow-sm transform group-hover:scale-105 transition-transform duration-300">
+                    ${avatarChar}
+                  </div>
+                </div>
+                <div class="flex-grow min-w-0">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                      ${comment.nickname}
+                      ${comment.isAdmin ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-[var(--primary)] text-white">ADMIN</span>' : ''}
+                    </span>
+                    <span class="text-xs text-gray-400 font-mono">${date}</span>
+                  </div>
+                  <div class="text-gray-700 dark:text-gray-300 opacity-90 text-sm leading-relaxed whitespace-pre-wrap break-words border-l-2 border-transparent pl-0 group-hover:pl-2 group-hover:border-[var(--primary)]/30 transition-all duration-300">${comment.content}</div>
+                </div>
               </div>
             </div>
-          `).join('');
+          `}).join('');
 
           if (isLoadMore) {
              if (commentsList) commentsList.insertAdjacentHTML('beforeend', commentsHtml);
