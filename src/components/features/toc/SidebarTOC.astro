@@ -16,7 +16,7 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<table-of-contents class:list={[className, "group", "relative"]} id="toc">
+<table-of-contents class:list={[className, "group", "relative"]} id="sidebar-toc">
 </table-of-contents>
 
 <style is:global>
@@ -26,23 +26,44 @@ const { class: className } = Astro.props;
 	}
 
 	/* 给正文容器的随动动画，不移动而是压缩宽度（需要使用 padding 配合 box-sizing） */
-	html.toc-expanded #main-grid {
+	/* 仅在页面有 TOC（即 html 拥有 has-toc）的情境下才生效，以防带去给没有目录的页面 */
+	html.toc-expanded.has-toc #main-grid {
 		/* 计算需要压缩的差值，并应用到外边距或内边距（这里依赖其 flex 容器或其他布局方式） */
 		/* 在当前 Grid 布局下改变它的宽度可能会好一点 */
 	}
-	html.toc-expanded.toc-right #main-grid {
+	html.toc-expanded.toc-right.has-toc #main-grid {
 		padding-right: var(--toc-shift, 0px) !important;
 	}
-	html.toc-expanded.toc-left #main-grid {
+	html.toc-expanded.toc-left.has-toc #main-grid {
 		padding-left: var(--toc-shift, 0px) !important;
 	}
-	#main-grid, #top-row {
-		transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	html.has-toc #main-grid, html.has-toc #top-row {
+		transition: padding 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+		will-change: padding;
 	}
 
 	#toc-inner-wrapper {
-		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), padding 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+		will-change: width, transform, padding;
+		
+		/* 默认常驻显示的圆角风格 */
+		border-radius: 0.75rem;
+		background-color: var(--card-bg);
+
+		/* 强制移除遮罩渐变 */
+		mask-image: none !important;
+		-webkit-mask-image: none !important;
 	}
+
+    /* 暴力移除可能产生渐变的伪元素 */
+    #toc-inner-wrapper::before, #toc-inner-wrapper::after,
+    #toc::before, #toc::after,
+    #toc-wrapper::before, #toc-wrapper::after {
+        display: none !important;
+        background: none !important;
+        mask-image: none !important;
+        -webkit-mask-image: none !important;
+    }
 	#toc-inner-wrapper.toc-expanded-active {
 		width: var(--toc-expanded-width) !important;
 		max-width: calc(100vw - 2rem);
@@ -50,7 +71,7 @@ const { class: className } = Astro.props;
 		padding: 1rem 0.75rem !important;
 		border: 1px solid var(--line-divider);
 		border-radius: 1.25rem !important;
-		box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15), 0 0 0 1px var(--line-divider) !important;
+		box-shadow: none !important;
 		z-index: 50 !important;
 	}
 	/* 如果它在右侧布局下（意味着目录在文章右侧），让它向左扩展，避免超出右侧屏幕；如果在左侧，向右扩展即可 */
@@ -303,8 +324,18 @@ const { class: className } = Astro.props;
 
 			if (!isPostPage) {
 				this.innerHTML = "";
+				document.documentElement.classList.remove("has-toc");
+				// 清理可能因 swup 页面切换而残留的父级容器样式
+				const innerWrapper = this.closest("#toc-inner-wrapper");
+				if (innerWrapper) {
+					innerWrapper.classList.remove("toc-expanded-active");
+				}
+				document.documentElement.style.setProperty('--toc-shift', '0px');
+				document.documentElement.classList.remove("toc-expanded", "toc-right", "toc-left");
 				return;
 			}
+			
+			document.documentElement.classList.add("has-toc");
 
 			const config = getTOCConfig();
 			const headings = extractHeadings("#post-container");
@@ -321,7 +352,7 @@ const { class: className } = Astro.props;
 			const minLevel = Math.min(...headings.map((h) => h.level));
 
 			const toggleHTML = `
-				<div class="sticky top-0 z-[100] w-full flex justify-end mb-2 pb-2 px-2 bg-gradient-to-b from-[var(--card-bg)] via-[var(--card-bg)] to-transparent" style="margin-top: -1rem; padding-top: 1rem;">
+				<div class="sticky top-0 z-[100] w-full flex justify-end mb-2 pb-2 px-2 bg-transparent" style="margin-top: -1rem; padding-top: 1rem;">
 					<button id="toc-expand-toggle" class="flex items-center justify-center p-1.5 rounded-xl bg-[var(--card-bg)] shadow-sm border border-[var(--line-divider)] hover:bg-[var(--btn-plain-bg-hover)] text-[var(--primary)] text-xs transition-all active:scale-95 cursor-pointer backdrop-blur-md" title="拓宽/恢复目录" aria-label="拓宽/恢复目录">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left-open"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
 					</button>
