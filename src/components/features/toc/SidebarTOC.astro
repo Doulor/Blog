@@ -16,8 +16,51 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<table-of-contents class:list={[className, "group"]} id="toc">
+<table-of-contents class:list={[className, "group", "relative"]} id="toc">
 </table-of-contents>
+
+<style is:global>
+	:root {
+		/* 你可以在这里修改展开后的目录宽度。22rem 约等于 352 像素。你可以把它改成 24rem, 26rem 等等 */
+		--toc-expanded-width: 18rem;
+	}
+
+	/* 给正文容器的随动动画，不移动而是压缩宽度（需要使用 padding 配合 box-sizing） */
+	html.toc-expanded #main-grid {
+		/* 计算需要压缩的差值，并应用到外边距或内边距（这里依赖其 flex 容器或其他布局方式） */
+		/* 在当前 Grid 布局下改变它的宽度可能会好一点 */
+	}
+	html.toc-expanded.toc-right #main-grid {
+		padding-right: var(--toc-shift, 0px) !important;
+	}
+	html.toc-expanded.toc-left #main-grid {
+		padding-left: var(--toc-shift, 0px) !important;
+	}
+	#main-grid, #top-row {
+		transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	#toc-inner-wrapper {
+		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	#toc-inner-wrapper.toc-expanded-active {
+		width: var(--toc-expanded-width) !important;
+		max-width: calc(100vw - 2rem);
+		background-color: var(--card-bg) !important;
+		padding: 1rem 0.75rem !important;
+		border: 1px solid var(--line-divider);
+		border-radius: 1.25rem !important;
+		box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15), 0 0 0 1px var(--line-divider) !important;
+		z-index: 50 !important;
+	}
+	/* 如果它在右侧布局下（意味着目录在文章右侧），让它向左扩展，避免超出右侧屏幕；如果在左侧，向右扩展即可 */
+	.toc-wrapper-right #toc-inner-wrapper.toc-expanded-active {
+		transform: translateX(calc(var(--toc-width) - var(--toc-expanded-width) - 1rem)) !important;
+	}
+	.toc-wrapper-left #toc-inner-wrapper.toc-expanded-active {
+		transform: translateX(1rem) !important;
+	}
+</style>
 
 <script>
 	import { JAPANESE_KATAKANA } from "./utils/japanese-katakana";
@@ -277,6 +320,14 @@ const { class: className } = Astro.props;
 			const items = generateTOCItems(headings, config);
 			const minLevel = Math.min(...headings.map((h) => h.level));
 
+			const toggleHTML = `
+				<div class="sticky top-0 z-[100] w-full flex justify-end mb-2 pb-2 px-2 bg-gradient-to-b from-[var(--card-bg)] via-[var(--card-bg)] to-transparent" style="margin-top: -1rem; padding-top: 1rem;">
+					<button id="toc-expand-toggle" class="flex items-center justify-center p-1.5 rounded-xl bg-[var(--card-bg)] shadow-sm border border-[var(--line-divider)] hover:bg-[var(--btn-plain-bg-hover)] text-[var(--primary)] text-xs transition-all active:scale-95 cursor-pointer backdrop-blur-md" title="拓宽/恢复目录" aria-label="拓宽/恢复目录">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left-open"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+					</button>
+				</div>
+			`;
+
 			const tocHTML = items
 				.map((item) => {
 					const depthClass =
@@ -301,13 +352,50 @@ const { class: className } = Astro.props;
 								? "pl-6"
 								: "pl-10";
 
-					return `<a href="#${item.id}" class="${padding} px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2"><span class="flex items-center gap-2">${badge}</span><span class="truncate text-sm text-[var(--toc-text)]">${item.text}</span></a>`;
+					return `<a href="#${item.id}" class="${padding} px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2"><span class="flex items-center gap-2 mt-0.5">${badge}</span><span class="line-clamp-3 text-sm text-[var(--toc-text)] leading-tight break-words">${item.text}</span></a>`;
 				})
 				.join("");
 
 			this.innerHTML =
+				toggleHTML +
 				tocHTML +
 				'<div id="active-indicator" style="opacity: 0" class="-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all group-hover:bg-transparent border-2 border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)] border-dashed"></div>';
+
+			// Bind toggle event
+			const toggleBtn = this.querySelector("#toc-expand-toggle");
+			const innerWrapper = this.closest("#toc-inner-wrapper");
+			
+			if (toggleBtn && innerWrapper) {
+				const setShift = (isExpanded) => {
+					const isRight = innerWrapper.closest('.toc-wrapper-right') !== null;
+					if (isExpanded) {
+						// Calculate layout shift to avoid overlap (only apply when screen > 1024px)
+						if (window.innerWidth > 1024) {
+							// 通过 CSS var 同步扩展的宽度，额外增加 2rem 的间距确保完全不重合
+							document.documentElement.style.setProperty('--toc-shift', `calc((var(--toc-expanded-width) - var(--toc-width)) + 2rem)`);
+						}
+						document.documentElement.classList.add("toc-expanded");
+						document.documentElement.classList.add(isRight ? "toc-right" : "toc-left");
+					} else {
+						document.documentElement.classList.remove("toc-expanded", "toc-right", "toc-left");
+						document.documentElement.style.setProperty('--toc-shift', '0px');
+					}
+				};
+
+				// Re-apply expanded state if it was persisted
+				if (localStorage.getItem("toc-expanded") === "true") {
+					innerWrapper.classList.add("toc-expanded-active");
+					setShift(true);
+					// Fallback re-apply in case layout wasn't ready
+					setTimeout(() => setShift(true), 100);
+				}
+				
+				toggleBtn.addEventListener("click", () => {
+					const isExpanded = innerWrapper.classList.toggle("toc-expanded-active");
+					setShift(isExpanded);
+					localStorage.setItem("toc-expanded", isExpanded ? "true" : "false");
+				});
+			}
 		}
 
 		disconnectedCallback() {
