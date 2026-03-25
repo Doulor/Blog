@@ -46,13 +46,16 @@ const { class: className } = Astro.props;
 		transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), padding 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 		will-change: width, transform, padding;
 		
-		/* 默认常驻显示的圆角风格 */
+		/* 默认常驻显示的圆角风格，仅在有 TOC 时显示背景 */
 		border-radius: 0.75rem;
-		background-color: var(--card-bg);
-
+		
 		/* 强制移除遮罩渐变 */
 		mask-image: none !important;
 		-webkit-mask-image: none !important;
+	}
+
+	html.has-toc #toc-inner-wrapper {
+		background-color: var(--card-bg);
 	}
 
     /* 暴力移除可能产生渐变的伪元素 */
@@ -329,13 +332,18 @@ const { class: className } = Astro.props;
 				const innerWrapper = this.closest("#toc-inner-wrapper");
 				if (innerWrapper) {
 					innerWrapper.classList.remove("toc-expanded-active");
+					innerWrapper.style.display = 'none'; // 隐藏整个容器防止显示空背景
 				}
 				document.documentElement.style.setProperty('--toc-shift', '0px');
 				document.documentElement.classList.remove("toc-expanded", "toc-right", "toc-left");
 				return;
 			}
 			
-			document.documentElement.classList.add("has-toc");
+			// 确保容器可见
+			const innerWrapper = this.closest("#toc-inner-wrapper");
+			if (innerWrapper) {
+				innerWrapper.style.display = '';
+			}
 
 			const config = getTOCConfig();
 			const headings = extractHeadings("#post-container");
@@ -345,8 +353,11 @@ const { class: className } = Astro.props;
 					setTimeout(() => this.regenerateTOC(retryCount + 1), 300);
 				}
 				this.innerHTML = "";
+				document.documentElement.classList.remove("has-toc");
 				return;
 			}
+			
+			document.documentElement.classList.add("has-toc");
 
 			const items = generateTOCItems(headings, config);
 			const minLevel = Math.min(...headings.map((h) => h.level));
@@ -394,7 +405,7 @@ const { class: className } = Astro.props;
 
 			// Bind toggle event
 			const toggleBtn = this.querySelector("#toc-expand-toggle");
-			const innerWrapper = this.closest("#toc-inner-wrapper");
+			// innerWrapper is already defined at the beginning of the function
 			
 			if (toggleBtn && innerWrapper) {
 				const setShift = (isExpanded) => {
