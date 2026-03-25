@@ -224,16 +224,22 @@ function formatDate(dateInput: string | Date): string {
 </MainGridLayout>
 
 <script is:inline define:vars={{ PAGE_SIZE: DIARY_PAGE_SIZE }}>
+  // 使用IIFE避免污染全局作用域, 每次页面加载（包括Swup切换）都会执行
   (function () {
     const list = document.getElementById('diary-list');
     const btn = document.getElementById('diary-load-more');
     const container = document.getElementById('diary-load-more-container');
+    
+    // 如果这些基础元素不存在，说明页面结构不对或不在日记页，直接退出
     if (!list || !btn || !container) return;
 
-    const items = Array.from(list.querySelectorAll('.moment-item'));
+    // 重新获取当前的列表项（确保是当前DOM树中的元素）
+    let items = Array.from(list.querySelectorAll('.moment-item'));
     let visible = 0;
 
     function applyVisibility() {
+      // 重新获取items可能是为了应对动态插入的情况，但在当前逻辑下，items是静态初始化的（除非后续有动态加载逻辑）
+      // 这里保持使用闭包内的 items
       items.forEach((el, idx) => {
         el.style.display = idx < visible ? '' : 'none';
       });
@@ -250,31 +256,25 @@ function formatDate(dateInput: string | Date): string {
       applyVisibility();
     }
 
-    // 初始显示 20 条
+    // 初始化：显示初始数量
     visible = Math.min(items.length, PAGE_SIZE);
     applyVisibility();
 
+    // 绑定点击事件 - 因为btn是当前页面的新元素，直接绑定即可，无需担心解绑
     btn.addEventListener('click', showMore);
-
-    // swup 切换回来时兜底重置
-    document.addEventListener('swup:contentReplaced', () => {
-      visible = Math.min(items.length, PAGE_SIZE);
-      applyVisibility();
-    });
   })();
 </script>
 
 <script is:inline>
   (function () {
-    // 避免 Swup 往返后重复绑定导致点击逻辑异常
-    if (window.__mizukiDiaryCardNavBound__) return;
-    window.__mizukiDiaryCardNavBound__ = true;
+    const list = document.getElementById('diary-list');
+    if (!list) return;
 
     function shouldIgnore(e) {
       const t = e.target;
       if (!(t instanceof Element)) return false;
-  // 点击图片/灯箱触发器时不跳转
-  if (t.closest('[data-lightbox-src], .moment-images img')) return true;
+      // 点击图片/灯箱触发器时不跳转
+      if (t.closest('[data-lightbox-src], .moment-images img')) return true;
       // 点击任何链接/按钮/表单控件时保留其默认行为
       if (t.closest('a, button, input, textarea, select, summary')) return true;
       return false;
@@ -284,12 +284,17 @@ function formatDate(dateInput: string | Date): string {
       if (shouldIgnore(e)) return;
       const t = e.target;
       if (!(t instanceof Element)) return;
+      
       const card = t.closest('.moment-item[data-href]');
       if (!card) return;
+      
+      // 确保点击的是列表内部的元素
+      if (!list.contains(card)) return;
+
       const href = card.getAttribute('data-href');
       if (!href) return;
 
-      // Swup 场景下优先用 swup.navigate，避免 history/缓存状态导致的“返回后无法进入”
+      // Swup 场景下优先用 swup.navigate
       if (window.swup && typeof window.swup.navigate === 'function') {
         window.swup.navigate(href);
       } else {
@@ -298,23 +303,28 @@ function formatDate(dateInput: string | Date): string {
     }
 
     function handleCardKeydown(e) {
-      if (!(e.target instanceof Element)) return;
-      const card = e.target.closest('.moment-item[data-href]');
-      if (!card) return;
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const href = card.getAttribute('data-href');
-        if (!href) return;
-        if (window.swup && typeof window.swup.navigate === 'function') {
-          window.swup.navigate(href);
-        } else {
-          window.location.href = href;
+        if (!(e.target instanceof Element)) return;
+        const card = e.target.closest('.moment-item[data-href]');
+        if (!card) return;
+        // 确保元素在列表内
+        if(!list.contains(card)) return;
+
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const href = card.getAttribute('data-href');
+            if (!href) return;
+            if (window.swup && typeof window.swup.navigate === 'function') {
+            window.swup.navigate(href);
+            } else {
+            window.location.href = href;
+            }
         }
-      }
     }
 
-    document.addEventListener('click', handleCardClick);
-    document.addEventListener('keydown', handleCardKeydown);
+    // 将事件监听器绑定在 list 容器上，而不是 document
+    // 这样每次 Swup 替换内容，旧 list 销毁（监听器自动销毁），新 list 创建并绑定新监听器
+    list.addEventListener('click', handleCardClick);
+    list.addEventListener('keydown', handleCardKeydown);
   })();
 </script>
 
