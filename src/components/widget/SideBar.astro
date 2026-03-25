@@ -105,40 +105,66 @@ function renderComponent(component: any, index: number, components: any[]) {
 	
 	// 响应式布局管理
 	class SidebarManager {
-		constructor() {
-			this.init();
-		}
-		
-		init() {
-			this.updateResponsiveDisplay();
-			window.addEventListener('resize', () => this.updateResponsiveDisplay());
-		}
-		
-		updateResponsiveDisplay() {
-			const breakpoints = widgetManager.getBreakpoints();
-			const width = window.innerWidth;
-			
-			let deviceType: 'mobile' | 'tablet' | 'desktop';
-			if (width < breakpoints.mobile) {
-				deviceType = 'mobile';
-			} else if (width < breakpoints.tablet) {
-				deviceType = 'tablet';
-			} else {
-				deviceType = 'desktop';
-			}
-			
-			const shouldShow = widgetManager.shouldShowSidebar(deviceType);
-			const sidebar = document.getElementById('sidebar');
-			
-			if (sidebar) {
-				sidebar.style.setProperty(
-					`--sidebar-${deviceType}-display`, 
-					shouldShow ? 'block' : 'none'
-				);
-			}
-		}
-	}
-	
-	// 初始化侧边栏管理器
-	new SidebarManager();
+                private resizeTicking = false;
+                
+                constructor() {
+                        this.init();
+                }
+
+                init() {
+                        this.updateResponsiveDisplay();
+                        
+                        // Performance Optimization: Debounce/RAF the resize event listener
+                        window.addEventListener('resize', () => {
+                                if (!this.resizeTicking) {
+                                        window.requestAnimationFrame(() => {
+                                                this.updateResponsiveDisplay();
+                                                this.resizeTicking = false;
+                                        });
+                                        this.resizeTicking = true;
+                                }
+                        });
+                        
+                        // Handle SWUP transitions gracefully if applicable
+                        if (typeof window !== "undefined" && (window as any).swup && !(window as any).__mizukiSidebarSwupHooked) {
+                                (window as any).__mizukiSidebarSwupHooked = true;
+                                (window as any).swup.hooks.on("content:replace", () => {
+                                        setTimeout(() => {
+                                                this.updateResponsiveDisplay();
+                                        }, 100);
+                                });
+                        }
+                }
+
+                updateResponsiveDisplay() {
+                        const breakpoints = widgetManager.getBreakpoints();
+                        const width = window.innerWidth;
+
+                        let deviceType: 'mobile' | 'tablet' | 'desktop';
+                        if (width < breakpoints.mobile) {
+                                deviceType = 'mobile';
+                        } else if (width < breakpoints.tablet) {
+                                deviceType = 'tablet';
+                        } else {
+                                deviceType = 'desktop';
+                        }
+
+                        const shouldShow = widgetManager.shouldShowSidebar(deviceType);
+                        const sidebar = document.getElementById('sidebar');
+
+                        if (sidebar) {
+                                sidebar.style.setProperty(
+                                        `--sidebar-${deviceType}-display`,
+                                        shouldShow ? 'block' : 'none'
+                                );
+                        }
+                }
+        }
+
+        // Initialize globally to avoid duplicates on SWUP page changes
+        const SIDEBAR_MANAGER_KEY = "__mizukiSidebarManagerInitialized";
+        if (!(window as any)[SIDEBAR_MANAGER_KEY]) {
+                (window as any)[SIDEBAR_MANAGER_KEY] = true;
+                new SidebarManager();
+        }
 </script>

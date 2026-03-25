@@ -38,6 +38,18 @@ function formatTime(dateInput: string | Date): string {
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
+  // If the entry is from today and has a meaningful time component, show HH:mm for better precision.
+  const isSameDay =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+  const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0;
+  if (isSameDay && hasTime) {
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+
   if (diffInMinutes < 60) return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
   if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
   return `${Math.floor(diffInMinutes / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;

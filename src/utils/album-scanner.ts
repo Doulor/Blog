@@ -58,7 +58,12 @@ export async function scanAlbums(): Promise<AlbumGroup[]> {
 			title: data.title || albumId,
 			description: data.description || "",
 			cover,
-			date: data.date || new Date().toISOString().split("T")[0],
+			date:
+				typeof data.date === "string"
+					? data.date
+					: data.date instanceof Date
+						? data.date.toISOString().split("T")[0]
+						: new Date().toISOString().split("T")[0],
 			location: data.location || "",
 			tags: data.tags || [],
 			layout: data.layout || "grid",

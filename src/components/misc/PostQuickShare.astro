@@ -1,0 +1,69 @@
+---
+import SharePoster from "./SharePoster.svelte";
+import { siteConfig, profileConfig } from "@/config";
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  title: string;
+  description?: string;
+  author?: string;
+  url: string;
+  siteTitle?: string;
+  avatar?: string;
+  image?: string;
+  published?: Date;
+  class?: string;
+}
+
+const {
+  title,
+  description,
+  author = profileConfig.name,
+  url,
+  siteTitle = siteConfig.title,
+  avatar,
+  image,
+  published,
+  class: className,
+} = Astro.props;
+
+const pubDate = published
+  ? `${published.getFullYear()}-${String(published.getMonth() + 1).padStart(2, "0")}-${String(published.getDate()).padStart(2, "0")}`
+  : new Date().toISOString().substring(0, 10);
+---
+
+<div class:list={[
+    "p-6 bg-[var(--license-block-bg)] rounded-xl mb-6 onload-animation",
+    className,
+  ]}
+>
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+      <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-[var(--enter-btn-bg)] shrink-0">
+        <Icon name="material-symbols:share" class="text-3xl text-[var(--primary)]" />
+      </div>
+      <div class="flex flex-col gap-1 min-w-0">
+        <div class="text-[1.0rem] leading-tight text-black/75 dark:text-white/75 truncate">
+          分享
+        </div>
+        <p class="text-[0.8rem] leading-tight text-black/75 dark:text-white/75">
+          复制链接或生成分享海报
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <SharePoster
+        client:visible
+        title={title}
+        author={author}
+        description={description || ""}
+        pubDate={pubDate}
+        coverImage={image ?? null}
+        url={url}
+        siteTitle={siteTitle}
+        avatar={avatar ?? null}
+      />
+    </div>
+  </div>
+</div>
