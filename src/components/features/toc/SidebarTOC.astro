@@ -55,7 +55,7 @@ const { class: className } = Astro.props;
 	}
 
 	html.has-toc #toc-inner-wrapper {
-		background-color: var(--card-bg);
+		background-color: transparent;
 	}
 
     /* 暴力移除可能产生渐变的伪元素 */
@@ -70,7 +70,8 @@ const { class: className } = Astro.props;
 	#toc-inner-wrapper.toc-expanded-active {
 		width: var(--toc-expanded-width) !important;
 		max-width: calc(100vw - 2rem);
-		background-color: var(--card-bg) !important;
+		background-color: transparent !important;
+		backdrop-filter: blur(12px);
 		padding: 1rem 0.75rem !important;
 		border: 1px solid var(--line-divider);
 		border-radius: 1.25rem !important;
