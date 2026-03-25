@@ -7,6 +7,7 @@ import { i18n } from "../../i18n/translation";
 import { siteConfig } from "../../config";
 import { getDir } from "../../utils/url-utils";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
+import PostQuickShare from "../../components/misc/PostQuickShare.astro";
 
 // 检测外部图片链接的函数
 function isExternalUrl(url: string): boolean {
@@ -226,6 +227,17 @@ const diaryDateIso = diaryDate.toISOString();
           </div>
         </section>
       )}
+
+      <div class="mt-8">
+        <PostQuickShare
+          title={diary.data.title}
+          description={description}
+          url={Astro.url.href}
+          image={gallery.length > 0 ? (isExternalUrl(normalizeImage(gallery[0])) ? normalizeImage(gallery[0]) : join(diaryBasePath, normalizeImage(gallery[0]))) : undefined}
+          published={diary.data.date}
+          class="onload-animation"
+        />
+      </div>
     </div>
   </div>
 </MainGridLayout>

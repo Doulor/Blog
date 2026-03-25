@@ -1480,12 +1480,16 @@ function scrollFunction() {
 			}
 		}
 
-		if (bannerEnabled && toc) {
+		// 在帖子页面常驻显示 TOC，不再根据 banner 高度隐藏
+		const isPostPage = window.location.pathname.startsWith('/posts/');
+		if (bannerEnabled && toc && !isPostPage) {
 			if (scrollTop > bannerHeight) {
 				toc.classList.remove('toc-hide')
 			} else {
 				toc.classList.add('toc-hide')
 			}
+		} else if (bannerEnabled && toc && isPostPage) {
+			toc.classList.remove('toc-hide')
 		}
 
 		if (bannerEnabled && navbar) {

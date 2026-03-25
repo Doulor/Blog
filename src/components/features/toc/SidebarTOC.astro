@@ -380,7 +380,6 @@ const { class: className } = Astro.props;
 			const expandedStyle = document.getElementById("toc-expanded-style");
 			if (expandedStyle) expandedStyle.remove();
 		}
-
 		regenerateTOC(retryCount = 0) {
 			const isPostPage =
 				window.location.pathname.includes("/posts/") ||
@@ -399,7 +398,6 @@ const { class: className } = Astro.props;
 			}
 
 			document.documentElement.classList.add("has-toc");
-
 			const config = getTOCConfig();
 			const headings = extractHeadings("#post-container");
 

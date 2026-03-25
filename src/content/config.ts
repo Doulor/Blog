@@ -31,6 +31,8 @@ const postsCollection = defineCollection({
 const diaryCollection = defineCollection({
 	schema: z.object({
 		title: z.string(),
+		// Allow both `YYYY-MM-DD` and `YYYY-MM-DD HH:mm` (or with seconds) via Date coercion.
+		// Users can now write: date: "2026-03-21 23:17" or "2026-03-21T23:17:30+08:00".
 		date: z.coerce.date(),
 		description: z.string().optional().default(""),
 		excerpt: z.string().optional().default(""),

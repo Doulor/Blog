@@ -235,9 +235,11 @@ html {
         @apply opacity-0 pointer-events-none
     }
 
+    /*
     #toc-inner-wrapper {
         mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%);
     }
+    */
 
     .hide-scrollbar {
         scrollbar-width: none;
