@@ -5,6 +5,7 @@ import I18nKey from "../../../i18n/i18nKey";
 import { i18n } from "../../../i18n/translation";
 import MainGridLayout from "../../../layouts/MainGridLayout.astro";
 import { scanAlbums } from "../../../utils/album-scanner";
+import PostQuickShare from "../../../components/misc/PostQuickShare.astro";
 
 export const getStaticPaths = async () => {
 	const albumsData = await scanAlbums();
@@ -104,6 +105,18 @@ if (!album) {
             </a>
           </figure>
         ))}
+      </div>
+
+      <!-- 快速分享组件 -->
+      <div class="mt-8">
+        <PostQuickShare 
+          title={album.title}
+          description={album.description}
+          url={Astro.url.href}
+          image={album.photos[0]?.src}
+          published={new Date(album.date)}
+          class="onload-animation"
+        />
       </div>
     </div>
   </div>
