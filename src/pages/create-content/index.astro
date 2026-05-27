@@ -296,20 +296,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">媒体文件名或外部链接</label>
                 <div id="diaryImagesContainer" class="space-y-2">
                 </div>
-                <div class="mt-3 p-3 rounded-lg border border-dashed border-[var(--secondary)]/40 bg-[var(--secondary)]/5 space-y-3">
-                  <div class="text-sm font-medium text-neutral-700 dark:text-neutral-300">快捷添加隐藏图片</div>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <input type="text" id="diaryHiddenImageValue"
-                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                      placeholder="真实图片文件名或链接">
-                    <input type="text" id="diaryHiddenImageLabel"
-                      class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                      placeholder="公开显示说明，例如：隐藏图片">
-                  </div>
-                  <button type="button" id="addDiaryHiddenImageBtn" class="text-sm bg-[var(--primary)]/15 hover:bg-[var(--primary)] text-[var(--primary)] hover:text-white px-4 py-2 rounded-lg transition-smooth border border-[var(--primary)]/30 hover:border-[var(--primary)]">
-                    添加隐藏图片
-                  </button>
-                </div>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2">勾选媒体行里的“隐藏”后，生成时会自动写成隐藏图片格式。</p>
                 <button type="button" id="addImageBtn" class="text-sm bg-[var(--secondary)]/20 hover:bg-[var(--secondary)] text-[var(--secondary)] hover:text-white px-4 py-2 rounded-lg transition-smooth flex items-center border border-[var(--secondary)]/30 hover:border-[var(--secondary)] mt-2">
                   <i class="fa fa-plus mr-1" aria-hidden="true"></i> 添加媒体
                 </button>
@@ -605,6 +592,34 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
     const safeHiddenValue = sanitizeDiaryHiddenMarkerPart(hiddenValue);
     const safeLabel = sanitizeDiaryHiddenMarkerPart(label) || '已隐藏内容';
     return safeHiddenValue ? `<Hide-${safeHiddenValue}=${safeLabel}>` : '';
+  }
+
+  function parseSingleDiaryHiddenMarker(value) {
+    const text = String(value ?? '').trim();
+    if (!text.startsWith('<Hide-') || !text.endsWith('>')) return null;
+    const body = text.slice(6, -1);
+    const separator = body.lastIndexOf('=');
+    if (separator <= 0) return null;
+    return {
+      value: body.slice(0, separator).trim(),
+      label: body.slice(separator + 1).trim() || '隐藏图片',
+    };
+  }
+
+  function getDiaryImageValueForMarkdown(inputDiv) {
+    const input = inputDiv.querySelector('input[name="diaryImage[]"]');
+    const hiddenToggle = inputDiv.querySelector('.diary-image-hidden-toggle');
+    const labelInput = inputDiv.querySelector('.diary-image-hidden-label');
+    const value = input?.value.trim() || '';
+    if (!value) return '';
+    if (!hiddenToggle?.checked) return value;
+    return createDiaryHiddenMarker(value, labelInput?.value || '隐藏图片');
+  }
+
+  function refreshActivePreview() {
+    const activeForm = document.querySelector('.form-content:not(.hidden)');
+    if (!activeForm) return;
+    generateMarkdown(activeForm.id.replace('Form', ''));
   }
 
   function ensureDiarySecret() {
@@ -922,31 +937,54 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
   function addDiaryImageInput(value = '') {
     const container = document.getElementById('diaryImagesContainer');
     const inputDiv = document.createElement('div');
-    inputDiv.className = 'diary-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
+    const marker = parseSingleDiaryHiddenMarker(value);
+    const mediaValue = marker?.value || value;
+    const hiddenLabel = marker?.label || '隐藏图片';
+    inputDiv.className = 'diary-image-input fade-in flex flex-col gap-2 mb-2 image-input-container';
     inputDiv.innerHTML = `
-        <span class="drag-handle" title="拖动排序" aria-hidden="true">⋮⋮</span>
-        <input type="text" name="diaryImage[]" value="${escapeAttribute(value)}" placeholder="媒体文件名或外部链接"
-            class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
-        <button type="button" class="remove-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
-            <span class="text-xl font-bold">🗑</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <span class="drag-handle" title="拖动排序" aria-hidden="true">⋮⋮</span>
+          <input type="text" name="diaryImage[]" value="${escapeAttribute(mediaValue)}" placeholder="媒体文件名或外部链接"
+              class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+          <label class="inline-flex items-center gap-1 text-sm text-neutral-700 dark:text-neutral-300 select-none whitespace-nowrap">
+            <input type="checkbox" class="diary-image-hidden-toggle w-4 h-4 text-[var(--primary)] border-neutral-300 dark:border-neutral-600 rounded focus:ring-[var(--primary)]" ${marker ? 'checked' : ''}>
+            隐藏
+          </label>
+          <button type="button" class="remove-image bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
+              <span class="text-xl font-bold">🗑</span>
+          </button>
+        </div>
+        <div class="diary-image-hidden-options ${marker ? '' : 'hidden'} pl-8">
+          <input type="text" class="diary-image-hidden-label w-full p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-sm" value="${escapeAttribute(hiddenLabel)}" placeholder="隐藏图片公开说明">
+        </div>
     `;
     container.appendChild(inputDiv);
     initDiaryImageSortable();
 
     // 添加输入事件监听器来实时更新内容
-    const inputField = inputDiv.querySelector('input');
+    const inputField = inputDiv.querySelector('input[name="diaryImage[]"]');
+    const hiddenToggle = inputDiv.querySelector('.diary-image-hidden-toggle');
+    const hiddenOptions = inputDiv.querySelector('.diary-image-hidden-options');
+    const hiddenLabelInput = inputDiv.querySelector('.diary-image-hidden-label');
     inputField.addEventListener('input', function() {
-      const activeForm = document.querySelector('.form-content:not(.hidden)');
-      if (activeForm) {
-        const formType = activeForm.id.replace('Form', '');
-        generateMarkdown(formType);
+      if (hiddenToggle.checked && this.value.trim()) ensureDiarySecret();
+      refreshActivePreview();
+    });
+    hiddenLabelInput.addEventListener('input', refreshActivePreview);
+    hiddenToggle.addEventListener('change', function() {
+      if (this.checked && !inputField.value.trim()) {
+        this.checked = false;
+        showMessage('请先填写要隐藏的图片文件名或链接', 'error');
+        return;
       }
+      hiddenOptions.classList.toggle('hidden', !this.checked);
+      if (this.checked) ensureDiarySecret();
+      refreshActivePreview();
     });
 
     // 添加删除功能
     inputDiv.querySelector('.remove-image').addEventListener('click', function() {
-      const item = this.parentElement;
+      const item = this.closest('.diary-image-input');
       item.classList.add('fade-out');
       setTimeout(() => {
         item.remove();
@@ -1002,31 +1040,6 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
     }
     ensureDiarySecret();
     insertTextAtCursor(textarea, marker);
-    hiddenValueInput.value = '';
-    labelInput.value = '';
-    refreshDiaryPreview();
-  });
-
-  document.getElementById('addDiaryHiddenImageBtn')?.addEventListener('click', function() {
-    const hiddenValueInput = document.getElementById('diaryHiddenImageValue');
-    const labelInput = document.getElementById('diaryHiddenImageLabel');
-    const marker = createDiaryHiddenMarker(hiddenValueInput?.value || '', labelInput?.value || '隐藏图片');
-    if (!marker) {
-      showMessage('请填写要隐藏的图片文件名或链接', 'error');
-      return;
-    }
-    ensureDiarySecret();
-    const useImage = document.getElementById('diaryUseImage');
-    const section = document.getElementById('diaryImageSection');
-    const localRadio = document.querySelector('input[name="diaryImageType"][value="local"]');
-    const r2Section = document.getElementById('r2DiarySection');
-    const localSection = document.getElementById('localDiaryImageSection');
-    if (useImage) useImage.checked = true;
-    if (localRadio) localRadio.checked = true;
-    if (section) section.classList.remove('hidden');
-    if (r2Section) r2Section.classList.add('hidden');
-    if (localSection) localSection.classList.remove('hidden');
-    addDiaryImageInput(marker);
     hiddenValueInput.value = '';
     labelInput.value = '';
     refreshDiaryPreview();
@@ -1442,8 +1455,8 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         // 为日记类型添加日期字段
         extraFields.date = date;
 
-        const diaryImageInputs = document.querySelectorAll('#diaryImagesContainer input[name="diaryImage[]"]');
-        const diaryImages = Array.from(diaryImageInputs).map(input => input.value.trim()).filter(val => val);
+        const diaryImageRows = document.querySelectorAll('#diaryImagesContainer .diary-image-input');
+        const diaryImages = Array.from(diaryImageRows).map(getDiaryImageValueForMarkdown).filter(val => val);
         const diarySecret = document.getElementById('diarySecret')?.value.trim() || '';
         const hasHiddenDiaryContent = content.includes('<Hide-') || diaryImages.some(value => value.includes('<Hide-'));
         if (diarySecret || hasHiddenDiaryContent) {
