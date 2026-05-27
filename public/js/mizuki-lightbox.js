@@ -443,6 +443,8 @@
         return;
       }
 
+      if (t.closest('[data-lightbox-ignore]')) return;
+
       const trigger = t.closest('[data-lightbox-src]');
       if (!trigger) return;
 

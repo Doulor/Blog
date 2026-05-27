@@ -165,7 +165,8 @@ const passwordHash = secret ? bcryptjs.hashSync(secret, 10) : "";
 		font-size: 0.78rem;
 		font-weight: 700;
 		backdrop-filter: blur(6px);
-		pointer-events: none;
+		cursor: pointer;
+		pointer-events: auto;
 	}
 
 	#diary-hidden-controller[hidden] {
@@ -414,7 +415,7 @@ const passwordHash = secret ? bcryptjs.hashSync(secret, 10) : "";
 			trigger.classList.add("is-revealed");
 			trigger.classList.add("is-prepared");
 			trigger.setAttribute("aria-pressed", "true");
-			trigger.removeAttribute("data-lightbox-src");
+			trigger.setAttribute("data-lightbox-src", src);
 			trigger.textContent = "";
 
 			const card = document.createElement("span");
@@ -429,6 +430,7 @@ const passwordHash = secret ? bcryptjs.hashSync(secret, 10) : "";
 			const toggle = document.createElement("span");
 			toggle.className = "diary-hidden-image-toggle";
 			toggle.textContent = "点击收起";
+			toggle.setAttribute("data-lightbox-ignore", "true");
 
 			card.append(img, toggle);
 			trigger.append(card);
@@ -496,14 +498,20 @@ const passwordHash = secret ? bcryptjs.hashSync(secret, 10) : "";
 			const trigger = event.target?.closest?.(".diary-hidden-trigger");
 			if (!trigger) return;
 
-			event.preventDefault();
-			event.stopPropagation();
-
 			if (trigger.classList.contains("is-revealed")) {
-				if (trigger.getAttribute("data-diary-hidden-kind") === "image") restoreImage(trigger);
+				const isImage = trigger.getAttribute("data-diary-hidden-kind") === "image";
+				if (isImage && !event.target?.closest?.(".diary-hidden-image-toggle")) return;
+
+				event.preventDefault();
+				event.stopPropagation();
+
+				if (isImage) restoreImage(trigger);
 				else restoreText(trigger);
 				return;
 			}
+
+			event.preventDefault();
+			event.stopPropagation();
 
 			if (!cachedPassword) {
 				showDialog(trigger);
