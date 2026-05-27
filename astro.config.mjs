@@ -83,6 +83,7 @@ export default defineConfig({
 					hidden: z.boolean().default(false),
 					images: z.array(z.string()).optional(),
 						secret: z.string().optional().default(""),
+						password: z.string().optional().default(""),
 				})
 		},
 		// 文章集合

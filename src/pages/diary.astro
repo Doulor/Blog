@@ -5,6 +5,7 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config';
 import { getSingleDiaryHiddenMarker, sanitizeDiaryHiddenMarkers } from "../utils/diary-hidden.js";
+import CryptoJS from "crypto-js";
 
 // 检测是否为外部图片链接
 function isExternalUrl(url: string): boolean {
@@ -76,6 +77,21 @@ function formatDate(dateInput: string | Date): string {
     weekday: 'short'
   });
 }
+
+function getDiaryPreviewText(diary: any): string {
+  return sanitizeDiaryHiddenMarkers(diary.data.excerpt || `${diary.body?.slice(0, 200) || ''}...`);
+}
+
+function encryptDiaryPreview(diary: any): string {
+  if (!diary.data.password) return '';
+  return CryptoJS.AES.encrypt(
+    JSON.stringify({
+      __diaryPreview: true,
+      preview: getDiaryPreviewText(diary),
+    }),
+    diary.data.password,
+  ).toString();
+}
 ---
 
 <MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">
@@ -104,11 +120,16 @@ function formatDate(dateInput: string | Date): string {
             {diaries.map((diary, index) => {
               const dateObj = new Date(diary.data.date);
               const dateIso = dateObj.toISOString();
+              const isPasswordProtected = Boolean(diary.data.password);
+              const encryptedPreview = isPasswordProtected ? encryptDiaryPreview(diary) : '';
               return (
               <div
                 class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all cursor-pointer"
                 data-index={index}
                 data-href={`/diary/${diary.slug}/`}
+                data-diary-path={`/diary/${diary.slug}/`}
+                data-diary-password-protected={isPasswordProtected ? "true" : "false"}
+                data-diary-preview={encryptedPreview}
                 role="link"
                 tabindex="0"
                 aria-label={`打开日记：${diary.data.title || diary.slug}`}
@@ -122,12 +143,12 @@ function formatDate(dateInput: string | Date): string {
                     )}
 
                     {/* 使用excerpt或body内容，并添加安全检查 */}
-                    <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">
-                      {sanitizeDiaryHiddenMarkers(diary.data.excerpt || diary.body?.slice(0, 200) + '...' || '')}
+                    <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4" data-diary-lock-message>
+                      {isPasswordProtected ? '🔒此日记受密码保护，需要输入密码才能查看。' : getDiaryPreviewText(diary)}
                     </p>
 
                     {/* 处理图片显示 */}
-                    {diary.data.images && diary.data.images.length > 0 && (() => {
+                    {!isPasswordProtected && diary.data.images && diary.data.images.length > 0 && (() => {
                       const images = (diary.data.images || []).filter((item) => {
 												const marker = getSingleDiaryHiddenMarker(item);
 												return !marker && isImageUrl(normalizeImage(item));
@@ -266,6 +287,98 @@ function formatDate(dateInput: string | Date): string {
 
     // 绑定点击事件 - 因为btn是当前页面的新元素，直接绑定即可，无需担心解绑
     btn.addEventListener('click', showMore);
+  })();
+</script>
+
+<script is:inline>
+  (function () {
+    const list = document.getElementById('diary-list');
+    if (!list) return;
+
+    let cryptoLoadingPromise = null;
+
+    function normalizeDiaryPath(path) {
+      const normalized = String(path || '').replace(/\/+$/, '/') || '/';
+      try {
+        return decodeURI(normalized);
+      } catch (_) {
+        return normalized;
+      }
+    }
+
+    function storageCandidates(path) {
+      const normalized = normalizeDiaryPath(path);
+      const encoded = encodeURI(normalized);
+      return Array.from(new Set([normalized, encoded]));
+    }
+
+    function getStoredValue(prefix, path) {
+      for (const candidate of storageCandidates(path)) {
+        const value = localStorage.getItem(`${prefix}${candidate}`);
+        if (value) return value;
+      }
+      return '';
+    }
+
+    function removeStoredValues(prefix, path) {
+      storageCandidates(path).forEach((candidate) => localStorage.removeItem(`${prefix}${candidate}`));
+    }
+
+    function loadCryptoJs() {
+      if (typeof CryptoJS !== 'undefined') return Promise.resolve();
+      if (cryptoLoadingPromise) return cryptoLoadingPromise;
+      cryptoLoadingPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '/assets/js/crypto-js.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+      return cryptoLoadingPromise;
+    }
+
+    async function decryptDiaryPreview(card, password) {
+      const encryptedPreview = card.getAttribute('data-diary-preview') || '';
+      if (!encryptedPreview || !password) return '';
+      await loadCryptoJs();
+      const decrypted = CryptoJS.AES.decrypt(encryptedPreview, password).toString(CryptoJS.enc.Utf8);
+      if (!decrypted) return '';
+      const payload = JSON.parse(decrypted);
+      if (!payload || payload.__diaryPreview !== true) return '';
+      return String(payload.preview || '').trim();
+    }
+
+    async function applyUnlockedStatus() {
+      const cards = Array.from(list.querySelectorAll('.moment-item[data-diary-password-protected="true"]'));
+      await Promise.all(cards.map(async (card) => {
+        const path = card.getAttribute('data-diary-path') || '';
+        const unlocked = getStoredValue('diary-unlocked-', path) === 'true';
+        const password = getStoredValue('diary-password-', path);
+        const message = card.querySelector('[data-diary-lock-message]');
+        if (!message) return;
+        if (!unlocked || !password) {
+          message.textContent = '🔒此日记受密码保护，需要输入密码才能查看。';
+          return;
+        }
+
+        try {
+          const preview = await decryptDiaryPreview(card, password);
+          message.textContent = preview
+            ? `[加密日记-已解锁🔓]${preview}`
+            : '加密日记，已解锁🔓';
+        } catch (_) {
+          message.textContent = '🔒此日记受密码保护，需要输入密码才能查看。';
+          removeStoredValues('diary-unlocked-', path);
+          removeStoredValues('diary-password-', path);
+        }
+      }));
+    }
+
+    applyUnlockedStatus();
+    window.addEventListener('storage', applyUnlockedStatus);
+    window.addEventListener('diary-password-unlocked', applyUnlockedStatus);
+    document.addEventListener('astro:page-load', applyUnlockedStatus);
+    document.addEventListener('swup:contentReplaced', applyUnlockedStatus);
   })();
 </script>
 

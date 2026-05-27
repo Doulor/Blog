@@ -239,6 +239,13 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
               placeholder="使用隐藏文字或隐藏图片时自动填写 666999">
             <p class="text-xs text-neutral-500 dark:text-neutral-400">用于解锁本篇日记里的隐藏文字和隐藏图片。</p>
           </div>
+          <div class="space-y-2">
+            <label for="diaryPassword" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">整篇日记密码</label>
+            <input type="text" id="diaryPassword" name="diaryPassword"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="填写后整篇日记需要密码才能查看，例如：666999">
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">会生成 password 字段，正文和媒体都会被完整隐藏。</p>
+          </div>
           <div class="pt-2">
             <div class="flex items-center space-x-3 mb-3 pt-1">
               <input type="checkbox" id="diaryUseImage" name="diaryUseImage"
@@ -1458,9 +1465,13 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         const diaryImageRows = document.querySelectorAll('#diaryImagesContainer .diary-image-input');
         const diaryImages = Array.from(diaryImageRows).map(getDiaryImageValueForMarkdown).filter(val => val);
         const diarySecret = document.getElementById('diarySecret')?.value.trim() || '';
+        const diaryPassword = document.getElementById('diaryPassword')?.value.trim() || '';
         const hasHiddenDiaryContent = content.includes('<Hide-') || diaryImages.some(value => value.includes('<Hide-'));
         if (diarySecret || hasHiddenDiaryContent) {
           extraFields.secret = diarySecret || '666999';
+        }
+        if (diaryPassword) {
+          extraFields.password = diaryPassword;
         }
 
         // 处理图片

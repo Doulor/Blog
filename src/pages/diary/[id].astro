@@ -1,6 +1,7 @@
 ---
 import { join } from "node:path";
 import DiaryHiddenContent from "../../components/DiaryHiddenContent.astro";
+import DiaryPasswordProtection from "../../components/DiaryPasswordProtection.astro";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import Markdown from "../../components/misc/Markdown.astro";
 import PostQuickShare from "../../components/misc/PostQuickShare.astro";
@@ -15,6 +16,7 @@ import {
 } from "../../utils/diary-hidden.js";
 import { getDir } from "../../utils/url-utils";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import CryptoJS from "crypto-js";
 
 function isExternalUrl(url: string): boolean {
 	try {
@@ -98,6 +100,8 @@ const rawVideos = diary.data.videos || [];
 const diaryBasePath = join("content/", getDir(diary.id));
 const diarySecret = diary.data.secret || "";
 const hasDiarySecret = Boolean(diarySecret);
+const diaryPassword = diary.data.password || "";
+const hasDiaryPassword = Boolean(diaryPassword);
 const gallery = rawImages
 	.map((item: string): GalleryItem | null => {
 		const marker = getSingleDiaryHiddenMarker(item);
@@ -121,15 +125,30 @@ const rawDescription =
 	diary.data.excerpt ||
 	diary.body?.slice(0, 160) ||
 	i18n(I18nKey.diarySubtitle);
-const description = sanitizeDiaryHiddenMarkers(rawDescription);
+const description = hasDiaryPassword ? "🔒此日记受密码保护" : sanitizeDiaryHiddenMarkers(rawDescription);
 const diaryDate = new Date(diary.data.date);
 const diaryDateIso = diaryDate.toISOString();
 const firstVisibleGalleryImage = gallery.find((item) => item.type === "visible");
-const shareImage = firstVisibleGalleryImage
-	? isExternalUrl(firstVisibleGalleryImage.normalized)
-		? firstVisibleGalleryImage.normalized
-		: join(diaryBasePath, firstVisibleGalleryImage.normalized)
-	: undefined;
+const shareImage = hasDiaryPassword
+	? undefined
+	: firstVisibleGalleryImage
+		? isExternalUrl(firstVisibleGalleryImage.normalized)
+			? firstVisibleGalleryImage.normalized
+			: join(diaryBasePath, firstVisibleGalleryImage.normalized)
+		: undefined;
+const encryptedDiaryPayload = hasDiaryPassword
+	? CryptoJS.AES.encrypt(
+			JSON.stringify({
+				__diaryPassword: true,
+				title: diary.data.title,
+				body: diary.body || "",
+				images: rawImages,
+				videos: rawVideos,
+				basePath: diaryBasePath,
+			}),
+			diaryPassword,
+		).toString()
+	: "";
 ---
 
 <MainGridLayout
@@ -137,7 +156,7 @@ const shareImage = firstVisibleGalleryImage
 	description={description}
 	lang={diary.data.lang || siteConfig.lang}
 	setOGTypeArticle={true}
-	headings={headings}
+	headings={hasDiaryPassword ? [] : headings}
 >
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
 		<div class="card-base z-10 px-5 md:px-8 lg:px-10 py-6 md:py-8 relative w-full">
@@ -159,7 +178,11 @@ const shareImage = firstVisibleGalleryImage
 				<h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-90 leading-tight mb-2">{diary.data.title}</h1>
 			</header>
 
-			{hasDiarySecret && <DiaryHiddenContent secret={diarySecret} basePath={diaryBasePath} />}
+			{hasDiaryPassword ? (
+					<DiaryPasswordProtection encryptedPayload={encryptedDiaryPayload} password={diaryPassword} />
+				) : (
+					<>
+						{hasDiarySecret && <DiaryHiddenContent secret={diarySecret} basePath={diaryBasePath} />}
 
 			<Markdown class="markdown-content onload-animation mb-8" data-lightbox-base={diaryBasePath}>
 				<Content />
@@ -283,6 +306,8 @@ const shareImage = firstVisibleGalleryImage
 					class="onload-animation"
 				/>
 			</div>
+					</>
+				)}
 		</div>
 	</div>
 </MainGridLayout>
