@@ -129,6 +129,7 @@ export default defineConfig({
 			updateHead: true,
 			updateBodyClass: false,
 			globalInstance: true,
+			ignore: [/\/(guestbook|content-manager|create-content|my-editor)(\/|$)/],
 		}),
 		icon({
 			include: {

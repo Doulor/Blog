@@ -124,16 +124,17 @@ function encryptDiaryPreview(diary: any): string {
               const encryptedPreview = isPasswordProtected ? encryptDiaryPreview(diary) : '';
               return (
               <div
-                class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all cursor-pointer"
+                class="moment-item card-base relative p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all cursor-pointer"
                 data-index={index}
-                data-href={`/diary/${diary.slug}/`}
                 data-diary-path={`/diary/${diary.slug}/`}
                 data-diary-password-protected={isPasswordProtected ? "true" : "false"}
                 data-diary-preview={encryptedPreview}
-                role="link"
-                tabindex="0"
-                aria-label={`打开日记：${diary.data.title || diary.slug}`}
               >
+                  <a
+                    href={`/diary/${diary.slug}/`}
+                    class="absolute inset-0 z-10 rounded-[var(--radius-large)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card-bg)]"
+                    aria-label={`打开日记：${diary.data.title || diary.slug}`}
+                  ></a>
                   <div class="moment-content">
                     {/* 新增：日记标题（保持原有设计语言） */}
                     {diary.data.title && (
@@ -156,7 +157,7 @@ function encryptDiaryPreview(diary: any): string {
                       const previewImages = images.slice(0, 4);
                       const remaining = images.length - previewImages.length;
                       return (
-                        <div class="moment-images grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
+                        <div class="moment-images relative z-20 grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
                           {previewImages.map((image, imageIndex) => {
                             const normalized = normalizeImage(image);
                             const external = isExternalUrl(normalized);
@@ -379,69 +380,6 @@ function encryptDiaryPreview(diary: any): string {
     window.addEventListener('diary-password-unlocked', applyUnlockedStatus);
     document.addEventListener('astro:page-load', applyUnlockedStatus);
     document.addEventListener('swup:contentReplaced', applyUnlockedStatus);
-  })();
-</script>
-
-<script is:inline>
-  (function () {
-    const list = document.getElementById('diary-list');
-    if (!list) return;
-
-    function shouldIgnore(e) {
-      const t = e.target;
-      if (!(t instanceof Element)) return false;
-      // 点击图片/灯箱触发器时不跳转
-      if (t.closest('[data-lightbox-src], .moment-images img')) return true;
-      // 点击任何链接/按钮/表单控件时保留其默认行为
-      if (t.closest('a, button, input, textarea, select, summary')) return true;
-      return false;
-    }
-
-    function handleCardClick(e) {
-      if (shouldIgnore(e)) return;
-      const t = e.target;
-      if (!(t instanceof Element)) return;
-      
-      const card = t.closest('.moment-item[data-href]');
-      if (!card) return;
-      
-      // 确保点击的是列表内部的元素
-      if (!list.contains(card)) return;
-
-      const href = card.getAttribute('data-href');
-      if (!href) return;
-
-      // Swup 场景下优先用 swup.navigate
-      if (window.swup && typeof window.swup.navigate === 'function') {
-        window.swup.navigate(href);
-      } else {
-        window.location.href = href;
-      }
-    }
-
-    function handleCardKeydown(e) {
-        if (!(e.target instanceof Element)) return;
-        const card = e.target.closest('.moment-item[data-href]');
-        if (!card) return;
-        // 确保元素在列表内
-        if(!list.contains(card)) return;
-
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            const href = card.getAttribute('data-href');
-            if (!href) return;
-            if (window.swup && typeof window.swup.navigate === 'function') {
-            window.swup.navigate(href);
-            } else {
-            window.location.href = href;
-            }
-        }
-    }
-
-    // 将事件监听器绑定在 list 容器上，而不是 document
-    // 这样每次 Swup 替换内容，旧 list 销毁（监听器自动销毁），新 list 创建并绑定新监听器
-    list.addEventListener('click', handleCardClick);
-    list.addEventListener('keydown', handleCardKeydown);
   })();
 </script>
 
