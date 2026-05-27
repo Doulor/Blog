@@ -143,7 +143,7 @@ function encryptDiaryPreview(diary: any): string {
                     )}
 
                     {/* 使用excerpt或body内容，并添加安全检查 */}
-                    <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4" data-diary-lock-message>
+                    <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4 whitespace-pre-wrap" data-diary-lock-message>
                       {isPasswordProtected ? '🔒此日记受密码保护，需要输入密码才能查看。' : getDiaryPreviewText(diary)}
                     </p>
 
