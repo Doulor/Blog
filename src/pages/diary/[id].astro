@@ -1,15 +1,21 @@
 ---
 import { join } from "node:path";
-import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import DiaryHiddenContent from "../../components/DiaryHiddenContent.astro";
+import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import Markdown from "../../components/misc/Markdown.astro";
+import PostQuickShare from "../../components/misc/PostQuickShare.astro";
+import { siteConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
-import { siteConfig } from "../../config";
+import {
+	createDiaryHiddenPayload,
+	getSingleDiaryHiddenMarker,
+	isDiaryImageUrl,
+	sanitizeDiaryHiddenMarkers,
+} from "../../utils/diary-hidden.js";
 import { getDir } from "../../utils/url-utils";
-import ImageWrapper from "../../components/misc/ImageWrapper.astro";
-import PostQuickShare from "../../components/misc/PostQuickShare.astro";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
 
-// 检测外部图片链接的函数
 function isExternalUrl(url: string): boolean {
 	try {
 		const parsed = new URL(url);
@@ -19,44 +25,38 @@ function isExternalUrl(url: string): boolean {
 	}
 }
 
-// 规范化图片字段，兼容类似 "[xxx](https://...)" 的写法
 function normalizeImage(url: string): string {
-  const match = url.match(/\((https?:[^)]+)\)/);
-  return match ? match[1] : url.trim();
+	const match = url.match(/\((https?:[^)]+)\)/);
+	return match ? match[1] : url.trim();
 }
 
 function isDirectVideoUrl(url: string): boolean {
-  return /\.(mp4|webm|ogg|mov|m4v|m3u8|mpd)(\?|#|$)/i.test(url);
+	return /\.(mp4|webm|ogg|mov|m4v|m3u8|mpd)(\?|#|$)/i.test(url);
 }
 
 function isImageUrl(url: string): boolean {
-  return /\.(png|jpe?g|gif|webp|avif|svg|bmp)(\?|#|$)/i.test(url);
-}
-
-function isVideoUrl(url: string): boolean {
-  return !isImageUrl(url);
+	return /\.(png|jpe?g|gif|webp|avif|svg|bmp)(\?|#|$)/i.test(url);
 }
 
 function getVideoMimeType(url: string): string {
-  const src = url.split('?')[0].split('#')[0].toLowerCase();
-  if (src.endsWith('.mp4') || src.endsWith('.m4v')) return 'video/mp4';
-  if (src.endsWith('.webm')) return 'video/webm';
-  if (src.endsWith('.ogg')) return 'video/ogg';
-  if (src.endsWith('.mov')) return 'video/quicktime';
-  if (src.endsWith('.m3u8')) return 'application/x-mpegURL';
-  if (src.endsWith('.mpd')) return 'application/dash+xml';
-  return '';
+	const src = url.split("?")[0].split("#")[0].toLowerCase();
+	if (src.endsWith(".mp4") || src.endsWith(".m4v")) return "video/mp4";
+	if (src.endsWith(".webm")) return "video/webm";
+	if (src.endsWith(".ogg")) return "video/ogg";
+	if (src.endsWith(".mov")) return "video/quicktime";
+	if (src.endsWith(".m3u8")) return "application/x-mpegURL";
+	if (src.endsWith(".mpd")) return "application/dash+xml";
+	return "";
 }
 
-// 绝对时间格式化（沿用列表页逻辑）
 function formatDate(dateInput: string | Date): string {
-  const date = new Date(dateInput);
+	const date = new Date(dateInput);
 	const lang = siteConfig.lang || "zh-CN";
 	const localeMap: Record<string, string> = {
-		"zh_CN": "zh-CN",
-		"zh_TW": "zh-TW",
-		"en": "en-US",
-		"ja": "ja-JP",
+		zh_CN: "zh-CN",
+		zh_TW: "zh-TW",
+		en: "en-US",
+		ja: "ja-JP",
 	};
 	const locale = localeMap[lang] || lang;
 
@@ -68,10 +68,9 @@ function formatDate(dateInput: string | Date): string {
 	});
 }
 
-// 相对时间显示
 function formatTime(dateInput: string | Date): string {
-  const now = new Date();
-  const date = new Date(dateInput);
+	const now = new Date();
+	const date = new Date(dateInput);
 	const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
 	if (diffInMinutes < 60) return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
@@ -88,157 +87,202 @@ export async function getStaticPaths() {
 	}));
 }
 
+type GalleryItem =
+	| { type: "visible"; original: string; normalized: string }
+	| { type: "hidden"; label: string; value: string };
+
 const { diary } = Astro.props;
 const { Content, headings } = await diary.render();
 const rawImages = diary.data.images || [];
 const rawVideos = diary.data.videos || [];
-const gallery = rawImages.filter((item) => isImageUrl(normalizeImage(item)));
+const diaryBasePath = join("content/", getDir(diary.id));
+const diarySecret = diary.data.secret || "";
+const hasDiarySecret = Boolean(diarySecret);
+const gallery = rawImages
+	.map((item: string): GalleryItem | null => {
+		const marker = getSingleDiaryHiddenMarker(item);
+		if (marker && isDiaryImageUrl(marker.value)) {
+			return { type: "hidden", label: marker.label, value: marker.value };
+		}
+		const normalized = normalizeImage(item);
+		if (!isImageUrl(normalized)) return null;
+		return { type: "visible", original: item, normalized };
+	})
+	.filter((item): item is GalleryItem => Boolean(item));
 const videos = [
-  ...rawVideos,
-  ...rawImages.filter((item) => !isImageUrl(normalizeImage(item))),
+	...rawVideos,
+	...rawImages.filter((item: string) => {
+		if (getSingleDiaryHiddenMarker(item)) return false;
+		return !isImageUrl(normalizeImage(item));
+	}),
 ];
-const description =
+const rawDescription =
 	diary.data.description ||
 	diary.data.excerpt ||
 	diary.body?.slice(0, 160) ||
 	i18n(I18nKey.diarySubtitle);
-const diaryBasePath = join("content/", getDir(diary.id));
+const description = sanitizeDiaryHiddenMarkers(rawDescription);
 const diaryDate = new Date(diary.data.date);
 const diaryDateIso = diaryDate.toISOString();
+const firstVisibleGalleryImage = gallery.find((item) => item.type === "visible");
+const shareImage = firstVisibleGalleryImage
+	? isExternalUrl(firstVisibleGalleryImage.normalized)
+		? firstVisibleGalleryImage.normalized
+		: join(diaryBasePath, firstVisibleGalleryImage.normalized)
+	: undefined;
 ---
 
 <MainGridLayout
-  title={diary.data.title}
-  description={description}
-  lang={diary.data.lang || siteConfig.lang}
-  setOGTypeArticle={true}
-  headings={headings}
+	title={diary.data.title}
+	description={description}
+	lang={diary.data.lang || siteConfig.lang}
+	setOGTypeArticle={true}
+	headings={headings}
 >
-  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
-    <div class="card-base z-10 px-5 md:px-8 lg:px-10 py-6 md:py-8 relative w-full">
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <a
-          href="/diary/"
-          class="inline-flex items-center gap-2 px-4 md:px-5 py-2.5 rounded-xl text-sm md:text-base font-semibold text-white bg-[var(--primary)] hover:bg-[color:var(--primary-dark,var(--primary))] shadow-lg hover:shadow-xl transition transform hover:-translate-y-[1px] active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--card-bg)]"
-        >
-          <span class="text-lg">←</span>
-          <span>{i18n(I18nKey.diary)}</span>
-        </a>
-        <div class="flex flex-col text-right text-75 text-xs md:text-sm">
-          <time datetime={diaryDateIso} class="font-semibold text-90">{formatDate(diaryDate)}</time>
-          <span class="mt-0.5">{formatTime(diaryDate)}</span>
-        </div>
-      </div>
+	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
+		<div class="card-base z-10 px-5 md:px-8 lg:px-10 py-6 md:py-8 relative w-full">
+			<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+				<a
+					href="/diary/"
+					class="inline-flex items-center gap-2 px-4 md:px-5 py-2.5 rounded-xl text-sm md:text-base font-semibold text-white bg-[var(--primary)] hover:bg-[color:var(--primary-dark,var(--primary))] shadow-lg hover:shadow-xl transition transform hover:-translate-y-[1px] active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--card-bg)]"
+				>
+					<span class="text-lg">←</span>
+					<span>{i18n(I18nKey.diary)}</span>
+				</a>
+				<div class="flex flex-col text-right text-75 text-xs md:text-sm">
+					<time datetime={diaryDateIso} class="font-semibold text-90">{formatDate(diaryDate)}</time>
+					<span class="mt-0.5">{formatTime(diaryDate)}</span>
+				</div>
+			</div>
 
-      <header class="mb-4 md:mb-6">
-        <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-90 leading-tight mb-2">{diary.data.title}</h1>
-      </header>
+			<header class="mb-4 md:mb-6">
+				<h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-90 leading-tight mb-2">{diary.data.title}</h1>
+			</header>
 
-      <Markdown class="markdown-content onload-animation mb-8" data-lightbox-base={diaryBasePath}>
-        <Content />
-      </Markdown>
+			{hasDiarySecret && <DiaryHiddenContent secret={diarySecret} basePath={diaryBasePath} />}
 
-      {gallery.length > 0 && (
-        <section class="space-y-3">
-          <div class="flex items-center gap-2 text-75 text-sm font-semibold">
-            <span>📷</span>
-            <span>{i18n(I18nKey.diaryImage) || "Images"}</span>
-            <span class="text-xs text-60">({gallery.length})</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {gallery.map((image: string, index: number) => {
-              const normalized = normalizeImage(image);
-              const external = isExternalUrl(normalized);
-              return (
-                <a
-                  class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer block"
-                  href={external ? normalized : join(diaryBasePath, normalized)}
-                  data-lightbox-src={external ? normalized : join(diaryBasePath, normalized)}
-                  aria-label={`${diary.data.title} - ${index + 1}`}
-                >
-                  {external ? (
-                    <img
-                      src={normalized}
-                      alt={`${diary.data.title} - ${index + 1}`}
-                      class="w-full h-full object-cover transition duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <ImageWrapper
-                      src={normalized}
-                      alt={`${diary.data.title} - ${index + 1}`}
-                      class="w-full h-full"
-                      basePath={diaryBasePath}
-                    />
-                  )}
-                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
-                </a>
-              );
-            })}
-          </div>
-        </section>
-      )}
+			<Markdown class="markdown-content onload-animation mb-8" data-lightbox-base={diaryBasePath}>
+				<Content />
+			</Markdown>
 
-      {videos.length > 0 && (
-        <section class="space-y-3 mt-6">
-          <div class="flex items-center gap-2 text-75 text-sm font-semibold">
-            <span>🎬</span>
-            <span>视频</span>
-            <span class="text-xs text-60">({videos.length})</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {videos.map((video: string, index: number) => {
-              const normalized = normalizeImage(video);
-              const external = isExternalUrl(normalized);
-              const src = external ? normalized : join(diaryBasePath, normalized);
-              const direct = isDirectVideoUrl(src);
-              return (
-                <a
-                  class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer block"
-                  href={src}
-                  data-lightbox-src={src}
-                  data-lightbox-type="video"
-                  aria-label={`${diary.data.title} - video ${index + 1}`}
-                >
-                  {direct ? (
-                    <video
-                      preload="metadata"
-                      controls
-                      playsinline
-                      crossorigin="anonymous"
-                      class="w-full h-full object-cover"
-                    >
-                      <source src={src} type={getVideoMimeType(src)} />
-                    </video>
-                  ) : (
-                    <div class="w-full h-full flex items-center justify-center bg-black/40 text-white text-sm">
-                      外链视频
-                    </div>
-                  )}
-                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-12 h-12 rounded-full bg-black/55 text-white flex items-center justify-center text-xl shadow-lg">
-                      ▶
-                    </div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </section>
-      )}
+			{gallery.length > 0 && (
+				<section class="space-y-3">
+					<div class="flex items-center gap-2 text-75 text-sm font-semibold">
+						<span>📷</span>
+						<span>{i18n(I18nKey.diaryImage) || "Images"}</span>
+						<span class="text-xs text-60">({gallery.length})</span>
+					</div>
+					<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+						{gallery.map((image, index: number) => {
+							if (image.type === "hidden") {
+								const encryptedPayload = createDiaryHiddenPayload(image.value, diarySecret, "image");
+								return (
+									<button
+										type="button"
+										class="diary-hidden-trigger diary-hidden-image-gallery"
+										data-diary-hidden-kind="image"
+										data-diary-hidden-label={image.label}
+										data-diary-hidden-payload={encryptedPayload}
+										data-pagefind-ignore="true"
+										aria-label={`隐藏图片：${image.label}`}
+										aria-pressed="false"
+									>
+										{image.label}
+									</button>
+								);
+							}
 
-      <div class="mt-8">
-        <PostQuickShare
-          title={diary.data.title}
-          description={description}
-          url={Astro.url.href}
-          image={gallery.length > 0 ? (isExternalUrl(normalizeImage(gallery[0])) ? normalizeImage(gallery[0]) : join(diaryBasePath, normalizeImage(gallery[0]))) : undefined}
-          published={diary.data.date}
-          class="onload-animation"
-        />
-      </div>
-    </div>
-  </div>
+							const normalized = image.normalized;
+							const external = isExternalUrl(normalized);
+							return (
+								<a
+									class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer block"
+									href={external ? normalized : join(diaryBasePath, normalized)}
+									data-lightbox-src={external ? normalized : join(diaryBasePath, normalized)}
+									aria-label={`${diary.data.title} - ${index + 1}`}
+								>
+									{external ? (
+										<img
+											src={normalized}
+											alt={`${diary.data.title} - ${index + 1}`}
+											class="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+											loading="lazy"
+										/>
+									) : (
+										<ImageWrapper
+											src={normalized}
+											alt={`${diary.data.title} - ${index + 1}`}
+											class="w-full h-full"
+											basePath={diaryBasePath}
+										/>
+									)}
+									<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+								</a>
+							);
+						})}
+					</div>
+				</section>
+			)}
+
+			{videos.length > 0 && (
+				<section class="space-y-3 mt-6">
+					<div class="flex items-center gap-2 text-75 text-sm font-semibold">
+						<span>🎬</span>
+						<span>视频</span>
+						<span class="text-xs text-60">({videos.length})</span>
+					</div>
+					<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+						{videos.map((video: string, index: number) => {
+							const normalized = normalizeImage(video);
+							const external = isExternalUrl(normalized);
+							const src = external ? normalized : join(diaryBasePath, normalized);
+							const direct = isDirectVideoUrl(src);
+							return (
+								<a
+									class="relative rounded-xl overflow-hidden aspect-square group border border-[var(--line-divider)] bg-[var(--card-bg)] cursor-pointer block"
+									href={src}
+									data-lightbox-src={src}
+									data-lightbox-type="video"
+									aria-label={`${diary.data.title} - video ${index + 1}`}
+								>
+									{direct ? (
+										<video
+											preload="metadata"
+											controls
+											playsinline
+											crossorigin="anonymous"
+											class="w-full h-full object-cover"
+										>
+											<source src={src} type={getVideoMimeType(src)} />
+										</video>
+									) : (
+										<div class="w-full h-full flex items-center justify-center bg-black/40 text-white text-sm">
+											外链视频
+										</div>
+									)}
+									<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+									<div class="absolute inset-0 flex items-center justify-center">
+										<div class="w-12 h-12 rounded-full bg-black/55 text-white flex items-center justify-center text-xl shadow-lg">
+											▶
+										</div>
+									</div>
+								</a>
+							);
+						})}
+					</div>
+				</section>
+			)}
+
+			<div class="mt-8">
+				<PostQuickShare
+					title={diary.data.title}
+					description={description}
+					url={Astro.url.href}
+					image={shareImage}
+					published={diary.data.date}
+					class="onload-animation"
+				/>
+			</div>
+		</div>
+	</div>
 </MainGridLayout>
-

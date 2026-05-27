@@ -4,6 +4,7 @@ import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config';
+import { getSingleDiaryHiddenMarker, sanitizeDiaryHiddenMarkers } from "../utils/diary-hidden.js";
 
 // 检测是否为外部图片链接
 function isExternalUrl(url: string): boolean {
@@ -122,12 +123,15 @@ function formatDate(dateInput: string | Date): string {
 
                     {/* 使用excerpt或body内容，并添加安全检查 */}
                     <p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">
-                      {diary.data.excerpt || diary.body?.slice(0, 200) + '...' || ''}
+                      {sanitizeDiaryHiddenMarkers(diary.data.excerpt || diary.body?.slice(0, 200) + '...' || '')}
                     </p>
 
                     {/* 处理图片显示 */}
                     {diary.data.images && diary.data.images.length > 0 && (() => {
-                      const images = (diary.data.images || []).filter((item) => isImageUrl(normalizeImage(item)));
+                      const images = (diary.data.images || []).filter((item) => {
+												const marker = getSingleDiaryHiddenMarker(item);
+												return !marker && isImageUrl(normalizeImage(item));
+											});
                       const previewImages = images.slice(0, 4);
                       const remaining = images.length - previewImages.length;
                       return (

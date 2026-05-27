@@ -1,0 +1,551 @@
+---
+import * as bcryptjs from "bcryptjs";
+
+export interface Props {
+	secret: string;
+	basePath: string;
+}
+
+const { secret, basePath } = Astro.props;
+const passwordHash = secret ? bcryptjs.hashSync(secret, 10) : "";
+---
+
+{secret && (
+	<div
+		id="diary-hidden-controller"
+		data-diary-hidden-controller
+		data-diary-base-path={basePath}
+		data-password-hash={passwordHash}
+		hidden
+	>
+		<div class="diary-hidden-dialog" role="dialog" aria-modal="true" aria-labelledby="diary-hidden-title">
+			<button type="button" class="diary-hidden-dialog-close" data-diary-hidden-cancel aria-label="关闭">×</button>
+			<div class="diary-hidden-dialog-mark">私密</div>
+			<h2 id="diary-hidden-title">需要密码</h2>
+			<p>输入这篇日记的密码后，本页所有隐藏内容都可以点击显示或收起。</p>
+			<form class="diary-hidden-form" data-diary-hidden-form>
+				<input
+					type="password"
+					class="diary-hidden-input"
+					data-diary-hidden-input
+					placeholder="请输入密码"
+					autocomplete="current-password"
+				/>
+				<button type="submit" class="diary-hidden-unlock">解锁</button>
+			</form>
+			<div class="diary-hidden-error" data-diary-hidden-error hidden>密码错误，请重试</div>
+		</div>
+	</div>
+)}
+
+<style is:global>
+	.diary-hidden-token {
+		display: inline-flex;
+		align-items: center;
+		margin: 0 0.08em;
+		padding: 0.08em 0.42em;
+		border: 1px solid color-mix(in oklch, var(--primary) 60%, transparent);
+		border-radius: 0.45rem;
+		background: color-mix(in oklch, var(--primary) 34%, transparent);
+		color: color-mix(in oklch, var(--primary) 85%, black 15%);
+		box-shadow: inset 0 0 0 1px color-mix(in oklch, white 30%, transparent);
+		font: inherit;
+		font-weight: 600;
+		line-height: 1.45;
+		vertical-align: baseline;
+		cursor: pointer;
+		transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+	}
+
+	.diary-hidden-token:hover,
+	.diary-hidden-image-placeholder:hover {
+		background: color-mix(in oklch, var(--primary) 24%, transparent);
+		transform: translateY(-1px);
+	}
+
+	.diary-hidden-token.is-revealed {
+		background: color-mix(in oklch, var(--primary) 9%, transparent);
+		color: inherit;
+		border-style: dashed;
+	}
+
+	.diary-hidden-image-inline,
+	.diary-hidden-image-gallery {
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		text-align: inherit;
+		cursor: pointer;
+	}
+
+	.diary-hidden-image-inline:not(.is-prepared):not(.is-revealed),
+	.diary-hidden-image-gallery:not(.is-prepared):not(.is-revealed) {
+		min-height: 11rem;
+		border: 1px solid color-mix(in oklch, var(--primary) 60%, transparent);
+		border-radius: 0.75rem;
+		background: color-mix(in oklch, var(--primary) 34%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in oklch, white 30%, transparent);
+	}
+
+	.diary-hidden-image-inline:not(.is-prepared):not(.is-revealed)::before,
+	.diary-hidden-image-gallery:not(.is-prepared):not(.is-revealed)::before {
+		content: attr(data-diary-hidden-label);
+		display: flex;
+		min-height: 11rem;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		color: color-mix(in oklch, var(--primary) 85%, black 15%);
+		font-weight: 700;
+	}
+
+	.custom-md .diary-hidden-image-inline {
+		margin: 1rem 0;
+	}
+
+	.diary-hidden-image-gallery {
+		aspect-ratio: 1 / 1;
+	}
+
+	.diary-hidden-image-placeholder {
+		display: flex;
+		width: 100%;
+		height: 100%;
+		min-height: 11rem;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		border: 1px solid color-mix(in oklch, var(--primary) 60%, transparent);
+		border-radius: 0.75rem;
+		background: color-mix(in oklch, var(--primary) 34%, transparent);
+		color: color-mix(in oklch, var(--primary) 85%, black 15%);
+		box-shadow: inset 0 0 0 1px color-mix(in oklch, white 30%, transparent);
+		font-weight: 700;
+		transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+	}
+
+	.diary-hidden-image-card {
+		display: block;
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 11rem;
+		border-radius: 0.75rem;
+		overflow: hidden;
+		aspect-ratio: 1 / 1;
+		border: 1px solid var(--line-divider);
+		background: var(--card-bg);
+	}
+
+	.diary-hidden-image-card img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.diary-hidden-image-card .diary-hidden-image-toggle {
+		position: absolute;
+		right: 0.65rem;
+		top: 0.65rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		white-space: nowrap;
+		writing-mode: horizontal-tb;
+		line-height: 1;
+		padding: 0.4rem 0.7rem;
+		border-radius: 999px;
+		background: rgb(0 0 0 / 0.58);
+		color: white;
+		font-size: 0.78rem;
+		font-weight: 700;
+		backdrop-filter: blur(6px);
+		pointer-events: none;
+	}
+
+	#diary-hidden-controller[hidden] {
+		display: none;
+	}
+
+	#diary-hidden-controller {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1.25rem;
+		background: rgb(0 0 0 / 0.42);
+		backdrop-filter: blur(8px);
+	}
+
+	.diary-hidden-dialog {
+		position: relative;
+		width: min(100%, 25rem);
+		padding: 2rem;
+		border-radius: 1rem;
+		background: var(--card-bg);
+		border: 1px solid var(--line-divider);
+		box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 0.22);
+		text-align: center;
+	}
+
+	.diary-hidden-dialog-close {
+		position: absolute;
+		top: 0.75rem;
+		right: 0.85rem;
+		border: 0;
+		background: transparent;
+		color: var(--text-muted, currentColor);
+		font-size: 1.4rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.diary-hidden-dialog-mark {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 0.75rem;
+		padding: 0.35rem 0.8rem;
+		border-radius: 999px;
+		background: color-mix(in oklch, var(--primary) 14%, transparent);
+		color: var(--primary);
+		font-weight: 800;
+		font-size: 0.9rem;
+	}
+
+	.diary-hidden-dialog h2 {
+		margin: 0 0 0.5rem;
+		font-size: 1.35rem;
+		font-weight: 800;
+		color: rgba(0, 0, 0, 0.86);
+	}
+
+	:global(.dark) .diary-hidden-dialog h2 {
+		color: rgba(255, 255, 255, 0.88);
+	}
+
+	.diary-hidden-dialog p {
+		margin: 0 0 1.25rem;
+		color: rgba(0, 0, 0, 0.68);
+		line-height: 1.65;
+	}
+
+	:global(.dark) .diary-hidden-dialog p {
+		color: rgba(255, 255, 255, 0.72);
+	}
+
+	.diary-hidden-form {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.diary-hidden-input {
+		min-width: 0;
+		flex: 1;
+		padding: 0.75rem 0.9rem;
+		border-radius: 0.65rem;
+		border: 1px solid var(--line-divider);
+		background: var(--card-bg);
+		color: rgba(0, 0, 0, 0.85);
+		font-size: 1rem;
+	}
+
+	:global(.dark) .diary-hidden-input {
+		color: rgba(255, 255, 255, 0.86);
+	}
+
+	.diary-hidden-input:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 18%, transparent);
+	}
+
+	.diary-hidden-unlock {
+		padding: 0.75rem 1.1rem;
+		border: 0;
+		border-radius: 0.65rem;
+		background: var(--primary);
+		color: white;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.diary-hidden-unlock:disabled {
+		opacity: 0.62;
+		cursor: not-allowed;
+	}
+
+	.diary-hidden-error {
+		margin-top: 0.75rem;
+		color: #ef4444;
+		font-size: 0.88rem;
+	}
+
+	@media (max-width: 520px) {
+		.diary-hidden-dialog {
+			padding: 1.5rem;
+		}
+
+		.diary-hidden-form {
+			flex-direction: column;
+		}
+
+		.diary-hidden-unlock {
+			width: 100%;
+		}
+	}
+</style>
+
+<script is:inline define:vars={{ clientPasswordHash: passwordHash, clientBasePath: basePath }}>
+	(function () {
+		const controller = document.querySelector('[data-diary-hidden-controller]');
+		if (!controller) return;
+
+		const diaryHiddenWindow = window;
+		const previousAbortController = diaryHiddenWindow.__diaryHiddenAbortController;
+		if (previousAbortController) previousAbortController.abort();
+		const cleanupController = new AbortController();
+		diaryHiddenWindow.__diaryHiddenAbortController = cleanupController;
+		const cleanupSignal = cleanupController.signal;
+
+		let activeTrigger = null;
+		const storageKey = `diary-hidden-password-${window.location.pathname}`;
+		let cachedPassword = localStorage.getItem(storageKey) || "";
+		const originalLabels = new WeakMap();
+
+		function getInput() {
+			return controller.querySelector('[data-diary-hidden-input]');
+		}
+
+		function getError() {
+			return controller.querySelector('[data-diary-hidden-error]');
+		}
+
+		async function loadCryptoLibraries() {
+			if (typeof CryptoJS === "undefined") {
+				await new Promise((resolve, reject) => {
+					const script = document.createElement("script");
+					script.src = "/assets/js/crypto-js.min.js";
+					script.onload = resolve;
+					script.onerror = reject;
+					document.head.appendChild(script);
+				});
+			}
+
+			if (typeof bcrypt === "undefined") {
+				await new Promise((resolve, reject) => {
+					const script = document.createElement("script");
+					script.src = "/assets/js/bcrypt.min.js";
+					script.onload = resolve;
+					script.onerror = reject;
+					document.head.appendChild(script);
+				});
+			}
+		}
+
+		function showDialog(trigger) {
+			activeTrigger = trigger;
+			const input = getInput();
+			const error = getError();
+			if (error) error.hidden = true;
+			controller.hidden = false;
+			requestAnimationFrame(() => input?.focus());
+		}
+
+		function hideDialog() {
+			controller.hidden = true;
+			activeTrigger = null;
+			const input = getInput();
+			if (input) input.value = "";
+		}
+
+		function showError(message) {
+			const error = getError();
+			if (!error) return;
+			error.textContent = message;
+			error.hidden = false;
+			getInput()?.focus();
+		}
+
+		function normalizeSrc(value) {
+			const raw = String(value || "").trim();
+			if (/^(https?:|data:|blob:|\/)/i.test(raw)) return raw;
+			return `${String(clientBasePath || "").replace(/\\/g, "/").replace(/\/+$/, "")}/${raw.replace(/^\/+/, "")}`;
+		}
+
+		function decryptPayload(trigger, password) {
+			const payload = trigger.getAttribute("data-diary-hidden-payload") || "";
+			const decrypted = CryptoJS.AES.decrypt(payload, password).toString(CryptoJS.enc.Utf8);
+			if (!decrypted) throw new Error("empty decrypted payload");
+			const data = JSON.parse(decrypted);
+			if (!data || data.__diaryHidden !== true) throw new Error("invalid hidden payload");
+			return data;
+		}
+
+		function setTextContent(parent, text) {
+			parent.textContent = "";
+			parent.append(document.createTextNode(text));
+		}
+
+		function renderText(trigger, data) {
+			if (!originalLabels.has(trigger)) originalLabels.set(trigger, trigger.textContent || "隐藏内容");
+			setTextContent(trigger, data.value);
+			trigger.classList.add("is-revealed");
+			trigger.setAttribute("aria-pressed", "true");
+		}
+
+		function restoreText(trigger) {
+			trigger.textContent = originalLabels.get(trigger) || trigger.getAttribute("data-diary-hidden-label") || "隐藏内容";
+			trigger.classList.remove("is-revealed");
+			trigger.setAttribute("aria-pressed", "false");
+		}
+
+		function renderImage(trigger, data) {
+			const src = normalizeSrc(data.value);
+			const label = trigger.getAttribute("data-diary-hidden-label") || "隐藏图片";
+			if (!originalLabels.has(trigger)) originalLabels.set(trigger, trigger.textContent || label);
+			trigger.classList.add("is-revealed");
+			trigger.classList.add("is-prepared");
+			trigger.setAttribute("aria-pressed", "true");
+			trigger.removeAttribute("data-lightbox-src");
+			trigger.textContent = "";
+
+			const card = document.createElement("span");
+			card.className = "diary-hidden-image-card";
+
+			const img = document.createElement("img");
+			img.src = src;
+			img.alt = label;
+			img.loading = "lazy";
+			img.decoding = "async";
+
+			const toggle = document.createElement("span");
+			toggle.className = "diary-hidden-image-toggle";
+			toggle.textContent = "点击收起";
+
+			card.append(img, toggle);
+			trigger.append(card);
+		}
+
+		function restoreImage(trigger) {
+			const label = originalLabels.get(trigger) || trigger.getAttribute("data-diary-hidden-label") || "隐藏图片";
+			trigger.classList.remove("is-revealed");
+			trigger.classList.add("is-prepared");
+			trigger.setAttribute("aria-pressed", "false");
+			trigger.removeAttribute("data-lightbox-src");
+			trigger.textContent = "";
+
+			const placeholder = document.createElement("span");
+			placeholder.className = "diary-hidden-image-placeholder";
+			placeholder.textContent = label;
+			trigger.append(placeholder);
+		}
+
+		function revealTrigger(trigger, password) {
+			const data = decryptPayload(trigger, password);
+			if (data.kind === "image") {
+				renderImage(trigger, data);
+			} else {
+				renderText(trigger, data);
+			}
+		}
+
+		async function attemptUnlock() {
+			const input = getInput();
+			const password = input?.value?.trim() || "";
+			if (!password) {
+				showError("请输入密码");
+				return;
+			}
+
+			const submit = controller.querySelector(".diary-hidden-unlock");
+			if (submit) {
+				submit.disabled = true;
+				submit.textContent = "解锁中...";
+			}
+
+			try {
+				await loadCryptoLibraries();
+				if (!bcrypt.compareSync(password, clientPasswordHash)) {
+					showError("密码错误，请重试");
+					return;
+				}
+				cachedPassword = password;
+				localStorage.setItem(storageKey, password);
+				if (activeTrigger) revealTrigger(activeTrigger, password);
+				hideDialog();
+			} catch (error) {
+				console.error("Failed to unlock diary hidden content", error);
+				showError("解锁失败，请检查密码");
+			} finally {
+				if (submit) {
+					submit.disabled = false;
+					submit.textContent = "解锁";
+				}
+			}
+		}
+
+		function handleHiddenClick(event) {
+			const trigger = event.target?.closest?.(".diary-hidden-trigger");
+			if (!trigger) return;
+
+			event.preventDefault();
+			event.stopPropagation();
+
+			if (trigger.classList.contains("is-revealed")) {
+				if (trigger.getAttribute("data-diary-hidden-kind") === "image") restoreImage(trigger);
+				else restoreText(trigger);
+				return;
+			}
+
+			if (!cachedPassword) {
+				showDialog(trigger);
+				return;
+			}
+
+			loadCryptoLibraries()
+				.then(() => revealTrigger(trigger, cachedPassword))
+				.catch(() => {
+					cachedPassword = "";
+					localStorage.removeItem(storageKey);
+					showDialog(trigger);
+				});
+		}
+
+		function prepareTriggers() {
+			document.querySelectorAll('.diary-hidden-trigger[data-diary-hidden-kind="image"]').forEach((trigger) => {
+				if (trigger.classList.contains("is-revealed") || trigger.classList.contains("is-prepared")) return;
+				restoreImage(trigger);
+			});
+		}
+
+		function startDiaryHiddenContent() {
+			prepareTriggers();
+			document.addEventListener("click", handleHiddenClick, { capture: true, signal: cleanupSignal });
+			controller.querySelector("[data-diary-hidden-form]")?.addEventListener("submit", (event) => {
+				event.preventDefault();
+				attemptUnlock();
+			}, { signal: cleanupSignal });
+			controller.querySelector("[data-diary-hidden-cancel]")?.addEventListener("click", hideDialog, { signal: cleanupSignal });
+			controller.addEventListener("click", (event) => {
+				if (event.target === controller) hideDialog();
+			}, { signal: cleanupSignal });
+			document.addEventListener("keydown", (event) => {
+				if (event.key === "Escape" && !controller.hidden) hideDialog();
+			}, { signal: cleanupSignal });
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", startDiaryHiddenContent, { once: true, signal: cleanupSignal });
+		} else {
+			startDiaryHiddenContent();
+		}
+	})();
+</script>

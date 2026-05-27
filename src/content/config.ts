@@ -38,6 +38,7 @@ const diaryCollection = defineCollection({
 		excerpt: z.string().optional().default(""),
 		images: z.array(z.string()).optional().default([]),
 		videos: z.array(z.string()).optional().default([]),
+		secret: z.string().optional().default(""),
 		lang: z.string().optional().default(""),
 		pinned: z.boolean().optional().default(false),
 	}),

@@ -23,6 +23,7 @@ import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.m
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
 import { rehypeMermaid } from "./src/plugins/rehype-mermaid.mjs";
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
+import { remarkDiaryHidden } from "./src/plugins/remark-diary-hidden.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
@@ -81,6 +82,7 @@ export default defineConfig({
 					tags: z.array(z.string()).optional().default([]),
 					hidden: z.boolean().default(false),
 					images: z.array(z.string()).optional(),
+						secret: z.string().optional().default(""),
 				})
 		},
 		// 文章集合
@@ -189,6 +191,7 @@ export default defineConfig({
 			remarkMath,
 			remarkReadingTime,
 			remarkExcerpt,
+			remarkDiaryHidden,
 			remarkGithubAdmonitionsToDirectives,
 			remarkDirective,
 			remarkSectionize,
