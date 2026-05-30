@@ -6,7 +6,7 @@ category: "wiki"
 tags: ["Powertoys", "工具", "AI"]
 draft: false
 pinned: false
-image: "AIExtension.png"
+image: "/images/posts/AIExtension.png"
 encrypted: false
 sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPanel"
 ---
