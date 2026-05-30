@@ -1,5 +1,4 @@
 ---
-import * as path from "node:path";
 // 替换原 Comment 组件为自定义的 SupabaseComments 组件
 import SupabaseComments from "@components/SupabaseComments.astro";
 import License from "@components/misc/License.astro";
@@ -10,10 +9,9 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@utils/content-utils";
-import { getDir, getPostUrlBySlug } from "@utils/url-utils";
+import { getPostUrlBySlug } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
 import { licenseConfig } from "src/config";
-import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
@@ -130,20 +128,8 @@ const jsonLd = {
           tags={entry.data.tags}
           category={entry.data.category}
         />
-        {!entry.data.image && (
-          <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5" />
-        )}
+        <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5" />
       </div>
-
-      <!-- 文章封面图（保持原有） -->
-      {entry.data.image && (
-        <ImageWrapper
-          id="post-cover"
-          src={entry.data.image}
-          basePath={path.join("content/posts/", getDir(entry.id))}
-          class="mb-8 rounded-xl banner-container onload-animation"
-        />
-      )}
 
       <!-- 加密文章逻辑（保持原有） -->
       {isEncrypted ? (
