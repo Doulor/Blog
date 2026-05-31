@@ -8,7 +8,7 @@ draft: false
 pinned: false
 image: "/images/posts/AIExtension.png"
 encrypted: false
-sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPanel"
+sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPalette"
 ---
 # 快速询问AI：把 PowerToys Command Palette 变成随手可用的 AI 提问入口
 
@@ -104,7 +104,7 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPanel"
 
 打开项目的 GitHub Releases 页面：
 
-<https://github.com/Doulor/AIExtension-for-Powertoys-CMDPanel/releases>
+<https://github.com/Doulor/AIExtension-for-Powertoys-CMDPalette/releases>
 
 在最新版 Release 页面底部的 Assets 区域，下载类似下面名字的文件：
 
