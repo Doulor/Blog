@@ -18,12 +18,10 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPanel"
 
 ---
 ---
-title: 介绍宣传视频
-published: 2026-5-31
-// ...
+介绍宣传视频
 ---
 
-<iframe width="100%" height="468" src="https://img.doulor.cn/post/AIExtension-for-Powertoys/quickaskai-intro-no-voiceover.mp4" title="介绍宣传视频" frameborder="0" allowfullscreen></iframe>
+<iframe width="100%" height="468" src="https://pub-a425f506bc5e491696a5cf9be896049c.r2.dev/post/AIExtension-for-Powertoys/quickaskai-intro-no-voiceover.mp4" title="介绍宣传视频" frameborder="0" allowfullscreen></iframe>
 
 ## 目录
 
