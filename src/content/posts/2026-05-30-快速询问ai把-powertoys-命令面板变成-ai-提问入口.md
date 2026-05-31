@@ -1,7 +1,7 @@
 ---
 title: "快速询问AI：把 PowerToys 命令面板变成 AI 提问入口"
 published: 2026-05-30
-description: "快速询问AI是一个 PowerToys Command Palette 插件，支持 GitHub Copilot 登录和 OpenAI 兼容接口。本文详细介绍它的使用场景、安装方法、首次配置、会话管理、本地数据存储，以及开发者如何构建、注册和打包发布。"
+description: "快速询问AI是一个 PowerToys Command Palette 插件，支持 GitHub Copilot 登录和 OpenAI 兼容接口。1.2.0 起 GitHub Copilot provider 改为直接调用 Copilot HTTP API，不再依赖本地 copilot.exe，包体更小，也减少了本机兼容性问题。"
 category: "wiki"
 tags: ["Powertoys", "工具", "AI"]
 draft: false
@@ -16,6 +16,8 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPalette"
 
 如果你已经习惯使用 PowerToys Command Palette 打开应用、搜索命令、执行工具，那么这个插件会把同一个入口扩展成一个轻量的 AI 问答界面。你可以接入 GitHub Copilot，也可以接入 OpenAI 兼容接口，例如 OpenAI、Azure OpenAI、本地大模型网关或其他支持 Chat Completions 协议的服务。
 
+1.2.0 是一次重要更新：GitHub Copilot provider 不再启动随包的本地 `copilot.exe`，而是使用 GitHub 登录得到的 token 直接调用 Copilot HTTP API。这样包体从一百多 MB 降到四十多 MB，运行时也少了一个本地 CLI 子进程，同时避开了部分电脑上 `copilot.exe` 首次解压失败、Node SEA 初始化失败等兼容性问题。
+
 ---
 介绍宣传视频
 
@@ -29,6 +31,7 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPalette"
 - [普通用户安装指南](#普通用户安装指南)
 - [第一次使用](#第一次使用)
 - [GitHub Copilot 登录流程](#github-copilot-登录流程)
+- [1.2.0：不再依赖本地 copilot.exe](#120不再依赖本地-copilotexe)
 - [OpenAI 兼容服务配置](#openai-兼容服务配置)
 - [会话与本地数据](#会话与本地数据)
 - [使用建议](#使用建议)
@@ -64,7 +67,7 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPalette"
 
 ### GitHub Copilot 用户
 
-如果你有 GitHub Copilot 权益，这个插件支持通过 GitHub 设备码授权登录。你不需要手动准备 Copilot API key，也不需要把 token 写进配置文件。登录完成后，插件会使用你的 GitHub 账号和 Copilot 权益。
+如果你有 GitHub Copilot 权益，这个插件支持通过 GitHub 设备码授权登录。你不需要手动准备 Copilot API key，也不需要把 token 写进配置文件。登录完成后，插件会使用你的 GitHub 账号和 Copilot 权益，并直接通过 Copilot HTTP API 获取回答。
 
 ### 使用 OpenAI 兼容服务的用户
 
@@ -82,6 +85,7 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPalette"
 | --- | --- |
 | Command Palette 内提问 | 在 PowerToys Command Palette 中输入问题并查看回答 |
 | GitHub Copilot provider | 使用 GitHub 设备码登录，不需要用户手动准备 Copilot API key |
+| Copilot HTTP 直连 | 1.2.0 起不再启动本地 `copilot.exe`，直接请求 Copilot HTTP API |
 | OpenAI-compatible provider | 支持自定义 Base URL、API Key、模型名、系统提示词和 temperature |
 | 多提供商管理 | 可以添加、选择和编辑不同 AI 服务配置 |
 | 会话上下文 | 默认保留上下文，适合连续追问 |
@@ -196,7 +200,7 @@ GitHub Copilot provider 使用 GitHub OAuth Device Flow，也就是设备码登�
 
 ### 普通用户不需要创建 OAuth App
 
-Release 版本已经内置默认 GitHub OAuth Client ID。普通用户不需要自己创建 GitHub OAuth App，也不需要填写 Client Secret。
+Release 版本已经内置默认 GitHub OAuth Client ID。普通用户不需要自己创建 GitHub OAuth App，也不需要填写 Client Secret。1.2.0 起默认使用 VS Code Copilot 的公开 client id，以便登录得到的 token 可以兑换 Copilot API token。
 
 ### token 保存在哪里
 
@@ -205,6 +209,46 @@ GitHub Copilot 登录得到的 token 不会写入普通配置文件，而是保�
 ```text
 QuickAskAI.GitHubCopilot
 ```
+
+---
+
+## 1.2.0：不再依赖本地 copilot.exe
+
+早期版本的 GitHub Copilot provider 依赖 `GitHub.Copilot.SDK`。插件会先完成 GitHub 登录，然后启动随包带的本地 `copilot.exe`，由这个 CLI 负责和 GitHub Copilot 后端通信。
+
+这个方案在开发机上跑得通，但对普通用户机器不够稳。`copilot.exe` 是一个 Node SEA 打包程序，第一次运行时会自解压运行时文件。有些 Windows 环境会在这一步失败，例如：
+
+```text
+EXDEV: cross-device link not permitted
+```
+
+也有机器会在 Node 初始化阶段失败，例如 crypto 随机源初始化断言。问题本质上不在 GitHub 登录，而在本地 CLI 进程启动和自解包。
+
+1.2.0 改成了更轻的链路：
+
+```text
+插件 -> GitHub 登录 -> Copilot token 兑换 -> Copilot HTTP API -> 返回回答
+```
+
+也就是说，AI 推理仍然在 GitHub Copilot 云端完成，但插件不再通过本地 `copilot.exe` 做中转，而是自己完成 HTTP 请求。这样带来几个直接好处：
+
+- release zip 从约 128 MB 降到约 43 MB。
+- 本地不再包含 `runtimes\win-x64\native\copilot.exe`。
+- 运行时少一个本地 Node/SEA CLI 子进程。
+- 不再触发 `copilot.exe` 首次解压、`EXDEV`、Node SEA 初始化等本机兼容性问题。
+- GitHub Copilot provider 的行为更接近普通 OpenAI-compatible provider：登录后直接请求远端服务返回结果。
+
+### 从旧版本升级需要注意什么
+
+旧版本曾经使用自建 GitHub OAuth App 登录。这个登录 token 可以交给本地 `copilot.exe` 使用，但不能稳定地直接兑换 Copilot HTTP API token。1.2.0 已切换到 VS Code Copilot 的公开 client id。
+
+如果你从旧版本升级，并且 Copilot 请求返回：
+
+```text
+HTTP 404: Not Found
+```
+
+请在插件里先断开 GitHub，再重新选择 `连接 GitHub`。重新授权后得到的新 token 才能用于 Copilot HTTP API。
 
 ---
 
@@ -245,7 +289,7 @@ OpenAI 兼容 provider 的 API Key 会保存在本地配置文件中：
 | 模型提供商配置 | `%USERPROFILE%\Documents\QuickAskAI\providers.json` |
 | 会话聊天记录 | `%USERPROFILE%\Documents\QuickAskAI\conversations.json` |
 | GitHub Copilot token | Windows Credential Manager / PasswordVault，资源名 `QuickAskAI.GitHubCopilot` |
-| Copilot CLI 本机缓存 | `%LOCALAPPDATA%\copilot\pkg\win32-x64` |
+| GitHub Copilot HTTP 运行数据 | 1.2.0 起不再使用本地 `copilot.exe` 或 CLI 解压缓存 |
 
 这些文件不会保存在 Git 仓库里。对于普通用户来说，它们只是本机配置和聊天记录；对于开发者来说，也应当避免把它们误提交到代码仓库。
 
@@ -283,6 +327,7 @@ OpenAI 兼容 provider 的 API Key 会保存在本地配置文件中：
 | `AIExtension/Program.cs` | 扩展进程入口，负责托管 COM server |
 | `AIExtension/AIExtension.cs` | 扩展对象入口 |
 | `AIExtension/AIExtensionCommandsProvider.cs` | Command Palette 命令提供者 |
+| `AIExtension/Services/CopilotChatService.cs` | GitHub Copilot HTTP API 调用逻辑 |
 | `AIExtension/Pages/` | 主要页面实现，包括提问页、会话页、提供商管理页等 |
 | `AIExtension/SettingsManager.cs` | 配置读取、保存和管理 |
 | `AIExtension/Package.appxmanifest` | AppX/MSIX manifest，声明扩展身份、COM server 和 Command Palette app extension |
@@ -351,13 +396,13 @@ Add-AppxPackage -Register .\AIExtension\bin\x64\Debug\net9.0-windows10.0.26100.0
 项目提供了 `build-release.ps1` 用于生成适合上传到 GitHub Release 的 zip：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\build-release.ps1 -Configuration Release -Platform x64 -Version v1.1.0-beta.2
+powershell -ExecutionPolicy Bypass -File .\build-release.ps1 -Configuration Release -Platform x64 -Version v1.2.0
 ```
 
 生成文件位于：
 
 ```text
-release\artifacts\QuickAskAI-v1.1.0-beta.2-x64.zip
+release\artifacts\QuickAskAI-v1.2.0-x64.zip
 ```
 
 这个 zip 包含：
