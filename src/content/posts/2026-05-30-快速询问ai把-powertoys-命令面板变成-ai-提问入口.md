@@ -17,7 +17,6 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPanel"
 如果你已经习惯使用 PowerToys Command Palette 打开应用、搜索命令、执行工具，那么这个插件会把同一个入口扩展成一个轻量的 AI 问答界面。你可以接入 GitHub Copilot，也可以接入 OpenAI 兼容接口，例如 OpenAI、Azure OpenAI、本地大模型网关或其他支持 Chat Completions 协议的服务。
 
 ---
----
 介绍宣传视频
 ---
 
