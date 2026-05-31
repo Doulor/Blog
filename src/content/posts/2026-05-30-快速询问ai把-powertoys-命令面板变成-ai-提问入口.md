@@ -211,46 +211,6 @@ QuickAskAI.GitHubCopilot
 
 ---
 
-## 1.2.0：不再依赖本地 copilot.exe
-
-早期版本的 GitHub Copilot provider 依赖 `GitHub.Copilot.SDK`。插件会先完成 GitHub 登录，然后启动随包带的本地 `copilot.exe`，由这个 CLI 负责和 GitHub Copilot 后端通信。
-
-这个方案在开发机上跑得通，但对普通用户机器不够稳。`copilot.exe` 是一个 Node SEA 打包程序，第一次运行时会自解压运行时文件。有些 Windows 环境会在这一步失败，例如：
-
-```text
-EXDEV: cross-device link not permitted
-```
-
-也有机器会在 Node 初始化阶段失败，例如 crypto 随机源初始化断言。问题本质上不在 GitHub 登录，而在本地 CLI 进程启动和自解包。
-
-1.2.0 改成了更轻的链路：
-
-```text
-插件 -> GitHub 登录 -> Copilot token 兑换 -> Copilot HTTP API -> 返回回答
-```
-
-也就是说，AI 推理仍然在 GitHub Copilot 云端完成，但插件不再通过本地 `copilot.exe` 做中转，而是自己完成 HTTP 请求。这样带来几个直接好处：
-
-- release zip 从约 128 MB 降到约 43 MB。
-- 本地不再包含 `runtimes\win-x64\native\copilot.exe`。
-- 运行时少一个本地 Node/SEA CLI 子进程。
-- 不再触发 `copilot.exe` 首次解压、`EXDEV`、Node SEA 初始化等本机兼容性问题。
-- GitHub Copilot provider 的行为更接近普通 OpenAI-compatible provider：登录后直接请求远端服务返回结果。
-
-### 从旧版本升级需要注意什么
-
-旧版本曾经使用自建 GitHub OAuth App 登录。这个登录 token 可以交给本地 `copilot.exe` 使用，但不能稳定地直接兑换 Copilot HTTP API token。1.2.0 已切换到 VS Code Copilot 的公开 client id。
-
-如果你从旧版本升级，并且 Copilot 请求返回：
-
-```text
-HTTP 404: Not Found
-```
-
-请在插件里先断开 GitHub，再重新选择 `连接 GitHub`。重新授权后得到的新 token 才能用于 Copilot HTTP API。
-
----
-
 ## OpenAI 兼容服务配置
 
 如果你使用的是 OpenAI 兼容接口，可以添加一个自定义 provider。通常需要填写这些字段：
