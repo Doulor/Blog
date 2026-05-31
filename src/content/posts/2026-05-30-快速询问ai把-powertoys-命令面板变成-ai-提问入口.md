@@ -16,8 +16,6 @@ sourceLink: "https://github.com/Doulor/AIExtension-for-Powertoys-CMDPalette"
 
 如果你已经习惯使用 PowerToys Command Palette 打开应用、搜索命令、执行工具，那么这个插件会把同一个入口扩展成一个轻量的 AI 问答界面。你可以接入 GitHub Copilot，也可以接入 OpenAI 兼容接口，例如 OpenAI、Azure OpenAI、本地大模型网关或其他支持 Chat Completions 协议的服务。
 
-1.2.0 是一次重要更新：GitHub Copilot provider 不再启动随包的本地 `copilot.exe`，而是使用 GitHub 登录得到的 token 直接调用 Copilot HTTP API。这样包体从一百多 MB 降到四十多 MB，运行时也少了一个本地 CLI 子进程，同时避开了部分电脑上 `copilot.exe` 首次解压失败、Node SEA 初始化失败等兼容性问题。
-
 ---
 介绍宣传视频
 
