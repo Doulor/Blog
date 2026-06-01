@@ -6,8 +6,6 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![Mizuki Preview](./README.png)
-
 ![Mizuki Screenshot](./docs/image/1.png)
 
 ![Mizuki Screenshot](./docs/image/2.png)
