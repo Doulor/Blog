@@ -1,4 +1,4 @@
-# 🌸 Mizuki — Personal Blog (Fork)
+# 🌸 Mizuki — 个人博客（Fork）
 
 ![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen)
 ![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue)
@@ -12,15 +12,15 @@
 
 ![Mizuki Screenshot](./docs/image/3.png)
 
-A modern, feature-rich static blog template built with [Astro](https://astro.build).
+一个现代化、功能丰富的静态博客模板，基于 [Astro](https://astro.build) 构建。
 
-This project is a **fork of [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki)** with significant refactoring. The core differentiator is the **web-based content publishing system** — you can create, edit, and delete blog posts, diaries, and photo albums directly from the web interface and push changes to your GitHub repository, without touching the codebase locally.
+本项目是 **[LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki)** 的 Fork 分支，进行了规模性重构。核心特色是**网页端内容推送系统**——你可以直接在网页界面创建、编辑、删除博客帖子、日记和相册，并将变更推送到 GitHub 仓库，无需在本地操作代码。
 
-[**🖥️ Live Demo**](https://doulor.cn/) &nbsp;|&nbsp; [**📝 Live Blog**](https://blog.doulor.cn/)
+[**🖥️ 在线演示**](https://doulor.cn/) &nbsp;|&nbsp; [**📝 博客地址**](https://blog.doulor.cn/)
 
-🌏 README Languages
-[**English**](./README.md) /
-[**中文**](./README.zh.md) /
+🌏 README 语言
+[**中文**](./README.md) /
+[**English**](./README.en.md) /
 [**日本語**](./docs/README.ja.md) /
 [**中文繁体**](./docs/README.tw.md) /
 
@@ -57,230 +57,230 @@ This project is a **fork of [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki
 
 ---
 
-## ✨ Features
+## ✨ 功能特性
 
-### 🔥 Web-Based Content Management (Core Feature)
-- [x] **Content Creator** — Create posts, diaries, and albums with a visual form
-- [x] **Content Manager** — Browse, search, edit, and delete all content online
-- [x] **Online Editor** — Full Markdown editing experience in the browser
-- [x] **GitHub API Integration** — Push content directly via Personal Access Token
-- [x] **Content Encryption** — Password-protect posts and hidden diary content
-- [x] **R2 Image Support** — Fetch images from Cloudflare R2 storage for albums and diaries
+### 🔥 网页端内容管理（核心功能）
+- [x] **内容创建器** — 通过可视化表单创建帖子、日记和相册
+- [x] **内容管理器** — 在线浏览、搜索、编辑和删除所有内容
+- [x] **在线编辑器** — 在浏览器中获得完整的 Markdown 编辑体验
+- [x] **GitHub API 集成** — 通过 Personal Access Token 直接推送内容
+- [x] **内容加密** — 支持帖子密码保护和日记隐藏内容
+- [x] **R2 图片支持** — 从 Cloudflare R2 存储获取相册和日记图片
 
-### 🎨 Design & Interface
-- [x] Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
-- [x] Smooth animations and page transitions using [Swup](https://swup.js.org/)
-- [x] Light/dark theme switching with system preference detection
-- [x] Customizable theme colors and dynamic banner carousel
-- [x] Fullscreen background images with carousel, opacity, and blur effects
-- [x] Fully responsive design for all devices
-- [x] Beautiful typography with JetBrains Mono font
-- [x] **Pio Live2D** interactive companion character
+### 🎨 设计与界面
+- [x] 基于 [Astro](https://astro.build) 和 [Tailwind CSS](https://tailwindcss.com) 构建
+- [x] 使用 [Swup](https://swup.js.org/) 实现流畅的动画和页面过渡
+- [x] 明暗主题切换，支持系统偏好检测
+- [x] 可自定义主题色彩和动态横幅轮播
+- [x] 全屏背景图片，支持轮播、透明度和模糊效果
+- [x] 全设备响应式设计
+- [x] 使用 JetBrains Mono 字体的优美排版
+- [x] **Pio 看板娘**（Live2D）互动角色
 
-### 🔍 Content & Search
-- [x] Advanced search functionality based on [Pagefind](https://pagefind.app/)
-- [x] Enhanced Markdown features with syntax highlighting
-- [x] Interactive table of contents with auto-scrolling
-- [x] RSS feed generation
-- [x] Reading time estimation
-- [x] Article categorization and tagging system
+### 🔍 内容与搜索
+- [x] 基于 [Pagefind](https://pagefind.app/) 的高级搜索功能
+- [x] 增强的 Markdown 功能，支持语法高亮
+- [x] 交互式目录，支持自动滚动
+- [x] RSS 订阅生成
+- [x] 阅读时间估算
+- [x] 文章分类和标签系统
 
-### 🌐 Internationalization
-- [x] Multi-language support with real-time translation
-- [x] Automatic language detection based on user preferences
-- [x] Client-side translation powered by Edge Translate
-- [x] Support for 10+ languages (Chinese, English, Japanese, Korean, Spanish, etc.)
+### 🌐 国际化支持
+- [x] 多语言支持，实时翻译功能
+- [x] 自动语言检测，基于用户偏好
+- [x] 客户端翻译，由 Edge Translate 驱动
+- [x] 支持 10+ 种语言（中文、英文、日文、韩文、西班牙文等）
 
-### 📱 Special Pages
-- [x] **Anime Tracking Page** — Track anime watching progress and ratings
-- [x] **Friends Page** — Beautiful cards showcasing friend websites
-- [x] **Diary Page** — Share life moments, similar to social media
-- [x] **Archive Page** — Organized timeline view of articles
-- [x] **About Page** — Customizable personal introduction
-- [x] **Guestbook** — Visitor comments powered by Supabase
+### 📱 特色页面
+- [x] **追番页面** — 追踪番剧观看进度和评分
+- [x] **友链页面** — 精美卡片展示朋友网站
+- [x] **日记页面** — 分享生活瞬间，类似社交媒体
+- [x] **归档页面** — 有序的文章时间线视图
+- [x] **关于页面** — 可自定义的个人介绍
+- [x] **留言板** — 基于 Supabase 的访客留言系统
 
-### 🛠 Technical Features
-- [x] Enhanced code blocks based on [Expressive Code](https://expressive-code.com/)
-- [x] Math formula support with KaTeX rendering
-- [x] Image optimization with PhotoSwipe gallery integration
-- [x] SEO optimization including sitemaps and meta tags
-- [x] Performance optimization with lazy loading and caching
-- [x] Supabase integration for guestbook
+### 🛠 技术特性
+- [x] 增强代码块，基于 [Expressive Code](https://expressive-code.com/)
+- [x] 数学公式支持，KaTeX 渲染
+- [x] 图片优化，PhotoSwipe 画廊集成
+- [x] SEO 优化，包含站点地图和元标签
+- [x] 性能优化，懒加载和缓存机制
+- [x] Supabase 集成用于留言板
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### 📦 Installation
+### 📦 安装
 
-1. **Clone the repository:**
+1. **克隆仓库：**
    ```bash
    git clone https://github.com/Doulor/Blog.git
    cd Blog
    ```
 
-2. **Install dependencies:**
+2. **安装依赖：**
    ```bash
-   # Install pnpm if not already installed
+   # 如果没有安装 pnpm，先安装
    npm install -g pnpm
 
-   # Install project dependencies
+   # 安装项目依赖
    pnpm install
    ```
 
-3. **Configure your blog:**
-   - Edit `src/config.ts` to customize blog settings
-   - Update site information, theme colors, banner images, and social links
-   - Configure translation settings and feature page functionality
-   - Set up Supabase credentials for guestbook (optional)
-   - Set up `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` in `.env`
+3. **配置博客：**
+   - 编辑 `src/config.ts` 自定义博客设置
+   - 更新站点信息、主题色彩、横幅图片和社交链接
+   - 配置翻译设置和特色页面功能
+   - 在 `.env` 中配置 Supabase 凭证（留言板功能，可选）
+   - 设置 `PUBLIC_SUPABASE_URL` 和 `PUBLIC_SUPABASE_ANON_KEY`
 
-4. **Start the development server:**
+4. **启动开发服务器：**
    ```bash
    pnpm dev
    ```
-   Your blog will be available at `http://localhost:4321`
+   博客将在 `http://localhost:4321` 可用
 
-### 📝 Web-Based Content Management
+### 📝 网页端内容管理
 
-The web-based content system is the core feature of this fork:
+网页端内容管理系统是本分支的核心功能：
 
-- **Create content:** Visit `/create-content/` to create posts, diaries, or albums
-- **Manage content:** Visit `/content-manager/` to browse, edit, or delete existing content
-- **Edit content:** Visit `/my-editor/` for the unified editing interface
+- **创建内容：** 访问 `/create-content/` 创建帖子、日记或相册
+- **管理内容：** 访问 `/content-manager/` 浏览、编辑或删除已有内容
+- **编辑内容：** 访问 `/my-editor/` 使用统一编辑界面
 
-All operations require a **GitHub Personal Access Token** (stored locally in your browser's localStorage). The content is pushed directly to your GitHub repository as commits.
+所有操作需要 **GitHub Personal Access Token**（存储在浏览器的 localStorage 中）。内容会直接以 commit 的形式推送到 GitHub 仓库。
 
-### 🚀 Deployment
+### 🚀 部署
 
-Deploy your blog to any static hosting platform:
+将博客部署到任何静态托管平台：
 
-- **Vercel:** Connect your GitHub repository to Vercel
-- **Netlify:** Deploy directly from GitHub
-- **GitHub Pages:** Use the included GitHub Actions workflow
-- **Cloudflare Pages:** Connect your repository
+- **Vercel：** 连接 GitHub 仓库到 Vercel
+- **Netlify：** 直接从 GitHub 部署
+- **GitHub Pages：** 使用包含的 GitHub Actions 工作流
+- **Cloudflare Pages：** 连接你的仓库
 
-Before deployment, update the `site` URL in `astro.config.mjs`.
+部署前，请在 `astro.config.mjs` 中更新 `site` URL。
 
-## 📝 Post Frontmatter Format
+## 📝 文章前言格式
 
 ```yaml
 ---
-title: My First Blog Post
+title: 我的第一篇博客文章
 published: 2023-09-09
-description: This is the first post of my new blog.
+description: 这是我新博客的第一篇文章。
 image: ./cover.jpg
-tags: [tag1, tag2]
-category: Frontend
+tags: [标签1, 标签2]
+category: 前端
 draft: false
 pinned: false
-lang: en      # Only set when article language differs from site language in config.ts
+lang: zh-CN      # 仅当文章语言与 config.ts 中的站点语言不同时设置
 ---
 ```
 
-### Frontmatter Field Descriptions
+### Frontmatter 字段说明
 
-- **title**: Article title (required)
-- **published**: Publication date (required)
-- **description**: Article description for SEO and previews
-- **image**: Cover image path (relative to article file)
-- **tags**: Array of tags for categorization
-- **category**: Article category
-- **draft**: Set to `true` to hide article in production
-- **pinned**: Set to `true` to pin article to top
-- **lang**: Article language (only set when different from site default)
+- **title**: 文章标题（必需）
+- **published**: 发布日期（必需）
+- **description**: 文章描述，用于 SEO 和预览
+- **image**: 封面图片路径（相对于文章文件）
+- **tags**: 标签数组，用于分类
+- **category**: 文章分类
+- **draft**: 设置为 `true` 在生产环境中隐藏文章
+- **pinned**: 设置为 `true` 将文章置顶
+- **lang**: 文章语言（仅当与站点默认语言不同时设置）
 
-## 🧩 Markdown Extensions
+## 🧩 Markdown 扩展语法
 
-Mizuki supports enhanced features beyond standard GitHub Flavored Markdown:
+Mizuki 支持超越标准 GitHub Flavored Markdown 的增强功能：
 
-### 📝 Enhanced Writing
-- **Callouts:** Create beautiful annotation boxes using `> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, etc.
-- **Math Formulas:** Write LaTeX math formulas using `$inline$` and `$$block$$` syntax
-- **Code Highlighting:** Advanced syntax highlighting with line numbers and copy buttons
-- **GitHub Cards:** Embed repository cards using `::github{repo="user/repo"}`
+### 📝 增强写作
+- **提示框：** 使用 `> [!NOTE]`、`> [!TIP]`、`> [!WARNING]` 等创建精美的标注框
+- **数学公式：** 使用 `$行内$` 和 `$$块级$$` 语法编写 LaTeX 数学公式
+- **代码高亮：** 高级语法高亮，支持行号和复制按钮
+- **GitHub 卡片：** 使用 `::github{repo="用户/仓库"}` 嵌入仓库卡片
 
-### 🎨 Visual Elements
-- **Image Gallery:** Automatic PhotoSwipe integration for image viewing
-- **Collapsible Sections:** Create expandable content blocks
-- **Custom Components:** Enhance content with special directives
+### 🎨 视觉元素
+- **图片画廊：** 自动 PhotoSwipe 集成，支持图片查看
+- **可折叠部分：** 创建可展开的内容块
+- **自定义组件：** 使用特殊指令增强内容
 
-### 📊 Content Organization
-- **Table of Contents:** Automatically generated from headings with smooth scrolling
-- **Reading Time:** Automatically calculated and displayed
-- **Article Metadata:** Rich frontmatter support with categories and tags
+### 📊 内容组织
+- **目录：** 从标题自动生成，支持平滑滚动
+- **阅读时间：** 自动计算和显示
+- **文章元数据：** 丰富的前言支持，包含分类和标签
 
-## ⚡ Commands
+## ⚡ 命令
 
-All commands are run from the project root:
+所有命令都在项目根目录运行：
 
-| Command                    | Action                                   |
-|:---------------------------|:-----------------------------------------|
-| `pnpm install`             | Install dependencies                     |
-| `pnpm dev`                 | Start local dev server at `localhost:4321` |
-| `pnpm build`               | Build production site to `./dist/`       |
-| `pnpm preview`             | Preview build locally before deployment  |
-| `pnpm check`               | Run Astro error checking                 |
-| `pnpm format`              | Format code with Biome                   |
-| `pnpm lint`                | Check and fix code issues                |
-| `pnpm new-post <filename>` | Create a new blog post                   |
-| `pnpm astro ...`           | Run Astro CLI commands                   |
+| 命令                       | 操作                                    |
+|:---------------------------|:---------------------------------------|
+| `pnpm install`             | 安装依赖                               |
+| `pnpm dev`                 | 在 `localhost:4321` 启动本地开发服务器 |
+| `pnpm build`               | 构建生产站点到 `./dist/`               |
+| `pnpm preview`             | 在部署前本地预览构建                   |
+| `pnpm check`               | 运行 Astro 错误检查                    |
+| `pnpm format`              | 使用 Biome 格式化代码                  |
+| `pnpm lint`                | 检查并修复代码问题                     |
+| `pnpm new-post <文件名>`   | 创建新博客文章                         |
+| `pnpm astro ...`           | 运行 Astro CLI 命令                    |
 
-## 🎯 Configuration Guide
+## 🎯 配置指南
 
-### 🔧 Basic Configuration
+### 🔧 基础配置
 
-Edit `src/config.ts` to customize your blog:
+编辑 `src/config.ts` 自定义你的博客：
 
 ```typescript
 export const siteConfig: SiteConfig = {
-  title: "Your Blog Name",
-  subtitle: "Your Blog Description",
-  lang: "en", // or "zh-CN", "ja", etc.
+  title: "你的博客名称",
+  subtitle: "你的博客描述",
+  lang: "zh-CN", // 或 "en"、"ja" 等
   themeColor: {
-    hue: 210, // 0-360, theme hue
-    fixed: false, // Hide theme color picker
+    hue: 210, // 0-360，主题色调
+    fixed: false, // 隐藏主题色选择器
   },
   translate: {
-    enable: true, // Enable translation
-    service: "client.edge", // Translation service
-    defaultLanguage: "english",
+    enable: true, // 启用翻译功能
+    service: "client.edge", // 翻译服务
+    defaultLanguage: "chinese_simplified",
   },
   banner: {
     enable: true,
-    src: ["assets/banner/1.webp"], // Banner images
+    src: ["assets/banner/1.webp"], // 横幅图片
     carousel: {
       enable: true,
-      interval: 0.8, // seconds
+      interval: 0.8, // 秒
     },
   },
 };
 ```
 
-## 📄 License
+## 📄 许可证
 
-This project is a fork of [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki) with significant modifications, licensed under the MIT License.
+本项目是 [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki) 的 Fork 分支，进行了规模性重构，基于 MIT 许可证。
 
-The original Mizuki project is built upon the [Fuwari](https://github.com/saicaca/fuwari) template by [saicaca](https://github.com/saicaca).
+原始 Mizuki 项目基于 [Fuwari](https://github.com/saicaca/fuwari) 模板，由 [saicaca](https://github.com/saicaca) 创建。
 
-## 🙏 Acknowledgements
+## 🙏 致谢
 
-This blog is built on the excellent work of others:
+本博客建立在以下优秀项目的基础上：
 
-- **Upstream Project**: [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki) by [LyraVoid](https://github.com/LyraVoid) — the original Mizuki template this fork is based on
-- **Original Template**: [Fuwari](https://github.com/saicaca/fuwari) by [saicaca](https://github.com/saicaca)
-- **Design Inspiration**: [Yukina](https://github.com/WhitePaper233/yukina) — a beautiful and elegant blog template
-- **Framework**: Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
-- **Translation**: Translation functionality powered by [translate](https://gitee.com/mail_osc/translate)
-- **Icons**: Icons from [Iconify](https://iconify.design/)
+- **上游项目**：[LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki)，由 [LyraVoid](https://github.com/LyraVoid) 维护——本分支的原型
+- **原始模板**：[Fuwari](https://github.com/saicaca/fuwari)，由 [saicaca](https://github.com/saicaca) 创建
+- **设计灵感**：[Yukina](https://github.com/WhitePaper233/yukina) — 一个美丽优雅的博客模板
+- **框架**：基于 [Astro](https://astro.build) 和 [Tailwind CSS](https://tailwindcss.com)
+- **翻译功能**：由 [translate](https://gitee.com/mail_osc/translate) 提供支持
+- **图标**：来自 [Iconify](https://iconify.design/)
 
-### About This Fork
+### 关于此 Fork
 
-This fork focuses on adding **web-based content management capabilities** to the Mizuki template:
-- Web-based content creation, editing, and deletion
-- GitHub API integration for content push
-- Password protection for posts and hidden diary content
-- Supabase backend for guestbook
-- Cloudflare R2 integration for image management
+本分支专注于为 Mizuki 模板添加**网页端内容管理能力**：
+- 网页端内容创建、编辑和删除
+- GitHub API 集成实现内容推送
+- 帖子密码保护和日记隐藏内容
+- 基于 Supabase 的留言板后端
+- Cloudflare R2 集成用于图片管理
 
 ---
 
-⭐ If you find this project helpful, please consider giving it a star!
+⭐ 如果你觉得这个项目有帮助，请考虑给它一个星标！
