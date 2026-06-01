@@ -1,30 +1,24 @@
-# 🌸 Mizuki - Personal Blog
+# 🌸 Mizuki — Personal Blog (Fork)
+
 ![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen)
 ![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue)
-![Astro](https://img.shields.io/badge/Astro-5.12.8-orange)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue)
+![Astro](https://img.shields.io/badge/Astro-5-orange)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![Mizuki Preview](./README.png)
 
-<table>
-  <tr>
-    <td><img alt="" src="docs/image/1.png"></td>
-    <td><img alt="" src="docs/image/2.png"></td>
-    <td><img alt="" src="docs/image/3.png"></td>
-  <tr>
-  <tr>
-    <td><img alt="" src="docs/image/4.png"></td>
-    <td><img alt="" src="docs/image/5.png"></td>
-    <td><img alt="" src="docs/image/6.png"></td>
-  <tr>
-</table>
+![Mizuki Screenshot](./docs/image/1.png)
 
-A modern, feature-rich static blog template built with [Astro](https://astro.build), featuring advanced functionality and beautiful design.
-This is a personal customization of the original Mizuki template for my own blog.
+![Mizuki Screenshot](./docs/image/2.png)
 
-[**🖥️ Live Demo**](https://doulor.cn/)
-[**📝 Documentation**](https://docs.mizuki.mysqil.com/)
+![Mizuki Screenshot](./docs/image/3.png)
+
+A modern, feature-rich static blog template built with [Astro](https://astro.build).
+
+This project is a **fork of [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki)** with significant refactoring. The core differentiator is the **web-based content publishing system** — you can create, edit, and delete blog posts, diaries, and photo albums directly from the web interface and push changes to your GitHub repository, without touching the codebase locally.
+
+[**🖥️ Live Demo**](https://doulor.cn/) &nbsp;|&nbsp; [**📝 Live Blog**](https://blog.doulor.cn/)
 
 🌏 README Languages
 [**English**](./README.md) /
@@ -32,51 +26,48 @@ This is a personal customization of the original Mizuki template for my own blog
 [**日本語**](./docs/README.ja.md) /
 [**中文繁体**](./docs/README.tw.md) /
 
-## 🆕 v4.9 Update
-- **Pio Live2D Integration**: Added Pio Live2D character, providing a cute interactive companion to enhance user engagement.
-- **Highly Configurable**: Supports detailed configuration in `src/config.ts`, including model path, position, size, dialogue content, etc., to meet personalized needs.
-- **Seamless Navigation**: The "Back to Home" feature now uses the theme's built-in Swup for smooth, no-refresh page transitions.
+---
 
-## 🆕 v4.3 Update
-- **Anime Page:** Redesigned a cuter and more attractive anime page, including anime list, details, and timeline.
-- **Album Page:** Restructured the album page using pagination + folder data indexing solution.
+## ⚠️ 关于此 Fork
 
-## 🆕 v3.4 Update
-- **New Pages:** Added project showcase, skills showcase, and timeline pages to display your work, professional skills, and growth journey.
-- **Dropdown Menu Fix:** Resolved the issue of border outlines appearing when clicking dropdown menus, improving interface consistency.
-- **Search Optimization:** Enhanced search functionality performance and accuracy.
-- **Footer HTML Injection:** Introduced a new feature allowing custom HTML content injection at the bottom of pages, providing greater flexibility.
+本分支基于 [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki)（上游最新版已至 v9.0+），进行了规模性重构。由于上游仍在持续更新，本分支的部分功能可能落后于上游最新版本。
 
-## 🆕 v3.3 Update
-- **Mermaid Syntax Support:** Added support for Mermaid chart syntax, now you can embed flowcharts, sequence diagrams, Gantt charts, etc. directly in Markdown.
-- **Umami Analytics:** Added support for Umami analytics, making it easy to integrate website visit data analysis.
+### 与上游的主要差异
 
-![Configuration](configuration.svg)
+| 方面 | 本分支 (Doulor/Blog) | 上游 (LyraVoid/Mizuki) |
+|---|---|---|
+| **核心特色** | 网页端内容推送系统（在线创建/编辑/删除） | 代码-内容分离模式，自动分辨率适配 |
+| **Astro 版本** | 5.x | 6.x |
+| **Tailwind CSS** | v3 | v4 |
+| **内容管理** | 网页端直接创建内容并提交到 GitHub | 本地编辑器操作 |
+| **图片灯箱** | PhotoSwipe | Fancybox |
+| **密码保护** | bcryptjs/crypto-js 加密 | 不支持 |
+| **留言板** | Supabase 后端 | Twikoo |
+| **许可证** | MIT | Apache 2.0 |
 
-### 🔧 Component Configuration System Restructuring
-- **Unified Configuration Architecture:** Brand new modular component configuration system, supporting dynamic component management and order configuration
-- **Configuration-Driven Component Loading:** Restructured SideBar component, implementing fully configuration-based component loading mechanism
-- **Unified Control Switches:** Removed independent enable switches for music player and announcement components, unified control through sidebarLayoutConfig
-- **Responsive Layout Adaptation:** Components support responsive layouts, automatically adjusting display based on device type
+---
 
-### 📐 Layout System Optimization
-- **Dynamic Sidebar Position Adjustment:** Support for left/right sidebar switching, with automatic layout adaptation
-- **Intelligent Article Directory Positioning:** When sidebar is on the right, article navigation automatically moves to the left, providing a better reading experience
-- **Grid Layout Improvements:** Optimized CSS Grid layout, resolving container width anomaly issues
+## 🔥 核心特色：网页端内容推送
 
-### 🎛️ Configuration File Format Standardization
-- **Standardized Configuration Format:** Created unified component configuration file format specifications
-- **Type Safety:** Comprehensive TypeScript type definitions ensuring configuration type safety
-- **Extensibility:** Support for custom component types and configuration options
+这是本分支最重要的功能。通过网页界面，你可以：
 
-### 🧹 Code Optimization
-- **Test File Cleanup:** Removed unused test configurations and dependencies, reducing project size
-- **Code Structure Optimization:** Improved component architecture, enhancing code maintainability
-- **Performance Improvement:** Optimized component loading logic, improving page rendering performance
+- **📝 内容创建器** (`/create-content/`) — 在线创建帖子、日记、相册，生成 frontmatter 后直接推送到 GitHub 仓库
+- **📋 内容管理器** (`/content-manager/`) — 浏览、搜索、编辑、删除博客中已有的所有内容
+- **✏️ 在线编辑器** (`/my-editor/`) — 统一的内容编辑界面
+
+所有这些操作通过 **GitHub Personal Access Token** 认证，内容会以 commit 的形式直接提交到你的 GitHub 仓库，触发 Vercel/Netlify 等平台的自动部署。
 
 ---
 
 ## ✨ Features
+
+### 🔥 Web-Based Content Management (Core Feature)
+- [x] **Content Creator** — Create posts, diaries, and albums with a visual form
+- [x] **Content Manager** — Browse, search, edit, and delete all content online
+- [x] **Online Editor** — Full Markdown editing experience in the browser
+- [x] **GitHub API Integration** — Push content directly via Personal Access Token
+- [x] **Content Encryption** — Password-protect posts and hidden diary content
+- [x] **R2 Image Support** — Fetch images from Cloudflare R2 storage for albums and diaries
 
 ### 🎨 Design & Interface
 - [x] Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
@@ -86,35 +77,37 @@ This is a personal customization of the original Mizuki template for my own blog
 - [x] Fullscreen background images with carousel, opacity, and blur effects
 - [x] Fully responsive design for all devices
 - [x] Beautiful typography with JetBrains Mono font
+- [x] **Pio Live2D** interactive companion character
 
 ### 🔍 Content & Search
 - [x] Advanced search functionality based on [Pagefind](https://pagefind.app/)
-- [x] [Enhanced Markdown features](#-markdown-extensions) with syntax highlighting
+- [x] Enhanced Markdown features with syntax highlighting
 - [x] Interactive table of contents with auto-scrolling
 - [x] RSS feed generation
 - [x] Reading time estimation
 - [x] Article categorization and tagging system
 
 ### 🌐 Internationalization
-- [x] **Multi-language support** with real-time translation
-- [x] **Automatic language detection** based on user preferences
-- [x] **Client-side translation** powered by Edge Translate
+- [x] Multi-language support with real-time translation
+- [x] Automatic language detection based on user preferences
+- [x] Client-side translation powered by Edge Translate
 - [x] Support for 10+ languages (Chinese, English, Japanese, Korean, Spanish, etc.)
 
 ### 📱 Special Pages
-- [x] **Anime Tracking Page** - Track anime watching progress and ratings
-- [x] **Friends Page** - Beautiful cards showcasing friend websites
-- [x] **Diary Page** - Share life moments, similar to social media
-- [x] **Archive Page** - Organized timeline view of articles
-- [x] **About Page** - Customizable personal introduction
+- [x] **Anime Tracking Page** — Track anime watching progress and ratings
+- [x] **Friends Page** — Beautiful cards showcasing friend websites
+- [x] **Diary Page** — Share life moments, similar to social media
+- [x] **Archive Page** — Organized timeline view of articles
+- [x] **About Page** — Customizable personal introduction
+- [x] **Guestbook** — Visitor comments powered by Supabase
 
 ### 🛠 Technical Features
-- [x] **Enhanced code blocks** based on [Expressive Code](https://expressive-code.com/)
-- [x] **Math formula support** with KaTeX rendering
-- [x] **Image optimization** with PhotoSwipe gallery integration
-- [x] **SEO optimization** including sitemaps and meta tags
-- [x] **Performance optimization** with lazy loading and caching
-- [x] **Comment system** with Twikoo integration
+- [x] Enhanced code blocks based on [Expressive Code](https://expressive-code.com/)
+- [x] Math formula support with KaTeX rendering
+- [x] Image optimization with PhotoSwipe gallery integration
+- [x] SEO optimization including sitemaps and meta tags
+- [x] Performance optimization with lazy loading and caching
+- [x] Supabase integration for guestbook
 
 ## 🚀 Quick Start
 
@@ -122,15 +115,15 @@ This is a personal customization of the original Mizuki template for my own blog
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/matsuzaka-yuki/mizuki.git
-   cd mizuki
+   git clone https://github.com/Doulor/Blog.git
+   cd Blog
    ```
 
 2. **Install dependencies:**
    ```bash
    # Install pnpm if not already installed
    npm install -g pnpm
-   
+
    # Install project dependencies
    pnpm install
    ```
@@ -139,6 +132,8 @@ This is a personal customization of the original Mizuki template for my own blog
    - Edit `src/config.ts` to customize blog settings
    - Update site information, theme colors, banner images, and social links
    - Configure translation settings and feature page functionality
+   - Set up Supabase credentials for guestbook (optional)
+   - Set up `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` in `.env`
 
 4. **Start the development server:**
    ```bash
@@ -146,12 +141,15 @@ This is a personal customization of the original Mizuki template for my own blog
    ```
    Your blog will be available at `http://localhost:4321`
 
-### 📝 Content Management
+### 📝 Web-Based Content Management
 
-- **Create new posts:** `pnpm new-post <filename>`
-- **Edit posts:** Modify files in `src/content/posts/`
-- **Customize special pages:** Edit files in `src/content/spec/`
-- **Add images:** Place images in `src/assets/` or `public/`
+The web-based content system is the core feature of this fork:
+
+- **Create content:** Visit `/create-content/` to create posts, diaries, or albums
+- **Manage content:** Visit `/content-manager/` to browse, edit, or delete existing content
+- **Edit content:** Visit `/my-editor/` for the unified editing interface
+
+All operations require a **GitHub Personal Access Token** (stored locally in your browser's localStorage). The content is pushed directly to your GitHub repository as commits.
 
 ### 🚀 Deployment
 
@@ -191,20 +189,6 @@ lang: en      # Only set when article language differs from site language in con
 - **draft**: Set to `true` to hide article in production
 - **pinned**: Set to `true` to pin article to top
 - **lang**: Article language (only set when different from site default)
-
-### Pinned Articles Feature
-
-The `pinned` field allows you to pin important articles to the top of your blog list. Pinned articles will always appear before regular articles regardless of their publication date.
-
-**Usage:**
-```yaml
-pinned: true  # Pin this article to the top
-pinned: false # Regular article (default)
-```
-
-**Sorting Rules:**
-1. Pinned articles appear first, sorted by publication date (newest first)
-2. Regular articles follow, sorted by publication date (newest first)
 
 ## 🧩 Markdown Extensions
 
@@ -273,59 +257,31 @@ export const siteConfig: SiteConfig = {
 };
 ```
 
-### 📱 Feature Page Configuration
-
-- **Anime Page:** Edit anime list in `src/pages/anime.astro`
-- **Friends Page:** Edit friend data in `src/content/spec/friends.md`
-- **Diary Page:** Edit moments in `src/pages/diary.astro`
-- **About Page:** Edit content in `src/content/spec/about.md`
-
-## ✏️ Contributing
-
-Contributions are welcome! Feel free to submit issues and pull requests.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## 📄 License
 
-This project is a customization of the original [Mizuki](https://github.com/matsuzaka-yuki/Mizuki) project created by [matsuzaka-yuki](https://github.com/matsuzaka-yuki), which is licensed under the MIT License.
-The original license and copyright information is preserved in the [LICENSE](LICENSE) file.
+This project is a fork of [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki) with significant modifications, licensed under the MIT License.
 
-The original Mizuki project is built upon the [Fuwari](https://github.com/saicaca/fuwari) template by [saicaca](https://github.com/saicaca), which is also licensed under the MIT License.
-
-This customized version maintains the same MIT License as the original project.
+The original Mizuki project is built upon the [Fuwari](https://github.com/saicaca/fuwari) template by [saicaca](https://github.com/saicaca).
 
 ## 🙏 Acknowledgements
 
 This blog is built on the excellent work of others:
 
-- **Original Template**: Based on the original [Fuwari](https://github.com/saicaca/fuwari) template
+- **Upstream Project**: [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki) by [LyraVoid](https://github.com/LyraVoid) — the original Mizuki template this fork is based on
+- **Original Template**: [Fuwari](https://github.com/saicaca/fuwari) by [saicaca](https://github.com/saicaca)
+- **Design Inspiration**: [Yukina](https://github.com/WhitePaper233/yukina) — a beautiful and elegant blog template
 - **Framework**: Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
-- **Design Inspiration**: Inspired by [Yukina](https://github.com/WhitePaper233/yukina) - a beautiful and elegant blog template
-- **Translation**: Translation functionality powered by [translate](https://gitee.com/mail_osc/translate) - AI i18n automatic HTML translation solution
+- **Translation**: Translation functionality powered by [translate](https://gitee.com/mail_osc/translate)
 - **Icons**: Icons from [Iconify](https://iconify.design/)
 
-### Original Project Information
+### About This Fork
 
-- **Original Creator**: [matsuzaka-yuki](https://github.com/matsuzaka-yuki)
-- **Original Project**: [Mizuki](https://github.com/matsuzaka-yuki/Mizuki)
-- **License**: This project is distributed under the MIT License (see original project for full license details)
-
-### Special Thanks
-
-- **[Yukina](https://github.com/WhitePaper233/yukina)** - Thanks for providing design inspiration and creativity that helped shape this project. Yukina is an elegant blog template that demonstrates excellent design principles and user experience.
-- **[translate](https://gitee.com/mail_osc/translate)** - Thanks for providing an innovative AI-driven i18n solution that enables automatic HTML translation with just two lines of JavaScript code. This open-source tool makes multilingual support extremely simple and efficient.
-
-### My Customizations
-
-This personal blog is a customized version of the original Mizuki template, featuring:
-- Personal content and customization
-- Modified configuration to suit personal needs
-- Additional features and enhancements as needed
+This fork focuses on adding **web-based content management capabilities** to the Mizuki template:
+- Web-based content creation, editing, and deletion
+- GitHub API integration for content push
+- Password protection for posts and hidden diary content
+- Supabase backend for guestbook
+- Cloudflare R2 integration for image management
 
 ---
 
