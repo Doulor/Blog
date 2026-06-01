@@ -22,7 +22,7 @@
 
 一個現代化、功能豐富的靜態部落格模板，基於 [Astro](https://astro.build) 構建，具有先進的功能和精美的設計。
 
-[**🖥️ 線上演示**](https://mizuki.mysqil.com/)
+[**🖥️ 線上演示**](https://blog.doulor.cn/)
 [**📝 使用者文檔**](https://docs.mizuki.mysqil.com/)
 
 🌏 README 語言

@@ -1,4 +1,4 @@
-# 🌸 Mizuki — 个人博客（Fork）
+# 🌸 Mizuki — 个人博客 (Fork)
 
 ![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen)
 ![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue)
@@ -19,8 +19,8 @@
 [**🖥️ 在线演示**](https://blog.doulor.cn/) &nbsp;|&nbsp; [**📝 博客地址**](https://blog.doulor.cn/)
 
 🌏 README 语言
-[**中文**](./README.md) /
-[**English**](./README.en.md) /
+[**English**](./README.md) /
+[**中文**](./README.zh.md) /
 [**日本語**](./docs/README.ja.md) /
 [**中文繁体**](./docs/README.tw.md) /
 
@@ -92,7 +92,7 @@
 - [x] 支持 10+ 种语言（中文、英文、日文、韩文、西班牙文等）
 
 ### 📱 特色页面
-- [x] **追番页面** — 追踪番剧观看进度和评分
+- [x] **追番页面** — 追踪动画观看进度和评分
 - [x] **友链页面** — 精美卡片展示朋友网站
 - [x] **日记页面** — 分享生活瞬间，类似社交媒体
 - [x] **归档页面** — 有序的文章时间线视图

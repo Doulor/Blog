@@ -16,7 +16,7 @@ A modern, feature-rich static blog template built with [Astro](https://astro.bui
 
 This project is a **fork of [LyraVoid/Mizuki](https://github.com/LyraVoid/Mizuki)** with significant refactoring. The core differentiator is the **web-based content publishing system** — you can create, edit, and delete blog posts, diaries, and photo albums directly from the web interface and push changes to your GitHub repository, without touching the codebase locally.
 
-[**🖥️ Live Demo**](https://doulor.cn/) &nbsp;|&nbsp; [**📝 Live Blog**](https://blog.doulor.cn/)
+[**🖥️ Live Demo**](https://blog.doulor.cn/) &nbsp;|&nbsp; [**📝 Live Blog**](https://blog.doulor.cn/)
 
 🌏 README Languages
 [**中文**](./README.md) /

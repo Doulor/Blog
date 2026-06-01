@@ -22,7 +22,7 @@
 
 [Astro](https://astro.build)をベースにした、先進的な機能と美しいデザインを備えた現代的な静的ブログテンプレートです。
 
-[**🖥️ ライブデモ**](https://mizuki.mysqil.com/)
+[**🖥️ ライブデモ**](https://blog.doulor.cn/)
 [**📝 ドキュメント**](https://docs.mizuki.mysqil.com/)
 
 🌏 README 言語
