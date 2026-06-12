@@ -1,7 +1,7 @@
 ---
 title: "快速询问AI：把 PowerToys 命令面板变成 AI 提问入口"
 published: 2026-05-30
-description: "快速询问AI是一个 PowerToys Command Palette 插件，支持 GitHub Copilot 登录和 OpenAI 兼容接口。1.2.0 起 GitHub Copilot provider 改为直接调用 Copilot HTTP API，不再依赖本地 copilot.exe，包体更小，也减少了本机兼容性问题。"
+description: "快速询问AI是一个 PowerToys Command Palette 插件"
 category: "wiki"
 tags: ["Powertoys", "工具", "AI"]
 draft: false
