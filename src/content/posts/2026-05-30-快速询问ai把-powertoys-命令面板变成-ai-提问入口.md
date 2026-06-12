@@ -1,5 +1,5 @@
 ---
-title: "快速询问AI：把 PowerToys 命令面板变成 AI 提问入口"
+title: "把PowerToys命令面板变成AI提问入口"
 published: 2026-05-30
 description: "快速询问AI是一个 PowerToys Command Palette 插件"
 category: "wiki"
