@@ -1,6 +1,6 @@
 ---
 title: "QuickAskAI终于发布成功啦！"
-date: "2026-06-12"
+date: "2026-06-12 15:19"
 images: ["https://img.doulor.cn/diary/QuickAskAI/tmp32B9.webp", "https://img.doulor.cn/diary/QuickAskAI/tmp2DF5.webp"]
 ---
 嘿嘿嘿，终于啊，我做了那么久的这个Powertoys的命令面板插件终于成功在微软商店发布了！这个插件的主体可是当时一天花了29亿token才完成的，包体也是遇到很多问题，比如国际化和证书的问题，阻碍我本地测试，主要是我也不知道发布的时候要不要带证书。最后还是跟微软团队的人互发好几轮邮件才解决，像这样：

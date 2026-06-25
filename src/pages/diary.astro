@@ -40,18 +40,7 @@ function formatTime(dateInput: string | Date): string {
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-  // If the entry is from today and has a meaningful time component, show HH:mm for better precision.
-  const isSameDay =
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate();
-  const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0;
-  if (isSameDay && hasTime) {
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mm = String(date.getMinutes()).padStart(2, '0');
-    return `${hh}:${mm}`;
-  }
-
+  if (diffInMinutes <= 0) return "刚刚";
   if (diffInMinutes < 60) return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
   if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
   return `${Math.floor(diffInMinutes / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;
@@ -60,8 +49,7 @@ function formatTime(dateInput: string | Date): string {
 // 绝对时间格式化函数
 function formatDate(dateInput: string | Date): string {
   const date = new Date(dateInput);
-  const lang = siteConfig.lang || "zh-CN"; // 使用站点配置的语言或默认中文
-  // 将配置语言映射为可用的locale标识符
+  const lang = siteConfig.lang || "zh-CN";
   const localeMap: Record<string, string> = {
     "zh_CN": "zh-CN",
     "zh_TW": "zh-TW",
@@ -70,12 +58,15 @@ function formatDate(dateInput: string | Date): string {
   };
   const locale = localeMap[lang] || lang;
 
-  return date.toLocaleDateString(locale, {
+  const datePart = date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'short'
   });
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  return `${datePart} ${hh}:${mm}`;
 }
 
 function getDiaryPreviewText(diary: any): string {

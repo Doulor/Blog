@@ -62,12 +62,15 @@ function formatDate(dateInput: string | Date): string {
 	};
 	const locale = localeMap[lang] || lang;
 
-	return date.toLocaleDateString(locale, {
+	const datePart = date.toLocaleDateString(locale, {
 		year: "numeric",
 		month: "long",
 		day: "numeric",
 		weekday: "short",
 	});
+	const hh = String(date.getHours()).padStart(2, "0");
+	const mm = String(date.getMinutes()).padStart(2, "0");
+	return `${datePart} ${hh}:${mm}`;
 }
 
 function formatTime(dateInput: string | Date): string {
@@ -75,6 +78,7 @@ function formatTime(dateInput: string | Date): string {
 	const date = new Date(dateInput);
 	const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
+	if (diffInMinutes <= 0) return "刚刚";
 	if (diffInMinutes < 60) return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
 	if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
 	return `${Math.floor(diffInMinutes / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;

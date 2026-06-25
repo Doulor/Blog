@@ -229,7 +229,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
           </div>
           <div class="space-y-2">
             <label for="diaryDate" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">日记日期</label>
-            <input type="date" id="diaryDate" name="diaryDate"
+            <input type="datetime-local" id="diaryDate" name="diaryDate"
               class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
           </div>
           <div class="space-y-2">
@@ -1383,8 +1383,19 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 
   // 为日期输入框设置默认值
   document.getElementById('normalPublished').value = getCurrentDate();
-  document.getElementById('diaryDate').value = getCurrentDate();
   document.getElementById('albumDate').value = getCurrentDate();
+
+  // 获取当前日期时间函数（用于日记 datetime-local 输入）
+  function getCurrentDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+  document.getElementById('diaryDate').value = getCurrentDateTime();
 
   // 生成内容函数
   function generateMarkdown(type) {
@@ -1454,7 +1465,9 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 
       case 'diary': // 日记
         title = document.getElementById('diaryTitle').value;
-        date = document.getElementById('diaryDate').value || getCurrentDate();
+        // datetime-local returns "YYYY-MM-DDTHH:mm", convert to "YYYY-MM-DD HH:mm"
+        const rawDate = document.getElementById('diaryDate').value || getCurrentDateTime();
+        date = rawDate.replace('T', ' ');
         description = document.getElementById('diaryDescription')?.value || "";
         tags = (document.getElementById('diaryTags')?.value || "").split(',').map(tag => tag.trim()).filter(tag => tag);
         content = document.getElementById('diaryContent').value;
