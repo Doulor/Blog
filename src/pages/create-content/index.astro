@@ -1698,7 +1698,9 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
                      .replace(/[^\w\s\u4e00-\u9fff]/g, '')  // 允许字母、数字、空格和中文字符
                      .replace(/\s+/g, '-');                // 空格替换为短横线
 
-    document.getElementById('fileName').value = slug ? `${date}-${slug}.md` : `${date}-untitled.md`;
+    // 日记文件名只用日期，不含时间（避免Windows不支持的冒号）
+    const datePrefix = (type === 'diary') ? date.split(' ')[0] : date;
+    document.getElementById('fileName').value = slug ? `${datePrefix}-${slug}.md` : `${datePrefix}-untitled.md`;
 
     document.getElementById('fileDirectory').value =
       type === 'normal' ? 'src/content/posts' :
