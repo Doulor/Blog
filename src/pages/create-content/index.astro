@@ -2,16 +2,25 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getCollection } from 'astro:content';
+
+// 检查GitHub认证
+let isAuthenticated = false;
+let token = null;
+if (typeof window !== 'undefined') {
+  token = localStorage.getItem('github_token');
+  isAuthenticated = !!token;
+}
 ---
 
-<MainGridLayout title="内容创建器" description="创建新的博客文章、日记和相册">
+<MainGridLayout title="内容创建器" description="创建新的博客文章、日记、碎碎念和相册">
   <div id="create-content-root" class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
     <header class="mb-8">
       <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
         内容创建器
       </h1>
       <p class="text-neutral-600 dark:text-neutral-400">
-        快速创建博客内容，支持帖子、日记和相册
+        快速创建博客内容，支持帖子、日记、碎碎念和相册
       </p>
     </header>
 
@@ -34,13 +43,13 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
           </button>
         </div>
       </div>
-      
+
       <!-- 消息区域 -->
       <div id="message-area" class="mt-4 hidden">
         <div id="info-message" class="p-4 rounded-lg bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-200 dark:border-blue-800"></div>
         <div id="error-message" class="p-4 rounded-lg bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200 border border-red-200 dark:border-red-800 mt-2 hidden"></div>
       </div>
-      
+
       <!-- GitHub Token 输入模态框 -->
       <div id="create-auth-modal" class="fixed inset-0 bg-black bg-opacity-0 flex items-start justify-center z-50 hidden transition-opacity duration-500">
         <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 w-full max-w-md shadow-2xl mt-16 transform translate-y-0 opacity-0 transition-all duration-500 scale-95">
@@ -49,10 +58,10 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
             请输入您的GitHub Personal Access Token。该Token仅在本地存储，用于访问您的仓库。
           </p>
           <div class="mb-4">
-            <input 
-              type="password" 
-              id="create-token-input" 
-              placeholder="输入您的Personal Access Token" 
+            <input
+              type="password"
+              id="create-token-input"
+              placeholder="输入您的Personal Access Token"
               class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             >
           </div>
@@ -76,6 +85,9 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
         </button>
         <button class="tab-btn py-3 px-1 text-left text-neutral-500 dark:text-neutral-400 transition-smooth relative" data-target="diaryForm">
           <i class="fa fa-book mr-2" aria-hidden="true"></i>日记文档
+        </button>
+        <button class="tab-btn py-3 px-1 text-left text-neutral-500 dark:text-neutral-400 transition-smooth relative" data-target="thoughtForm">
+          <i class="fa fa-quote-left mr-2" aria-hidden="true"></i>碎碎念
         </button>
         <button class="tab-btn py-3 px-1 text-left text-neutral-500 dark:text-neutral-400 transition-smooth relative" data-target="albumForm">
           <i class="fa fa-picture-o mr-2" aria-hidden="true"></i>相册配置
@@ -329,6 +341,27 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
             <textarea id="diaryContent" name="diaryContent" rows="8"
               class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
               placeholder="今天天气很好..."></textarea>
+          </div>
+        </form>
+
+        <!-- 碎碎念表单 -->
+        <form id="thoughtForm" class="form-content space-y-5 hidden">
+          <div class="space-y-2">
+            <label for="thoughtContent" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">碎碎念内容 <span class="text-red-500">*</span></label>
+            <textarea id="thoughtContent" name="thoughtContent" rows="3"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
+              placeholder="写下你想说的那句话..."></textarea>
+          </div>
+          <div class="space-y-2">
+            <label for="thoughtDate" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">日期</label>
+            <input type="date" id="thoughtDate" name="thoughtDate" value={new Date().toISOString().split('T')[0]}
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+          </div>
+          <div class="space-y-2">
+            <label for="thoughtContext" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">背景 <span class="text-neutral-400">(可选)</span></label>
+            <input type="text" id="thoughtContext" name="thoughtContext"
+              class="w-full p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="当时的情况，比如：深夜emo、午休时看到窗外">
           </div>
         </form>
 
@@ -1588,6 +1621,27 @@ photos: [`;
 
         document.getElementById('markdownResult').textContent = albumFrontmatter;
         return; // 提前返回，因为我们已经设置了结果
+
+      case 'thought': // 碎碎念
+        const thoughtContent = document.getElementById('thoughtContent').value;
+        const thoughtDate = document.getElementById('thoughtDate').value || getCurrentDate();
+        const thoughtContext = document.getElementById('thoughtContext').value;
+
+        let thoughtFrontmatter = `---
+content: "${thoughtContent.replace(/"/g, '\\"')}"
+date: "${thoughtDate}"`;
+        if (thoughtContext) {
+          thoughtFrontmatter += `
+context: "${thoughtContext.replace(/"/g, '\\"')}"`;
+        }
+        thoughtFrontmatter += `\n---`;
+
+        // 使用内容作为文件名
+        const thoughtSlug = thoughtContent.substring(0, 30).replace(/[\/\\:*?"<>|]/g, '_').replace(/\s+/g, '-');
+        document.getElementById('fileName').value = `${thoughtDate}-${thoughtSlug}.md`;
+        document.getElementById('fileDirectory').value = 'src/content/thoughts';
+        document.getElementById('markdownResult').textContent = thoughtFrontmatter;
+        return;
     }
 
     // 构建Frontmatter，只包含published字段（完全按照您的要求）
@@ -1648,7 +1702,8 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
 
     document.getElementById('fileDirectory').value =
       type === 'normal' ? 'src/content/posts' :
-      type === 'diary' ? 'src/content/diary' : 'src/content/albums';
+      type === 'diary' ? 'src/content/diary' :
+      type === 'thought' ? 'src/content/thoughts' : 'src/content/albums';
 
     // 显示在结果区域
     document.getElementById('markdownResult').textContent = fullContent;

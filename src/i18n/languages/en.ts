@@ -189,6 +189,15 @@ export const en: Translation = {
 	[Key.timelineEmployed]: "Employed",
 	[Key.timelineAvailable]: "Available",
 
+	// Thoughts
+	[Key.thoughts]: "Thoughts",
+	[Key.thoughtsSubtitle]: "Sifting through sand, picking up scattered words",
+	[Key.thoughtsCount]: "thoughts",
+	[Key.thoughtsContext]: "Context",
+	[Key.thoughtsDate]: "Date",
+	[Key.thoughtsEmpty]: "No thoughts yet, go add some!",
+	[Key.thoughtsScrollHint]: "Scroll to discover your thought",
+
 	// Password Protection
 	[Key.passwordProtected]: "Password Protected",
 	[Key.passwordProtectedTitle]: "This content is password protected",

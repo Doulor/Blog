@@ -1,0 +1,396 @@
+---
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { getCollection } from 'astro:content';
+
+const thoughts = (await getCollection('thoughts'))
+  .filter(t => !t.id.endsWith('.json'))
+  .map(t => ({
+    content: t.data.content || t.body?.trim() || '',
+    date: new Date(t.data.date).toISOString(),
+    context: t.data.context || '',
+  }))
+  .filter(t => t.content)
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+function fmtDate(iso: string) {
+  try { return new Date(iso).toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric' }); }
+  catch { return ''; }
+}
+
+const emptyText = i18n(I18nKey.thoughtsEmpty);
+const contextLabel = i18n(I18nKey.thoughtsContext);
+const dateLabel = i18n(I18nKey.thoughtsDate);
+
+const adjectives = [
+  '喜怒无常', '悲喜交加', '笑中带泪', '怒而不言', '哀而不伤',
+  '乐在其中', '心如止水', '百感交集', '五味杂陈', '破涕为笑',
+  '没心没肺', '大大咧咧', '多愁善感', '优柔寡断', '三分钟热度',
+  '死要面子', '嘴硬心软', '外强中干', '口是心非', '半梦半醒',
+  '稀里糊涂', '恍恍惚惚', '自言自语', '胡思乱想', '异想天开',
+  '踽踽独行', '形单影只', '赤子之心', '一腔热血', '年少轻狂',
+  '岁月静好', '云淡风轻', '波澜不惊', '安之若素', '故作深沉',
+];
+const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+---
+
+<MainGridLayout title={i18n(I18nKey.thoughts)} description={i18n(I18nKey.thoughtsSubtitle)}>
+  <div class="thoughts-card" id="thoughts-world">
+    <canvas id="star-canvas" class="star-canvas" aria-hidden="true"></canvas>
+    <div class="nebula n1" aria-hidden="true"></div>
+    <div class="nebula n2" aria-hidden="true"></div>
+    <div id="thoughts-container" class="thoughts-container"></div>
+    <div class="toast" id="toast-hint" aria-hidden="true">
+      <span class="toast-arrow">⤳</span> 滚动鼠标，窥探那个{adj}的我
+    </div>
+    <div id="detail-overlay" class="overlay hidden">
+      <div class="backdrop"></div>
+      <div class="panel" role="dialog" aria-modal="true">
+        <button class="panel-close" id="detail-close" aria-label="关闭">&times;</button>
+        <div class="panel-quote" aria-hidden="true">&ldquo;</div>
+        <p class="panel-text" id="detail-text"></p>
+        <div class="panel-meta" id="detail-meta"></div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<script is:inline define:vars={{ thoughts, dateLabel, contextLabel }}>
+(function() {
+  var world = document.getElementById('thoughts-world');
+  var container = document.getElementById('thoughts-container');
+  var canvas = document.getElementById('star-canvas');
+  var overlay = document.getElementById('detail-overlay');
+  var detailText = document.getElementById('detail-text');
+  var detailMeta = document.getElementById('detail-meta');
+  var detailClose = document.getElementById('detail-close');
+
+  if (!world || !container || thoughts.length === 0) return;
+  container.innerHTML = '';
+
+  // ═══════════════════════════════════════════════
+  //  CANVAS STARS (2D parallax, not Three.js)
+  // ═══════════════════════════════════════════════
+  var ctx = canvas ? canvas.getContext('2d') : null;
+  var cW = 0, cH = 0;
+  var STAR_COUNT = 900;
+  var stars = [];
+  for (var si = 0; si < STAR_COUNT; si++) {
+    stars.push({
+      x: (Math.random() - 0.5) * 3000,
+      y: (Math.random() - 0.5) * 2000,
+      z: Math.random() * 6000,
+      r: 0.3 + Math.random() * 1.8,
+      bright: 0.3 + Math.random() * 0.7,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + Math.random() * 2,
+    });
+  }
+  function resizeCanvas() {
+    if (!canvas) return;
+    var dpr = window.devicePixelRatio || 1;
+    cW = world.offsetWidth;
+    cH = world.offsetHeight;
+    canvas.width = cW * dpr;
+    canvas.height = cH * dpr;
+    canvas.style.width = cW + 'px';
+    canvas.style.height = cH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function drawStars(time) {
+    if (!ctx) return;
+    ctx.fillStyle = '#060a14';
+    ctx.fillRect(0, 0, cW, cH);
+    var cx = cW / 2, cy = cH / 2;
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var sz = s.z - scrollZ;
+      sz = ((sz % 6000) + 6000) % 6000;
+      var dist = sz + 100;
+      var scale = 500 / dist;
+      var sx = cx + s.x * scale;
+      var sy = cy + s.y * scale;
+      if (sx < -5 || sx > cW + 5 || sy < -5 || sy > cH + 5) continue;
+      var r = Math.max(0.2, s.r * scale * 2);
+      var twinkle = Math.sin(time * 0.001 * s.speed + s.phase) * 0.35;
+      var alpha = Math.max(0.04, Math.min(1, s.bright * scale * 3 + twinkle));
+      var depth = dist / 6000;
+      var rv = Math.round(200 + 55 * (1 - depth));
+      var gv = Math.round(210 + 45 * (1 - depth));
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + rv + ',' + gv + ',255,' + alpha + ')';
+      ctx.fill();
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  3D THOUGHT ITEMS
+  // ═══════════════════════════════════════════════
+  var N = thoughts.length;
+  var DEPTH = 5000;
+  var FOCAL = 500;
+
+  var items = thoughts.map(function(t, i) {
+    return {
+      t: t,
+      x: (Math.random() - 0.5) * 1200,
+      y: (Math.random() - 0.5) * 700,
+      z: (i / N) * DEPTH + Math.random() * (DEPTH / N) * 0.4,
+      fontSize: 0.72 + Math.random() * 0.5,
+    };
+  });
+
+  var els = items.map(function(item, i) {
+    var el = document.createElement('span');
+    el.className = 'thought-text';
+    el.textContent = item.t.content;
+    el.dataset.index = i;
+    el.style.fontSize = item.fontSize + 'rem';
+    container.appendChild(el);
+    return el;
+  });
+
+  var scrollZ = 0;
+  var velocity = 0;
+  var hoveredIdx = -1;
+
+  // ═══════════════════════════════════════════════
+  //  RENDER LOOP (single rAF for everything)
+  // ═══════════════════════════════════════════════
+  function frame(time) {
+    requestAnimationFrame(frame);
+
+    // Inertia
+    velocity *= 0.94;
+    if (Math.abs(velocity) < 0.3) velocity = 0;
+    scrollZ += velocity;
+
+    // Stars
+    drawStars(time);
+
+    // Thoughts
+    var W = cW, H = cH;
+    for (var i = 0; i < N; i++) {
+      var item = items[i];
+      var el = els[i];
+      var sz = item.z - scrollZ;
+      sz = ((sz % DEPTH) + DEPTH) % DEPTH;
+      var dist = sz + 200;
+      if (dist < 10) { el.style.display = 'none'; continue; }
+      var scale = FOCAL / dist;
+      var sx = W / 2 + item.x * scale;
+      var sy = H / 2 + item.y * scale;
+      if (sx < -300 || sx > W + 300 || sy < -300 || sy > H + 300) {
+        el.style.display = 'none'; continue;
+      }
+      var opacity = dist > DEPTH - 400 ? Math.max(0.05, (DEPTH + 200 - dist) / 400) : 1;
+      var blur = dist > 3000 ? Math.min(3, (dist - 3000) / 1500 * 3) : 0;
+      var mul = (hoveredIdx === i) ? 1.5 : 1;
+      el.style.display = '';
+      el.style.left = sx + 'px';
+      el.style.top = sy + 'px';
+      el.style.transform = 'translate(-50%,-50%) scale(' + (scale * mul) + ')';
+      el.style.opacity = opacity;
+      el.style.filter = (hoveredIdx === i) ? 'none' : (blur > 0 ? 'blur(' + blur + 'px)' : 'none');
+      el.style.zIndex = (hoveredIdx === i) ? 99999 : Math.round(scale * 1000);
+    }
+  }
+
+  resizeCanvas();
+  requestAnimationFrame(frame);
+
+  // ═══════════════════════════════════════════════
+  //  EVENTS
+  // ═══════════════════════════════════════════════
+  world.addEventListener('wheel', function(e) {
+    if (!overlay.classList.contains('hidden')) return;
+    e.preventDefault();
+    velocity += Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY) * 0.15, 12);
+    velocity = Math.max(-80, Math.min(80, velocity));
+  }, { passive: false });
+
+  var touchY = null;
+  world.addEventListener('touchstart', function(e) { touchY = e.touches[0].clientY; }, { passive: true });
+  world.addEventListener('touchmove', function(e) {
+    if (!overlay.classList.contains('hidden') || touchY === null) return;
+    e.preventDefault();
+    var y = e.touches[0].clientY;
+    velocity += (touchY - y) * 0.8;
+    velocity = Math.max(-80, Math.min(80, velocity));
+    touchY = y;
+  }, { passive: false });
+  world.addEventListener('touchend', function() { touchY = null; }, { passive: true });
+
+  // Click empty → center card
+  world.addEventListener('click', function(e) {
+    if (!overlay.classList.contains('hidden')) return;
+    if (e.target.classList.contains('thought-text')) return;
+    var rect = world.getBoundingClientRect();
+    var target = rect.top + window.scrollY + rect.height / 2 - window.innerHeight / 2;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  });
+
+  // Hover
+  container.addEventListener('mouseover', function(e) {
+    if (e.target.classList.contains('thought-text')) {
+      hoveredIdx = parseInt(e.target.dataset.index);
+    }
+  });
+  container.addEventListener('mouseout', function(e) {
+    if (e.target.classList.contains('thought-text')) {
+      hoveredIdx = -1;
+    }
+  });
+
+  // Click detail
+  container.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('thought-text')) return;
+    var idx = parseInt(e.target.dataset.index);
+    if (isNaN(idx)) return;
+    var t = thoughts[idx];
+    detailText.textContent = t.content;
+    var html = '';
+    if (t.date) html += '<div class="meta-row"><span class="mi">📅</span><span class="ml">' + dateLabel + '</span><span class="mv">' + fmtDate(t.date) + '</span></div>';
+    if (t.context) html += '<div class="meta-row"><span class="mi">💭</span><span class="ml">' + contextLabel + '</span><span class="mv">' + t.context + '</span></div>';
+    detailMeta.innerHTML = html;
+    overlay.classList.remove('hidden');
+  });
+  function fmtDate(iso) {
+    try { return new Date(iso).toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric' }); }
+    catch { return ''; }
+  }
+  detailClose.addEventListener('click', function() { overlay.classList.add('hidden'); });
+  overlay.querySelector('.backdrop').addEventListener('click', function() { overlay.classList.add('hidden'); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') overlay.classList.add('hidden'); });
+
+  window.addEventListener('resize', resizeCanvas);
+})();
+</script>
+
+<style>
+  .thoughts-card {
+    position: relative;
+    width: 100%;
+    height: 85vh;
+    min-height: 520px;
+    overflow: hidden;
+    border-radius: var(--radius-large);
+    background: #060a14;
+  }
+
+  .star-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .nebula {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(110px);
+    animation: nebula-breathe 14s ease-in-out infinite;
+  }
+  .n1 { width: 420px; height: 420px; top: 8%; left: 3%; background: rgba(60,100,255,0.06); }
+  .n2 { width: 380px; height: 380px; bottom: 12%; right: 8%; background: rgba(120,60,200,0.05); animation-delay: -7s; }
+  @keyframes nebula-breathe { 0%,100% { opacity: 0.35; transform: scale(1); } 50% { opacity: 1; transform: scale(1.18); } }
+
+  .thoughts-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  :global(.thought-text) {
+    position: absolute;
+    white-space: nowrap;
+    font-weight: 500;
+    line-height: 1.5;
+    color: rgba(210, 225, 255, 0.9);
+    text-shadow: 0 1px 5px rgba(0,0,0,0.6);
+    user-select: none;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: filter 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+    will-change: transform, opacity;
+  }
+  :global(.thought-text:hover) {
+    color: #e0ecff;
+    filter: none !important;
+    text-shadow:
+      0 0 28px rgba(180,210,255,0.8),
+      0 0 65px rgba(120,170,255,0.3),
+      0 0 4px rgba(220,235,255,1);
+  }
+
+  .toast {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 1.4rem;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: rgba(200,215,240,0.6);
+    font-size: 0.82rem;
+    z-index: 10;
+    pointer-events: none;
+    white-space: nowrap;
+    opacity: 0;
+    animation: toast-lifecycle 4.5s ease-in-out forwards;
+  }
+  .toast-arrow { opacity: 0.5; margin-right: 0.3em; }
+  @keyframes toast-lifecycle {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  }
+
+  .overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; animation: o-in 0.25s ease; }
+  .overlay.hidden { display: none; }
+  .backdrop { position: absolute; inset: 0; background: rgba(4,6,16,0.6); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  @keyframes o-in { from { opacity: 0; } to { opacity: 1; } }
+  .panel {
+    position: relative; max-width: 460px; width: 90%; padding: 2.5rem 2rem 2rem; border-radius: 20px;
+    background: rgba(12,16,32,0.94); border: 1px solid rgba(255,255,255,0.07);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 12px 60px rgba(0,0,0,0.4), 0 0 60px rgba(80,120,255,0.05);
+    animation: p-in 0.45s cubic-bezier(0.34,1.56,0.64,1); text-align: center; overflow: hidden;
+  }
+  @keyframes p-in { from { opacity: 0; transform: scale(0.6) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .panel-quote { position: absolute; top: -0.15em; left: 0.3em; font-size: 5.5rem; font-family: Georgia, serif; color: rgba(140,170,255,0.05); line-height: 1; pointer-events: none; }
+  .panel-close {
+    position: absolute; top: 0.6rem; right: 0.8rem; width: 2rem; height: 2rem; border: none; background: none;
+    color: rgba(200,215,240,0.3); font-size: 1.5rem; cursor: pointer; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s; z-index: 1;
+  }
+  .panel-close:hover { background: rgba(255,255,255,0.07); color: rgba(210,225,255,0.9); }
+  .panel-text { font-size: 1.4rem; font-weight: 600; line-height: 1.9; color: rgba(220,235,255,0.95); word-break: break-word; margin-bottom: 1.5rem; }
+  .panel-meta { display: flex; flex-direction: column; gap: 0.55rem; padding-top: 1.1rem; border-top: 1px solid rgba(255,255,255,0.06); text-align: left; }
+  :global(.meta-row) { display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; }
+  :global(.mi) { font-size: 0.95rem; flex-shrink: 0; width: 1.5em; text-align: center; }
+  :global(.ml) { color: rgba(200,215,240,0.38); flex-shrink: 0; }
+  :global(.mv) { color: rgba(210,225,255,0.72); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel, .overlay, .nebula { animation: none !important; }
+    .toast { animation: none !important; opacity: 0.7; }
+  }
+  @media (max-width: 640px) {
+    .thoughts-card { height: 68vh; min-height: 420px; }
+    .panel { padding: 2rem 1.5rem 1.5rem; max-width: 92%; }
+    .panel-text { font-size: 1.15rem; }
+    .toast { font-size: 0.72rem; bottom: 1rem; }
+  }
+</style>

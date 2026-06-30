@@ -110,6 +110,15 @@ export default defineConfig({
 					tags: z.array(z.string()).optional().default([]),
 					hidden: z.boolean().default(false),
 				})
+		},
+		// 碎碎念集合
+		thoughts: {
+			schema: ({ z }) =>
+				z.object({
+					content: z.string().optional().default(""),
+					date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+					context: z.string().optional().default(""),
+				})
 		}
 	},
 	integrations: [
@@ -129,7 +138,7 @@ export default defineConfig({
 			updateHead: true,
 			updateBodyClass: false,
 			globalInstance: true,
-			ignore: [/\/(guestbook|content-manager|create-content|my-editor)(\/|$)/],
+			ignore: [/\/(guestbook|content-manager|create-content|my-editor|thoughts)(\/|$)/],
 		}),
 		icon({
 			include: {

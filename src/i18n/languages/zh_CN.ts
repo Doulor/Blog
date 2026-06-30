@@ -184,6 +184,15 @@ export const zh_CN: Translation = {
 	[Key.timelineEmployed]: "在职",
 	[Key.timelineAvailable]: "可入职",
 
+	// 碎碎念
+	[Key.thoughts]: "碎碎念",
+	[Key.thoughtsSubtitle]: "在沙砾中淘金，拾起散落的只言片语",
+	[Key.thoughtsCount]: "条碎碎念",
+	[Key.thoughtsContext]: "背景",
+	[Key.thoughtsDate]: "时间",
+	[Key.thoughtsEmpty]: "还没有碎碎念，快去添加一些吧！",
+	[Key.thoughtsScrollHint]: "滚动鼠标，淘出属于你的那句",
+
 	// 密码保护
 	[Key.passwordProtected]: "密码保护",
 	[Key.passwordProtectedTitle]: "🔒此内容受密码保护",

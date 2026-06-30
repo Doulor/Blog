@@ -168,6 +168,15 @@ export const ja: Translation = {
 	[Key.timelineEmployed]: "在職中",
 	[Key.timelineAvailable]: "利用可能",
 
+	// つぶやき
+	[Key.thoughts]: "つぶやき",
+	[Key.thoughtsSubtitle]: "砂の中から金を拾い、散らばった言葉を集める",
+	[Key.thoughtsCount]: "件のつぶやき",
+	[Key.thoughtsContext]: "背景",
+	[Key.thoughtsDate]: "日時",
+	[Key.thoughtsEmpty]: "まだつぶやきがありません、追加しましょう！",
+	[Key.thoughtsScrollHint]: "スクロールしてつぶやきを発見",
+
 	// 密码保护
 	[Key.passwordProtected]: "パスワード保護",
 	[Key.passwordProtectedTitle]: "このコンテンツはパスワードで保護されています",

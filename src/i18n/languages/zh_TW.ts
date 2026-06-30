@@ -166,6 +166,15 @@ export const zh_TW: Translation = {
 	[Key.timelineEmployed]: "在職",
 	[Key.timelineAvailable]: "可工作",
 
+	// 碎碎念
+	[Key.thoughts]: "碎碎念",
+	[Key.thoughtsSubtitle]: "在沙礫中淘金，拾起散落的隻言片語",
+	[Key.thoughtsCount]: "條碎碎念",
+	[Key.thoughtsContext]: "背景",
+	[Key.thoughtsDate]: "時間",
+	[Key.thoughtsEmpty]: "還沒有碎碎念，快去添加一些吧！",
+	[Key.thoughtsScrollHint]: "滾動滑鼠，淘出屬於你的那句",
+
 	// 密碼保護
 	[Key.passwordProtected]: "密碼保護",
 	[Key.passwordProtectedTitle]: "此內容受密碼保護",

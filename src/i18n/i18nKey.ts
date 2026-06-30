@@ -183,6 +183,15 @@ enum I18nKey {
 
 	// 密码保护
 	passwordProtected = "passwordProtected",
+
+	// 碎碎念
+	thoughts = "thoughts",
+	thoughtsSubtitle = "thoughtsSubtitle",
+	thoughtsCount = "thoughtsCount",
+	thoughtsContext = "thoughtsContext",
+	thoughtsDate = "thoughtsDate",
+	thoughtsEmpty = "thoughtsEmpty",
+	thoughtsScrollHint = "thoughtsScrollHint",
 	passwordProtectedTitle = "passwordProtectedTitle",
 	passwordProtectedDescription = "passwordProtectedDescription",
 	passwordPlaceholder = "passwordPlaceholder",

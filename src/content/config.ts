@@ -63,9 +63,17 @@ const albumsCollection = defineCollection({
 const specCollection = defineCollection({
 	schema: z.object({}),
 });
+const thoughtsCollection = defineCollection({
+	schema: z.object({
+		content: z.string().optional().default(""),
+		date: z.coerce.date(),
+		context: z.string().optional().default(""),
+	}),
+});
 export const collections = {
 	posts: postsCollection,
 	diary: diaryCollection,
 	albums: albumsCollection,
 	spec: specCollection,
+	thoughts: thoughtsCollection,
 };
