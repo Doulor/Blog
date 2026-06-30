@@ -126,75 +126,108 @@ const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
   }
 
   // ═══════════════════════════════════════════════
-  //  3D THOUGHT ITEMS
+  //  3D THOUGHT ITEMS — fixed pool, infinite conveyor
+  //  Only POOL DOM elements exist. Thoughts flow through.
   // ═══════════════════════════════════════════════
   var N = thoughts.length;
-  var DEPTH = 5000;
+  var POOL = 64;
+  var VISIBLE_COUNT = 64;
+  var DEPTH = 4000;
+  var SPACING = DEPTH / VISIBLE_COUNT;
   var FOCAL = 500;
+  var totalCycle = N * SPACING;
 
-  var items = thoughts.map(function(t, i) {
-    return {
-      t: t,
-      x: (Math.random() - 0.5) * 1200,
-      y: (Math.random() - 0.5) * 700,
-      z: (i / N) * DEPTH + Math.random() * (DEPTH / N) * 0.4,
-      fontSize: 0.72 + Math.random() * 0.5,
-    };
-  });
+  function hashRand(a, b) {
+    var x = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+    return x - Math.floor(x);
+  }
 
-  var els = items.map(function(item, i) {
+  // Position state per thought (not per slot) — stays stable
+  var tState = [];
+  for (var ti = 0; ti < N; ti++) {
+    tState.push({ x: 0, y: 0, fs: 1, cycle: -1 });
+  }
+
+  // Pool of DOM elements
+  var pool = [];
+  for (var pi = 0; pi < POOL; pi++) {
     var el = document.createElement('span');
     el.className = 'thought-text';
-    el.textContent = item.t.content;
-    el.dataset.index = i;
-    el.style.fontSize = item.fontSize + 'rem';
     container.appendChild(el);
-    return el;
-  });
+    pool.push({ el: el, idx: -1 });
+  }
 
   var scrollZ = 0;
   var velocity = 0;
   var hoveredIdx = -1;
 
   // ═══════════════════════════════════════════════
-  //  RENDER LOOP (single rAF for everything)
+  //  RENDER LOOP
   // ═══════════════════════════════════════════════
   function frame(time) {
     requestAnimationFrame(frame);
 
-    // Inertia
     velocity *= 0.94;
     if (Math.abs(velocity) < 0.3) velocity = 0;
     scrollZ += velocity;
 
-    // Stars
     drawStars(time);
 
-    // Thoughts
     var W = cW, H = cH;
-    for (var i = 0; i < N; i++) {
-      var item = items[i];
-      var el = els[i];
-      var sz = item.z - scrollZ;
-      sz = ((sz % DEPTH) + DEPTH) % DEPTH;
-      var dist = sz + 200;
-      if (dist < 10) { el.style.display = 'none'; continue; }
-      var scale = FOCAL / dist;
-      var sx = W / 2 + item.x * scale;
-      var sy = H / 2 + item.y * scale;
-      if (sx < -300 || sx > W + 300 || sy < -300 || sy > H + 300) {
-        el.style.display = 'none'; continue;
+    var headFloat = scrollZ / SPACING;
+    var headIdx = Math.floor(headFloat);
+    var frac = headFloat - headIdx;
+    var globalCycle = Math.floor(scrollZ / totalCycle);
+
+    for (var p = 0; p < POOL; p++) {
+      var rawIdx = headIdx + p;
+      var tIdx = ((rawIdx % N) + N) % N;
+      var depth = (p - frac) * SPACING + 200;
+      var sp = pool[p];
+
+      if (depth < 50 || depth > DEPTH + 400) {
+        sp.el.style.display = 'none';
+        sp.idx = -1;
+        continue;
       }
-      var opacity = dist > DEPTH - 400 ? Math.max(0.05, (DEPTH + 200 - dist) / 400) : 1;
-      var blur = dist > 3000 ? Math.min(3, (dist - 3000) / 1500 * 3) : 0;
-      var mul = (hoveredIdx === i) ? 1.5 : 1;
-      el.style.display = '';
-      el.style.left = sx + 'px';
-      el.style.top = sy + 'px';
-      el.style.transform = 'translate(-50%,-50%) scale(' + (scale * mul) + ')';
-      el.style.opacity = opacity;
-      el.style.filter = (hoveredIdx === i) ? 'none' : (blur > 0 ? 'blur(' + blur + 'px)' : 'none');
-      el.style.zIndex = (hoveredIdx === i) ? 99999 : Math.round(scale * 1000);
+
+      // Update content if slot maps to a different thought
+      if (sp.idx !== tIdx) {
+        sp.idx = tIdx;
+        sp.el.textContent = thoughts[tIdx].content;
+        sp.el.dataset.index = tIdx;
+      }
+
+      // Position per thought, re-randomized each cycle
+      var ts = tState[tIdx];
+      if (ts.cycle !== globalCycle) {
+        ts.cycle = globalCycle;
+        ts.x = (hashRand(tIdx, globalCycle * 3) - 0.5) * 1200;
+        ts.y = (hashRand(tIdx, globalCycle * 3 + 1) - 0.5) * 700;
+        ts.fs = 0.72 + hashRand(tIdx, globalCycle * 3 + 2) * 0.5;
+      }
+
+      var scale = FOCAL / depth;
+      var sx = W / 2 + ts.x * scale;
+      var sy = H / 2 + ts.y * scale;
+      if (sx < -300 || sx > W + 300 || sy < -300 || sy > H + 300) {
+        sp.el.style.display = 'none'; continue;
+      }
+
+      var opacity = 1;
+      if (depth > DEPTH - 400) opacity = Math.max(0.05, (DEPTH + 200 - depth) / 400);
+      else if (depth < 350) opacity = Math.max(0.05, (depth - 50) / 300);
+      var blur = depth > 3000 ? Math.min(3, (depth - 3000) / 1500 * 3) : 0;
+      var mul = (hoveredIdx === tIdx) ? 1.5 : 1;
+
+      sp.el.style.display = '';
+      sp.el.style.fontSize = ts.fs + 'rem';
+      sp.el.style.left = sx + 'px';
+      sp.el.style.top = sy + 'px';
+      sp.el.style.transform = 'translate(-50%,-50%) scale(' + (scale * mul) + ')';
+      sp.el.style.opacity = opacity;
+      sp.el.style.filter = (hoveredIdx === tIdx) ? 'none' : (blur > 0 ? 'blur(' + blur + 'px)' : 'none');
+      sp.el.style.zIndex = (hoveredIdx === tIdx) ? 99999 : Math.round(scale * 1000);
     }
   }
 
