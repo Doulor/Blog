@@ -740,6 +740,15 @@ if (typeof window !== 'undefined') {
       const target = button.getAttribute('data-target');
       const targetForm = document.getElementById(target);
 
+      // 碎碎念tab隐藏文件路径选择器，自动设为thoughts目录
+      const dirRow = document.getElementById('fileDirectory')?.closest('.space-y-4') || document.getElementById('fileDirectory')?.parentElement?.parentElement;
+      if (target === 'thoughtForm') {
+        if (dirRow) dirRow.style.display = 'none';
+        document.getElementById('fileDirectory').value = 'src/content/thoughts';
+      } else {
+        if (dirRow) dirRow.style.display = '';
+      }
+
       // 获取当前显示的表单
       const currentForm = document.querySelector('.form-content:not(.hidden):not(.fade-out)');
 
