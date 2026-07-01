@@ -1832,8 +1832,8 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
   // 提交到GitHub功能
   document.getElementById('saveToGithub').addEventListener('click', async function() {
     const content = document.getElementById('markdownResult').textContent;
-    const fileName = document.getElementById('fileName').value;
-    const directory = document.getElementById('fileDirectory').value;
+    const fileName = document.getElementById('fileName').value.replace(/^\/+/, '');
+    const directory = document.getElementById('fileDirectory').value.replace(/^\/+/, '');
 
     if (!content || !fileName) {
       showMessage('请先生成内容并填写文件名', 'error');
