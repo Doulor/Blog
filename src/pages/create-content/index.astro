@@ -520,6 +520,7 @@ if (typeof window !== 'undefined') {
                 <select id="fileDirectory" class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
                   <option value="src/content/posts">文章 (src/content/posts)</option>
                   <option value="src/content/diary">日记 (src/content/diary)</option>
+                  <option value="src/content/thoughts">碎碎念 (src/content/thoughts)</option>
                   <option value="src/content/albums">相册 (src/content/albums)</option>
                 </select>
               </div>
@@ -1834,6 +1835,7 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
     const content = document.getElementById('markdownResult').textContent;
     const fileName = document.getElementById('fileName').value.replace(/^\/+/, '');
     const directory = document.getElementById('fileDirectory').value.replace(/^\/+/, '');
+    const fullPath = directory + '/' + fileName;
 
     if (!content || !fileName) {
       showMessage('请先生成内容并填写文件名', 'error');
@@ -1849,7 +1851,7 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
       // 读取当前文件以获取SHA（如果文件已存在）
       let sha = null;
       try {
-        const response = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${directory}/${fileName}`, {
+        const response = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${fullPath}`, {
           headers: {
             'Authorization': `Bearer ${githubToken}`
           }
@@ -1873,7 +1875,7 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
 
       // 准备提交数据
       const commitData = {
-        message: `添加/更新 ${directory}/${fileName} [通过内容创建器]`,
+        message: `添加/更新 ${fullPath} [通过内容创建器]`,
         content: base64Content,
         branch: 'main'
       };
@@ -1883,7 +1885,7 @@ ${key}: ${JSON.stringify(value, null, 2).split('\n').join('\n  ')}`;
       }
 
       // 提交文件
-      const result = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${directory}/${fileName}`, {
+      const result = await fetch(`https://api.github.com/repos/Doulor/Blog/contents/${fullPath}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${githubToken}`,
