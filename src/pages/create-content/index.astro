@@ -514,13 +514,12 @@ if (typeof window !== 'undefined') {
               <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">请包含正确的文件扩展名(.md)和日期前缀</p>
             </div>
 
-            <div>
+            <div id="fileDirectoryRow">
               <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">文件路径</label>
               <div class="flex space-x-2">
                 <select id="fileDirectory" class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
                   <option value="src/content/posts">文章 (src/content/posts)</option>
                   <option value="src/content/diary">日记 (src/content/diary)</option>
-                  <option value="src/content/thoughts">碎碎念 (src/content/thoughts)</option>
                   <option value="src/content/albums">相册 (src/content/albums)</option>
                 </select>
               </div>
@@ -733,18 +732,16 @@ if (typeof window !== 'undefined') {
   // 选项卡切换功能
   document.querySelectorAll('.tab-btn').forEach(button => {
     button.addEventListener('click', () => {
-      // 切换激活状态
       switchTab(button);
-
-      // 获取目标表单
       const target = button.getAttribute('data-target');
       const targetForm = document.getElementById(target);
 
-      // 碎碎念tab隐藏文件路径选择器，自动设为thoughts目录
-      const dirRow = document.getElementById('fileDirectory')?.closest('.space-y-4') || document.getElementById('fileDirectory')?.parentElement?.parentElement;
+      // 碎碎念隐藏路径选择器（固定thoughts目录），其他tab显示
+      var dirField = document.getElementById('fileDirectory');
+      var dirRow = document.getElementById('fileDirectoryRow');
       if (target === 'thoughtForm') {
+        dirField.value = 'src/content/thoughts';
         if (dirRow) dirRow.style.display = 'none';
-        document.getElementById('fileDirectory').value = 'src/content/thoughts';
       } else {
         if (dirRow) dirRow.style.display = '';
       }
