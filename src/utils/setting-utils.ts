@@ -97,3 +97,46 @@ export function setTheme(theme: LIGHT_DARK_MODE): void {
 export function getStoredTheme(): LIGHT_DARK_MODE {
 	return (localStorage.getItem("theme") as LIGHT_DARK_MODE) || DEFAULT_THEME;
 }
+
+// ===== 字体切换 =====
+export type FontOption = "default" | "smiley-sans" | "lxgw-wenkai";
+
+const FONT_CLASS_MAP: Record<FontOption, string> = {
+	"default": "",
+	"smiley-sans": "font-smiley-sans",
+	"lxgw-wenkai": "font-lxgw-wenkai",
+};
+
+export function getDefaultFont(): FontOption {
+	const configCarrier = document.getElementById("config-carrier");
+	return (configCarrier?.dataset.defaultFont as FontOption) || "default";
+}
+
+export function getFont(): FontOption {
+	const stored = localStorage.getItem("font");
+	if (stored && stored in FONT_CLASS_MAP) {
+		return stored as FontOption;
+	}
+	return getDefaultFont();
+}
+
+export function setFont(font: FontOption): void {
+	localStorage.setItem("font", font);
+	applyFontToDocument(font);
+}
+
+export function applyFontToDocument(font: FontOption): void {
+	// 移除所有字体类（从 body 上）
+	for (const cls of Object.values(FONT_CLASS_MAP)) {
+		if (cls) document.body.classList.remove(cls);
+	}
+	// 切换 zen-maru-gothic-enabled：默认字体时保留，其他字体时移除
+	if (font === "default") {
+		document.body.classList.add("zen-maru-gothic-enabled");
+	} else {
+		document.body.classList.remove("zen-maru-gothic-enabled");
+		// 添加目标字体类
+		const cls = FONT_CLASS_MAP[font];
+		if (cls) document.body.classList.add(cls);
+	}
+}

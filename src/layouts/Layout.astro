@@ -372,6 +372,21 @@ const bannerOffset =
 			}
 		</style>
 
+		<!-- 字体切换初始化脚本（尽早执行以减少 FOUT） -->
+		<script is:inline>
+		(function() {
+			var font = localStorage.getItem('font');
+			if (!font || font === 'default') return;
+			// 非默认字体时，移除默认的 zen-maru-gothic-enabled，添加对应字体类
+			var body = document.body;
+			if (body) {
+				body.classList.remove('zen-maru-gothic-enabled');
+				var cls = font === 'smiley-sans' ? 'font-smiley-sans' : font === 'lxgw-wenkai' ? 'font-lxgw-wenkai' : '';
+				if (cls) body.classList.add(cls);
+			}
+		})();
+		</script>
+
 
 
 	</head>

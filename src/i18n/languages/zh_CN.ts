@@ -3,7 +3,7 @@ import type { Translation } from "../translation";
 
 export const zh_CN: Translation = {
 	[Key.home]: "主页",
-	[Key.about]: "关于我们",
+	[Key.about]: "关于我",
 	[Key.archive]: "归档",
 	[Key.search]: "搜索",
 	[Key.other]: "其他",
@@ -31,6 +31,7 @@ export const zh_CN: Translation = {
 	[Key.postsCount]: "篇文章",
 
 	[Key.themeColor]: "主题色",
+	[Key.font]: "字体",
 
 	[Key.lightMode]: "亮色",
 	[Key.darkMode]: "暗色",

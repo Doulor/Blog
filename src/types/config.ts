@@ -26,6 +26,7 @@ export type SiteConfig = {
 		zenMaruGothic: {
 			enable: boolean; // 是否使用 ZenMaruGothic-Black 作为全局字体
 		};
+		default?: "default" | "smiley-sans" | "lxgw-wenkai"; // 默认字体选择
 	};
 
 	// 文章列表布局配置
