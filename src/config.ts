@@ -258,7 +258,7 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.png", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	name: "Doulor",
-	bio: "世界很大，不妨到处走走",
+	bio: "旧人不知我近况,新人不知我过往",
 	links: [
 		{
 			name: "Home",
