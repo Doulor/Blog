@@ -1,0 +1,23 @@
+# R2 媒体 Worker 部署配置
+# 部署步骤见 worker/README.md
+#
+# name 保持与旧列表 Worker 一致（r2img），部署后 r2img.doulor.cn 直接获得上传能力，
+# 内容创建器里已保存的 Worker 地址无需修改。
+
+name = "r2img"
+main = "r2-media.js"
+compatibility_date = "2025-01-01"
+account_id = "83fdea7d910cbc683e6d53fa6baf45ab"
+
+# 绑定到 R2 存储桶（绑定名与旧 Worker 保持一致）
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "blog"
+
+# 非敏感变量：图片公开访问基址
+[vars]
+PUBLIC_BASE_URL = "https://img.doulor.cn"
+
+# 敏感变量用 secret 配置，不要写在这里：
+#   pnpm worker:secret
+# 然后输入一个足够随机的令牌（建议 32 位以上），内容创建器里填同一个令牌。

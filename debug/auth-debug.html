@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub OAuth 调试 - Firef 博客</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-2xl w-full space-y-8">
+            <div class="text-center">
+                <h2 class="mt-6 text-2xl font-extrabold text-gray-900">
+                    GitHub OAuth 调试工具
+                </h2>
+                <p class="mt-2 text-gray-600">
+                    用于诊断和修复 GitHub 认证问题
+                </p>
+            </div>
+
+            <div class="mt-8 bg-white py-8 px-4 shadow rounded-lg sm:px-10">
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">当前认证状态</h3>
+                        <div id="statusInfo" class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600">正在检查...</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">URL 参数信息</h3>
+                        <div id="urlInfo" class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600">正在解析...</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">操作选项</h3>
+                        <div class="space-y-4">
+                            <button id="checkTokenBtn" 
+                                class="w-full flex justify-center py-3 px-6 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                验证现有令牌
+                            </button>
+                            <button id="clearTokenBtn" 
+                                class="w-full flex justify-center py-3 px-6 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                清除认证数据
+                            </button>
+                            <button id="goToAuthBtn" 
+                                class="w-full flex justify-center py-3 px-6 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                重新进行认证
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示当前认证状态
+        function showAuthStatus() {
+            const statusInfo = document.getElementById('statusInfo');
+            const token = localStorage.getItem('github-auth-token') || 
+                         localStorage.getItem('decap-cms-user') || 
+                         localStorage.getItem('netlify-cms-user');
+            
+            if (token) {
+                try {
+                    const tokenObj = JSON.parse(token);
+                    statusInfo.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="font-medium">认证状态:</span>
+                                <span class="text-green-600">已认证</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">用户名:</span>
+                                <span>${tokenObj.login || '未知'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">令牌类型:</span>
+                                <span>${tokenObj.token ? 'Personal Access Token' : 'OAuth Token'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">令牌长度:</span>
+                                <span>${tokenObj.token ? tokenObj.token.length : 'N/A'}</span>
+                            </div>
+                            <div class="pt-2">
+                                <details class="text-xs text-gray-500">
+                                    <summary>查看完整令牌信息</summary>
+                                    <pre class="mt-2 p-2 bg-white rounded border">${JSON.stringify(tokenObj, null, 2)}</pre>
+                                </details>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) {
+                    statusInfo.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="font-medium">认证状态:</span>
+                                <span class="text-yellow-600">格式错误</span>
+                            </div>
+                            <div class="text-sm text-red-600">令牌数据格式不正确: ${e.message}</div>
+                        </div>
+                    `;
+                }
+            } else {
+                statusInfo.innerHTML = `
+                    <div class="flex justify-between">
+                        <span class="font-medium">认证状态:</span>
+                        <span class="text-red-600">未认证</span>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示URL参数
+        function showUrlParams() {
+            const urlInfo = document.getElementById('urlInfo');
+            const urlParams = new URLSearchParams(window.location.search);
+            const hash = window.location.hash.substring(1);
+            
+            let paramsHtml = '<div class="space-y-2">';
+            
+            if (urlParams.toString()) {
+                paramsHtml += '<div><strong>查询参数:</strong></div>';
+                for (const [key, value] of urlParams) {
+                    // 隐藏可能的敏感参数
+                    if (key.toLowerCase().includes('token') || key.toLowerCase().includes('auth')) {
+                        paramsHtml += `<div class="flex justify-between"><span>${key}:</span> <span class="text-red-500">[敏感信息隐藏]</span></div>`;
+                    } else {
+                        paramsHtml += `<div class="flex justify-between"><span>${key}:</span> <span>${value}</span></div>`;
+                    }
+                }
+            } else {
+                paramsHtml += '<div>无查询参数</div>';
+            }
+            
+            if (hash) {
+                paramsHtml += '<div class="pt-2"><strong>哈希参数:</strong></div>';
+                paramsHtml += `<div>${hash}</div>`;
+            }
+            
+            paramsHtml += '</div>';
+            urlInfo.innerHTML = paramsHtml;
+        }
+
+        // 验证令牌
+        async function validateToken() {
+            const token = localStorage.getItem('github-auth-token') || 
+                         localStorage.getItem('decap-cms-user') || 
+                         localStorage.getItem('netlify-cms-user');
+            
+            if (!token) {
+                alert('没有找到认证令牌');
+                return;
+            }
+            
+            try {
+                const tokenObj = JSON.parse(token);
+                const accessToken = tokenObj.backend_token || 
+                                  tokenObj.access_token || 
+                                  tokenObj.token || 
+                                  tokenObj.api_token;
+                
+                if (!accessToken) {
+                    alert('令牌对象中没有有效的访问令牌');
+                    return;
+                }
+                
+                // 尝试使用Bearer格式
+                let response;
+                try {
+                    response = await fetch('https://api.github.com/user', {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                } catch (e) {
+                    console.log('Bearer格式失败，尝试token格式:', e);
+                    response = await fetch('https://api.github.com/user', {
+                        headers: { 'Authorization': `token ${accessToken}` }
+                    });
+                }
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    alert(`令牌验证成功！用户: ${userData.login}`);
+                } else {
+                    alert(`令牌验证失败: ${response.status} ${response.statusText}`);
+                }
+            } catch (e) {
+                alert(`验证过程中出错: ${e.message}`);
+            }
+        }
+
+        // 清除令牌
+        function clearTokens() {
+            if (confirm('确定要清除所有认证数据吗？')) {
+                localStorage.removeItem('github-auth-token');
+                localStorage.removeItem('decap-cms-user');
+                localStorage.removeItem('netlify-cms-user');
+                alert('认证数据已清除');
+                showAuthStatus();
+            }
+        }
+
+        // 页面加载完成后运行
+        document.addEventListener('DOMContentLoaded', function() {
+            showAuthStatus();
+            showUrlParams();
+            
+            document.getElementById('checkTokenBtn').addEventListener('click', validateToken);
+            document.getElementById('clearTokenBtn').addEventListener('click', clearTokens);
+            document.getElementById('goToAuthBtn').addEventListener('click', function() {
+                window.location.href = '/auth.html';
+            });
+        });
+    </script>
+</body>
+</html>

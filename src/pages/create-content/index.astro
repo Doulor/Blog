@@ -307,6 +307,37 @@ if (typeof window !== 'undefined') {
                   <button type="button" id="fetchDiaryR2ImagesBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-smooth flex items-center">
                     <i class="fa fa-sync mr-2" aria-hidden="true"></i>获取 R2 图片链接
                   </button>
+
+                  <!-- 上传区域 -->
+                  <div class="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-1 space-y-2">
+                    <div class="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      <i class="fa fa-upload text-green-500" aria-hidden="true"></i>直接上传图片到 R2
+                    </div>
+                    <div class="space-y-1">
+                      <label for="diaryR2UploadToken" class="block text-xs text-neutral-500 dark:text-neutral-400">上传令牌（Worker 的 UPLOAD_TOKEN，仅存本地）</label>
+                      <input type="password" id="diaryR2UploadToken" placeholder="部署 Worker 时设置的令牌"
+                        class="w-full p-2.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                    </div>
+                    <div class="space-y-1">
+                      <label for="diaryR2UploadDirectory" class="block text-xs text-neutral-500 dark:text-neutral-400">上传目录（上传完后自动拉取该目录链接）</label>
+                      <input type="text" id="diaryR2UploadDirectory" placeholder="例如: happyday (上传到 diary/happyday)"
+                        class="w-full p-2.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                    </div>
+                    <input type="file" id="diaryR2UploadFiles" accept="image/*" multiple class="hidden">
+                    <div class="flex items-center gap-2">
+                      <button type="button" id="diaryR2PickBtn" class="text-sm bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-200 px-4 py-2 rounded-lg transition-smooth flex items-center">
+                        <i class="fa fa-image mr-2" aria-hidden="true"></i>选择图片
+                      </button>
+                      <button type="button" id="uploadDiaryR2Btn" class="text-sm bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-smooth flex items-center">
+                        <i class="fa fa-cloud-upload-alt mr-2" aria-hidden="true"></i>上传
+                      </button>
+                    </div>
+                    <label class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 cursor-pointer">
+                      <input type="checkbox" id="diaryR2ConvertWebp" checked class="accent-[var(--primary)]">
+                      上传前转为 WebP（质量 82，与本地脚本一致）
+                    </label>
+                    <p id="diaryR2UploadStatus" class="text-xs text-neutral-500 dark:text-neutral-400"></p>
+                  </div>
                 </div>
               </div>
 
@@ -482,6 +513,37 @@ if (typeof window !== 'undefined') {
               <button type="button" id="fetchR2ImagesBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-smooth flex items-center">
                 <i class="fa fa-sync mr-2" aria-hidden="true"></i>获取 R2 图片链接
               </button>
+
+              <!-- 上传区域 -->
+              <div class="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-1 space-y-2">
+                <div class="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <i class="fa fa-upload text-green-500" aria-hidden="true"></i>直接上传图片到 R2
+                </div>
+                <div class="space-y-1">
+                  <label for="r2UploadToken" class="block text-xs text-neutral-500 dark:text-neutral-400">上传令牌（Worker 的 UPLOAD_TOKEN，仅存本地）</label>
+                  <input type="password" id="r2UploadToken" placeholder="部署 Worker 时设置的令牌"
+                    class="w-full p-2.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                </div>
+                <div class="space-y-1">
+                  <label for="r2UploadDirectory" class="block text-xs text-neutral-500 dark:text-neutral-400">上传目录（上传完后自动拉取该目录链接）</label>
+                  <input type="text" id="r2UploadDirectory" placeholder="例如: sky (上传到 album/sky)"
+                    class="w-full p-2.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                </div>
+                <input type="file" id="r2UploadFiles" accept="image/*" multiple class="hidden">
+                <div class="flex items-center gap-2">
+                  <button type="button" id="r2PickBtn" class="text-sm bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-200 px-4 py-2 rounded-lg transition-smooth flex items-center">
+                    <i class="fa fa-image mr-2" aria-hidden="true"></i>选择图片
+                  </button>
+                  <button type="button" id="uploadR2Btn" class="text-sm bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-smooth flex items-center">
+                    <i class="fa fa-cloud-upload-alt mr-2" aria-hidden="true"></i>上传
+                  </button>
+                </div>
+                <label class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 cursor-pointer">
+                  <input type="checkbox" id="r2ConvertWebp" checked class="accent-[var(--primary)]">
+                  上传前转为 WebP（质量 82，与本地脚本一致）
+                </label>
+                <p id="r2UploadStatus" class="text-xs text-neutral-500 dark:text-neutral-400"></p>
+              </div>
             </div>
           </div>
 
@@ -1145,6 +1207,150 @@ if (typeof window !== 'undefined') {
     });
   }
 
+  // ============ R2 上传（相册/日记共用） ============
+
+  // 浏览器内转 WebP，与本地 ImageMagick 质量参数保持一致
+  function convertImageToWebp(file, quality) {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith('image/')) { reject(new Error('不是图片文件')); return; }
+      const objectUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        canvas.toBlob(
+          blob => blob ? resolve(blob) : reject(new Error('WebP 转换失败')),
+          'image/webp', quality
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('图片读取失败')); };
+      img.src = objectUrl;
+    });
+  }
+
+  // 通用上传：选图 → 可选转 WebP → POST 到 Worker → 回填链接
+  async function uploadImagesToR2({ workerUrl, directory, token, files, convertWebp, onProgress }) {
+    if (!workerUrl || !directory) throw new Error('请先填写 Worker URL 和 R2 目录名');
+    if (!token) throw new Error('请填写上传令牌');
+
+    const formData = new FormData();
+    formData.append('dir', directory);
+
+    for (const file of files) {
+      let f = file;
+      if (convertWebp && file.type.startsWith('image/')) {
+        const blob = await convertImageToWebp(file, 0.82);
+        const newName = file.name.replace(/\.[^.]+$/, '') + '.webp';
+        f = new File([blob], newName, { type: 'image/webp' });
+      }
+      formData.append('files', f);
+      if (onProgress) onProgress(`已准备 ${f.name}`);
+    }
+
+    const response = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'X-Upload-Token': token },
+      body: formData,
+    });
+    if (!response.ok) {
+      let msg = `上传失败: ${response.status}`;
+      try { const err = await response.json(); if (err.error) msg = err.error; } catch {}
+      throw new Error(msg);
+    }
+    const data = await response.json();
+    const uploaded = (data.uploaded || data) || [];
+    if (!Array.isArray(uploaded)) throw new Error('返回数据格式不正确');
+    return uploaded;
+  }
+
+  // 绑定一个上传区（相册/日记各一份）
+  function setupR2Uploader({ tokenInputId, fileInputId, pickBtnId, uploadBtnId, convertId, statusId, workerUrlId, directoryId, prefix, refresh }) {
+    const tokenInput = document.getElementById(tokenInputId);
+    const fileInput = document.getElementById(fileInputId);
+    const statusEl = document.getElementById(statusId);
+
+    // 令牌持久化（两个输入框共用同一个 key）
+    const TOKEN_KEY = 'r2_upload_token';
+    const saved = localStorage.getItem(TOKEN_KEY);
+    if (saved) tokenInput.value = saved;
+    tokenInput.addEventListener('input', () => localStorage.setItem(TOKEN_KEY, tokenInput.value.trim()));
+
+    document.getElementById(pickBtnId).addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const n = fileInput.files.length;
+      statusEl.textContent = n ? `已选择 ${n} 个文件` : '';
+    });
+
+    document.getElementById(uploadBtnId).addEventListener('click', async function() {
+      const workerUrl = document.getElementById(workerUrlId).value.trim();
+      let directory = document.getElementById(directoryId).value.trim();
+      const token = tokenInput.value.trim();
+      const convertWebp = document.getElementById(convertId).checked;
+      const files = Array.from(fileInput.files || []);
+
+      if (!files.length) { showMessage('请先选择要上传的图片', 'error'); return; }
+
+      // 与“获取链接”保持一致的目录前缀逻辑
+      directory = normalizeR2Directory(directory, prefix);
+
+      const originalText = this.innerHTML;
+      this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>上传中...';
+      this.disabled = true;
+      statusEl.textContent = '正在上传...';
+
+      try {
+        const uploaded = await uploadImagesToR2({
+          workerUrl, directory, token, files, convertWebp,
+          onProgress: msg => { statusEl.textContent = msg; },
+        });
+        // 上传完自动拉取该目录的最新链接并回填
+        statusEl.textContent = `已上传 ${uploaded.length} 张，正在拉取链接...`;
+        const total = await refresh(workerUrl, directory);
+        statusEl.textContent = `已上传 ${uploaded.length} 张，目录共 ${total} 张图片`;
+        showMessage(`成功上传 ${uploaded.length} 张图片到 ${directory}`, 'info');
+        fileInput.value = '';
+      } catch (error) {
+        console.error('R2 上传失败:', error);
+        statusEl.textContent = '上传失败';
+        showMessage(`R2 上传失败: ${error.message}`, 'error');
+      } finally {
+        this.innerHTML = originalText;
+        this.disabled = false;
+      }
+    });
+  }
+
+  // 相册上传区
+  setupR2Uploader({
+    tokenInputId: 'r2UploadToken',
+    fileInputId: 'r2UploadFiles',
+    pickBtnId: 'r2PickBtn',
+    uploadBtnId: 'uploadR2Btn',
+    convertId: 'r2ConvertWebp',
+    statusId: 'r2UploadStatus',
+    workerUrlId: 'r2WorkerUrl',
+    directoryId: 'r2UploadDirectory',
+    prefix: 'album',
+    refresh: refreshAlbumR2Images,
+  });
+
+  // 日记上传区
+  setupR2Uploader({
+    tokenInputId: 'diaryR2UploadToken',
+    fileInputId: 'diaryR2UploadFiles',
+    pickBtnId: 'diaryR2PickBtn',
+    uploadBtnId: 'uploadDiaryR2Btn',
+    convertId: 'diaryR2ConvertWebp',
+    statusId: 'diaryR2UploadStatus',
+    workerUrlId: 'diaryR2WorkerUrl',
+    directoryId: 'diaryR2UploadDirectory',
+    prefix: 'diary',
+    refresh: refreshDiaryR2Images,
+  });
+
   // 相册类型切换
   document.querySelectorAll('input[name="albumType"]').forEach(radio => {
     radio.addEventListener('change', function() {
@@ -1203,171 +1409,99 @@ if (typeof window !== 'undefined') {
     });
   });
 
-  // 添加从R2获取相册图片链接的功能
+  // ============ R2 目录列表拉取（获取链接 / 上传后自动刷新共用） ============
+
+  // 规范化目录名：含 / 的按原样，简短名加前缀
+  function normalizeR2Directory(directory, prefix) {
+    return directory.includes('/') ? directory : `${prefix}/${directory}`;
+  }
+
+  // 拉取指定目录的图片链接列表
+  async function fetchR2ImageUrls(workerUrl, directory) {
+    const response = await fetch(`${workerUrl}?dir=${encodeURIComponent(directory)}`);
+    if (!response.ok) throw new Error(`获取图片失败: ${response.status} ${response.statusText}`);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error('返回的数据格式不正确');
+    return data.map(item => item.url);
+  }
+
+  // 相册：清空现有图片输入框，按目录列表回填，返回图片数量
+  async function refreshAlbumR2Images(workerUrl, directory) {
+    const imageUrls = await fetchR2ImageUrls(workerUrl, directory);
+    const container = document.getElementById('photosContainer');
+    container.innerHTML = '';
+    imageUrls.forEach(url => {
+      addAlbumImageInput();
+      const inputs = document.querySelectorAll('#photosContainer input[name="photoSrc[]"]');
+      if (inputs.length) inputs[inputs.length - 1].value = url;
+    });
+    const activeForm = document.querySelector('.form-content:not(.hidden)');
+    if (activeForm) generateMarkdown(activeForm.id.replace('Form', ''));
+    return imageUrls.length;
+  }
+
+  // 日记：清空现有图片输入框，按目录列表回填，返回图片数量
+  async function refreshDiaryR2Images(workerUrl, directory) {
+    const imageUrls = await fetchR2ImageUrls(workerUrl, directory);
+    const container = document.getElementById('diaryImagesContainer');
+    container.innerHTML = '';
+    imageUrls.forEach(url => addDiaryImageInput(url));
+    const activeForm = document.querySelector('.form-content:not(.hidden)');
+    if (activeForm) generateMarkdown(activeForm.id.replace('Form', ''));
+    return imageUrls.length;
+  }
+
+  // 获取相册图片链接
   document.getElementById('fetchR2ImagesBtn').addEventListener('click', async function() {
     const workerUrl = document.getElementById('r2WorkerUrl').value.trim();
-    let directory = document.getElementById('r2Directory').value.trim();
+    const directory = document.getElementById('r2Directory').value.trim();
 
     if (!workerUrl || !directory) {
       showMessage('请填写Worker URL和R2目录名', 'error');
       return;
     }
 
-    // 为相册添加路径前缀（仅当用户输入简短名称且未指定路径前缀时）
-    if (!directory.includes('/')) {
-      // 如果用户输入没有包含任何斜杠，假设这是一个简短目录名，添加 album/ 前缀
-      directory = 'album/' + directory;
-    }
-
-    // 显示加载状态
+    const target = normalizeR2Directory(directory, 'album');
     const originalText = this.innerHTML;
     this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>加载中...';
     this.disabled = true;
 
     try {
-      const response = await fetch(`${workerUrl}?dir=${encodeURIComponent(directory)}`);
-
-      if (!response.ok) {
-        throw new Error(`获取图片失败: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (!Array.isArray(data)) {
-        throw new Error('返回的数据格式不正确');
-      }
-
-      // 获取图片链接列表
-      const imageUrls = data.map(item => item.url);
-
-      if (imageUrls.length === 0) {
-        showMessage('该目录下没有找到图片', 'info');
-        return;
-      }
-
-      // 清空现有的图片输入框
-      const container = document.getElementById('photosContainer');
-      container.innerHTML = '';
-
-      // 添加从R2获取到的图片链接
-      imageUrls.forEach(url => {
-        const inputDiv = document.createElement('div');
-        inputDiv.className = 'album-image-input fade-in flex items-center gap-2 mb-2 image-input-container';
-        inputDiv.innerHTML = `
-            <input type="text" name="photoSrc[]" value="${url}" placeholder="图片链接"
-                class="flex-1 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
-            <button type="button" class="remove-photo bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800 text-red-600 dark:text-red-300 w-10 h-10 rounded-full flex items-center justify-center transition-smooth">
-                <span class="text-xl font-bold">×</span>
-            </button>
-        `;
-        container.appendChild(inputDiv);
-
-        // 添加输入事件监听器来实时更新内容
-        const inputField = inputDiv.querySelector('input');
-        inputField.addEventListener('input', function() {
-          const activeForm = document.querySelector('.form-content:not(.hidden)');
-          if (activeForm) {
-            const formType = activeForm.id.replace('Form', '');
-            generateMarkdown(formType);
-          }
-        });
-
-        // 添加删除功能
-        inputDiv.querySelector('.remove-photo').addEventListener('click', function() {
-          const item = this.parentElement;
-          item.classList.add('fade-out');
-          setTimeout(() => {
-            item.remove();
-            // 删除后更新生成的内容
-            const activeForm = document.querySelector('.form-content:not(.hidden)');
-            if (activeForm) {
-              const formType = activeForm.id.replace('Form', '');
-              generateMarkdown(formType);
-            }
-          }, 300);
-        });
-      });
-
-      // 更新预览
-      const activeForm = document.querySelector('.form-content:not(.hidden)');
-      if (activeForm) {
-        const formType = activeForm.id.replace('Form', '');
-        generateMarkdown(formType);
-      }
-
-      showMessage(`成功获取到 ${imageUrls.length} 张图片链接`, 'info');
+      const count = await refreshAlbumR2Images(workerUrl, target);
+      if (count === 0) { showMessage('该目录下没有找到图片', 'info'); return; }
+      showMessage(`成功获取到 ${count} 张图片链接`, 'info');
     } catch (error) {
       console.error('获取R2图片链接失败:', error);
       showMessage(`获取R2图片链接失败: ${error.message}`, 'error');
     } finally {
-      // 恢复按钮状态
       this.innerHTML = originalText;
       this.disabled = false;
     }
   });
 
-  // 添加从R2获取日记图片链接的功能
+  // 获取日记图片链接
   document.getElementById('fetchDiaryR2ImagesBtn').addEventListener('click', async function() {
     const workerUrl = document.getElementById('diaryR2WorkerUrl').value.trim();
-    let directory = document.getElementById('diaryR2Directory').value.trim();
+    const directory = document.getElementById('diaryR2Directory').value.trim();
 
     if (!workerUrl || !directory) {
       showMessage('请填写Worker URL和R2目录名', 'error');
       return;
     }
 
-    // 为日记添加路径前缀（仅当用户输入简短名称且未指定路径前缀时）
-    if (!directory.includes('/')) {
-      // 如果用户输入没有包含任何斜杠，假设这是一个简短目录名，添加 diary/ 前缀
-      directory = 'diary/' + directory;
-    }
-
-    // 显示加载状态
+    const target = normalizeR2Directory(directory, 'diary');
     const originalText = this.innerHTML;
     this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>加载中...';
     this.disabled = true;
 
     try {
-      const response = await fetch(`${workerUrl}?dir=${encodeURIComponent(directory)}`);
-
-      if (!response.ok) {
-        throw new Error(`获取图片失败: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (!Array.isArray(data)) {
-        throw new Error('返回的数据格式不正确');
-      }
-
-      // 获取图片链接列表
-      const imageUrls = data.map(item => item.url);
-
-      if (imageUrls.length === 0) {
-        showMessage('该目录下没有找到图片', 'info');
-        return;
-      }
-
-      // 清空现有的图片输入框
-      const container = document.getElementById('diaryImagesContainer');
-      container.innerHTML = '';
-
-      // 添加从R2获取到的图片链接
-      imageUrls.forEach(url => addDiaryImageInput(url));
-
-      // 更新预览
-      const activeForm = document.querySelector('.form-content:not(.hidden)');
-      if (activeForm) {
-        const formType = activeForm.id.replace('Form', '');
-        generateMarkdown(formType);
-      }
-
-      showMessage(`成功获取到 ${imageUrls.length} 张图片链接`, 'info');
+      const count = await refreshDiaryR2Images(workerUrl, target);
+      if (count === 0) { showMessage('该目录下没有找到图片', 'info'); return; }
+      showMessage(`成功获取到 ${count} 张图片链接`, 'info');
     } catch (error) {
       console.error('获取R2图片链接失败:', error);
       showMessage(`获取R2图片链接失败: ${error.message}`, 'error');
     } finally {
-      // 恢复按钮状态
       this.innerHTML = originalText;
       this.disabled = false;
     }

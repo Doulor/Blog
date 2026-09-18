@@ -11,6 +11,11 @@
 		"astro": "astro",
 		"type-check": "tsc --noEmit --isolatedDeclarations",
 		"new-post": "node scripts/new-post.js",
+		"webp": "node scripts/images-to-webp.mjs",
+		"wrangler": "wrangler",
+		"worker:login": "wrangler login",
+		"worker:secret": "wrangler secret put UPLOAD_TOKEN --config worker/wrangler.toml",
+		"worker:deploy": "wrangler deploy --config worker/wrangler.toml",
 		"format": "biome format --write ./src",
 		"lint": "biome check --write ./src",
 		"preinstall": "npx only-allow pnpm"
@@ -79,7 +84,8 @@
 		"@types/qrcode": "^1.5.6",
 		"@types/sanitize-html": "^2.16.0",
 		"postcss-import": "^16.1.1",
-		"postcss-nesting": "^13.0.2"
+		"postcss-nesting": "^13.0.2",
+		"wrangler": "^4.134.0"
 	},
 	"packageManager": "pnpm@9.14.4"
 }

@@ -35,7 +35,7 @@ interface Props {
 	postSlug?: string;
 }
 
-let { title, banner, description, lang, setOGTypeArticle, postSlug } =
+let { title, description, lang, setOGTypeArticle, postSlug } =
 	Astro.props;
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
@@ -54,42 +54,9 @@ const navbarTransparentMode =
 const shouldShowTopHighlight =
 	navbarTransparentMode === "full" || navbarTransparentMode === "semifull";
 
-// 获取默认banner图片的辅助函数
-const getDefaultBanner = (): string => {
-	const src = siteConfig.banner.src;
-	if (typeof src === "string") {
-		return src;
-	}
-	if (Array.isArray(src)) {
-		return src[0] || "";
-	}
-	if (src && typeof src === "object") {
-		// 优先使用desktop，如果没有则使用mobile
-		const desktopSrc = src.desktop;
-		const mobileSrc = src.mobile;
-		if (typeof desktopSrc === "string") {
-			return desktopSrc;
-		}
-		if (Array.isArray(desktopSrc) && desktopSrc.length > 0) {
-			return desktopSrc[0];
-		}
-		if (typeof mobileSrc === "string") {
-			return mobileSrc;
-		}
-		if (Array.isArray(mobileSrc) && mobileSrc.length > 0) {
-			return mobileSrc[0];
-		}
-	}
-	return "";
-};
-
-if (!banner || typeof banner !== "string" || banner.trim() === "") {
-	banner = getDefaultBanner();
-}
-
-// TODO don't use post cover as banner for now
-banner = getDefaultBanner();
-
+// banner 图片由 MainGridLayout 直接从 siteConfig.banner.src 渲染，
+// Layout 只控制开关与高度逻辑；如需恢复“文章封面作为 banner”，
+// 可重新解构 banner prop 并在此回填。
 const enableBanner = siteConfig.banner.enable;
 
 let pageTitle: string;
@@ -850,50 +817,6 @@ import {
 } from "../constants/constants";
 import { siteConfig } from '../config';
 
-/* Preload fonts */
-/* (async function() {
-	try {
-		await Promise.all([
-			document.fonts.load("400 1em Roboto"),
-			document.fonts.load("700 1em Roboto"),
-		]);
-		document.body.classList.remove("hidden");
-	} catch (error) {
-		console.log("Failed to load fonts:", error);
-	}
-})(); */
-
-/* TODO This is a temporary solution for style flicker issue when the transition is activated */
-/* issue link: https://github.com/withastro/astro/issues/8711, the solution get from here too */
-/* update: fixed in Astro 3.2.4 */
-/*
-function disableAnimation() {
-	const css = document.createElement('style')
-	css.appendChild(
-		document.createTextNode(
-			`*{
-              -webkit-transition:none!important;
-              -moz-transition:none!important;
-              -o-transition:none!important;
-              -ms-transition:none!important;
-              transition:none!important
-              }`
-		)
-	)
-	document.head.appendChild(css)
-
-	return () => {
-		// Force restyle
-		;(() => window.getComputedStyle(document.body))()
-
-		// Wait for next tick before removing
-		setTimeout(() => {
-			document.head.removeChild(css)
-		}, 1)
-	}
-}
-*/
-
 const bannerEnabled = !!document.getElementById('banner-wrapper')
 
 function setClickOutsideToClose(panel: string, ignores: string[]) {
@@ -1290,18 +1213,6 @@ const handleGlobalPageLoaded = () => {
 };
 
 const setup = () => {
-	// TODO: temp solution to change the height of the banner
-/*
-	window.swup.hooks.on('animation:out:start', () => {
-		const path = window.location.pathname
-		const body = document.querySelector('body')
-		if (path[path.length - 1] === '/' && !body.classList.contains('is-home')) {
-			body.classList.add('is-home')
-		} else if (path[path.length - 1] !== '/' && body.classList.contains('is-home')) {
-			body.classList.remove('is-home')
-		}
-	})
-*/
 	window.swup.hooks.on('link:click', () => {
 		// Remove the delay for the first time page load
 		document.documentElement.style.setProperty('--content-delay', '0ms')

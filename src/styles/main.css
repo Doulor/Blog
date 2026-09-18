@@ -15,25 +15,16 @@
 /* 导入 ZenMaruGothic-Medium 字体 */
 @font-face {
   font-family: 'ZenMaruGothic-Medium';
-  src: url('/assets/font/ZenMaruGothic-Medium.ttf') format('truetype');
+  src: url('/assets/font/ZenMaruGothic-Medium.woff2') format('woff2');
   font-weight: 500;
   font-display: swap;
-}
-
-/* 导入 GenEiGothic 字体 */
-@font-face {
-	font-family: "GenEiGothic";
-	src: url("/assets/font/GenEiGothicP.ttf") format("truetype");
-	font-weight: normal;
-	font-display: swap;
 }
 
 /* 导入得意黑字体 (Smiley Sans) */
 /* GitHub: https://github.com/atelier-anchor/smiley-sans */
 @font-face {
 	font-family: "SmileySans";
-	src: url("/assets/font/SmileySans-Oblique.ttf.woff2") format("woff2"),
-	     url("/assets/font/SmileySans-Oblique.ttf") format("truetype");
+	src: url("/assets/font/SmileySans-Oblique.ttf.woff2") format("woff2");
 	font-weight: normal;
 	font-display: swap;
 }
@@ -42,13 +33,13 @@
 /* GitHub: https://github.com/lxgw/LxgwWenKai */
 @font-face {
 	font-family: "LXGWWenKai";
-	src: url("/assets/font/LXGWWenKai-Regular.ttf") format("truetype");
+	src: url("/assets/font/LXGWWenKai-Regular.woff2") format("woff2");
 	font-weight: normal;
 	font-display: swap;
 }
 @font-face {
 	font-family: "LXGWWenKai";
-	src: url("/assets/font/LXGWWenKai-Medium.ttf") format("truetype");
+	src: url("/assets/font/LXGWWenKai-Medium.woff2") format("woff2");
 	font-weight: 500;
 	font-display: swap;
 }

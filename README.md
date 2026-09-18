@@ -149,6 +149,15 @@
 
 所有操作需要 **GitHub Personal Access Token**（存储在浏览器的 localStorage 中）。内容会直接以 commit 的形式推送到 GitHub 仓库。
 
+#### 📸 R2 图片上传（内容创建器内置）
+
+内容创建器的相册/日记区域支持直接上传图片到 Cloudflare R2，无需本地转换再手动填链接：
+
+- 在网页内选择图片 → 自动转 WebP（质量 82，与本地脚本一致）→ 上传 → 链接自动填入
+- 上传令牌保存在 localStorage，不上传到服务端
+
+该功能依赖一个支持上传的 Worker，源码与部署步骤见 [`worker/README.md`](./worker/README.md)（约 2 分钟一次性部署）。
+
 ### 🚀 部署
 
 将博客部署到任何静态托管平台：
