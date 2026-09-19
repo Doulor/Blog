@@ -16,6 +16,7 @@ import {
 import ContentList from "./ContentList.svelte";
 import EditorPanel from "./EditorPanel.svelte";
 import GithubAuth from "./GithubAuth.svelte";
+import Icon from "./Icon.svelte";
 import Modal from "./Modal.svelte";
 
 let { items = [] } = $props();
@@ -257,7 +258,7 @@ function typeLabel(type) {
 
   {#if busy}
     <div class="flex items-center gap-2 text-75 text-sm">
-      <i class="fa fa-spinner fa-spin" aria-hidden="true"></i> 处理中...
+      <Icon name="loader" class="w-4 h-4 animate-spin" /> 处理中...
     </div>
   {/if}
 

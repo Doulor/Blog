@@ -1,7 +1,11 @@
 <script>
-// R2 面板：输入目录 → 读取已有图片并预览 → 上传新图 → 自动刷新
+// R2 面板：目录名按标题自动生成 → 自动读取已有图片 → 上传新图 → 自动刷新
+//
+// 简化后的流程：填标题即可，目录名自动带出并自动读取；上传令牌首次输入后
+// 存本地折叠起来，不用每次出现在主流程里。
 
 import { onMount } from "svelte";
+import { slugifyTitle } from "../../scripts/admin/markdown.js";
 import {
 	fetchR2Media,
 	getR2Token,
@@ -9,17 +13,24 @@ import {
 	setR2Token,
 	uploadImagesToR2,
 } from "../../scripts/admin/r2.js";
+import Icon from "./Icon.svelte";
 
 let {
 	prefix, // 'album' | 'diary'
 	onimages, // 回调：图片 URL 列表（含隐藏标记由调用方处理）
 	title = "R2 存储",
+	contentTitle = "", // 编辑中的内容标题，用于自动生成目录名
+	contentDate = "", // 标题为空时回退到日期
+	initialDirectory = "", // 编辑模式：从已有图片反推的目录名
 } = $props();
 
 const WORKER_URL_KEY = "r2_worker_url";
 let workerUrl = $state("https://r2img.doulor.cn");
-let directory = $state("");
+let directory = $state(initialDirectory || "");
+// 手动改过目录名后就不再跟随标题自动生成（标准 slug 输入框交互）
+let dirTouched = $state(!!initialDirectory);
 let token = $state(getR2Token());
+let editingToken = $state(!token); // 已配置令牌则折叠
 let convertWebp = $state(true);
 
 let media = $state([]); // [{ name, url, key, size, uploaded }]
@@ -37,6 +48,22 @@ onMount(() => {
 
 function persistUrl() {
 	localStorage.setItem(WORKER_URL_KEY, workerUrl.trim());
+}
+
+// 建议目录名：标题 slug（允许中文），空标题回退日期串
+const suggestedDirectory = $derived(
+	slugifyTitle(contentTitle) ||
+		(contentDate || "").replace(/[\s:T]/g, "-").slice(0, 16),
+);
+
+// 自动字段：用户没手动改过时跟随标题更新
+$effect(() => {
+	if (!dirTouched) directory = suggestedDirectory;
+});
+
+function onDirectoryInput() {
+	dirTouched = true;
+	error = "";
 }
 
 function resolvedDirectory() {
@@ -61,6 +88,21 @@ async function readDirectory() {
 		loading = false;
 	}
 }
+
+// 目录名变更后防抖自动读取，省掉手动点"读取目录"
+let readTimer;
+$effect(() => {
+	const dir = directory.trim();
+	clearTimeout(readTimer);
+	if (!dir) {
+		media = [];
+		status = "";
+		return;
+	}
+	readTimer = setTimeout(() => {
+		readDirectory();
+	}, 600);
+});
 
 function emitImages() {
 	onimages?.(media.map((item) => item.url));
@@ -110,6 +152,7 @@ async function upload() {
 		status = `已上传 ${uploaded.length} 张，目录共 ${media.length} 个媒体文件`;
 		if (fileInput) fileInput.value = "";
 		selectedCount = 0;
+		editingToken = false; // 令牌已存好，折叠起来
 	} catch (err) {
 		error = err.message || "上传失败";
 		status = "上传失败";
@@ -132,7 +175,7 @@ function toggleSelect(url) {
 
 <div class="card-base rounded-xl p-4 space-y-4">
   <h3 class="text-base font-semibold text-90 flex items-center gap-2">
-    <i class="fa fa-cloud text-blue-500" aria-hidden="true"></i>
+    <Icon name="cloud" class="w-4 h-4 text-blue-500" />
     {title}
   </h3>
 
@@ -148,11 +191,11 @@ function toggleSelect(url) {
       />
     </label>
     <label class="block">
-      <span class="text-75 text-xs">R2 目录名（填写后自动读取已有图片）</span>
+      <span class="text-75 text-xs">R2 目录名（跟随标题自动生成，可手改；变更后自动读取已有图片）</span>
       <input
         type="text"
         bind:value={directory}
-        oninput={() => { error = ''; }}
+        oninput={onDirectoryInput}
         placeholder={prefix === 'album' ? '如 sky（自动识别为 album/sky）' : '如 happyday（自动识别为 diary/happyday）'}
         class="w-full mt-1 p-2 text-sm rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-800 text-90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
       />
@@ -162,14 +205,14 @@ function toggleSelect(url) {
   <div class="flex items-center gap-2 flex-wrap">
     <button
       type="button"
-      class="btn-regular h-9 px-4 rounded-lg text-sm"
+      class="btn-regular h-9 px-4 rounded-lg text-sm flex items-center"
       onclick={readDirectory}
       disabled={loading || !directory.trim()}
     >
       {#if loading}
-        <i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>读取中...
+        <Icon name="loader" class="w-4 h-4 mr-2 animate-spin" />读取中...
       {:else}
-        <i class="fa fa-sync mr-2" aria-hidden="true"></i>读取目录
+        <Icon name="refresh" class="w-4 h-4 mr-2" />读取目录
       {/if}
     </button>
     <span class="text-50 text-xs">当前目录：<span class="font-mono">{directory.trim() ? resolvedDirectory() : '—'}</span></span>
@@ -194,12 +237,12 @@ function toggleSelect(url) {
             </div>
             <button
               type="button"
-              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-md flex items-center justify-center text-xs bg-white/90 dark:bg-neutral-800/90 text-75 opacity-0 group-hover:opacity-100 transition-opacity hover:text-[var(--primary)]"
+              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-md flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 text-75 opacity-60 hover:opacity-100 transition-opacity hover:text-[var(--primary)]"
               title="回填此图片链接"
               aria-label="回填此图片链接"
               onclick={() => toggleSelect(item.url)}
             >
-              <i class="fa fa-plus" aria-hidden="true"></i>
+              <Icon name="plus" class="w-3.5 h-3.5" />
             </button>
             <p class="px-1.5 pb-1.5 text-[10px] text-50 truncate" title={item.name}>{item.name}</p>
           </div>
@@ -210,37 +253,55 @@ function toggleSelect(url) {
 
   <div class="border-t border-black/5 dark:border-white/10 pt-3 space-y-2">
     <div class="flex items-center gap-2 text-sm font-medium text-75">
-      <i class="fa fa-upload text-green-500" aria-hidden="true"></i>直接上传图片到 R2
+      <Icon name="upload" class="w-4 h-4 text-green-500" />直接上传图片到 R2
     </div>
-    <label class="block">
-      <span class="text-50 text-xs">上传令牌（Worker 的 UPLOAD_TOKEN，仅存本地）</span>
-      <input
-        type="password"
-        bind:value={token}
-        placeholder="部署 Worker 时设置的令牌"
-        class="w-full mt-1 p-2 text-sm rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-800 text-90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-      />
-    </label>
+
+    {#if editingToken}
+      <label class="block">
+        <span class="text-50 text-xs">上传令牌（Worker 的 UPLOAD_TOKEN，仅存本地，以后自动填充）</span>
+        <input
+          type="password"
+          bind:value={token}
+          placeholder="部署 Worker 时设置的令牌"
+          class="w-full mt-1 p-2 text-sm rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-800 text-90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+        />
+      </label>
+    {:else}
+      <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[var(--secondary)]/10 border border-[var(--secondary)]/20">
+        <span class="text-xs text-75 flex items-center gap-2">
+          <Icon name="check" class="w-3.5 h-3.5 text-green-500" />
+          上传令牌已配置（仅存本地）
+        </span>
+        <button
+          type="button"
+          class="text-xs text-[var(--primary)] hover:underline"
+          onclick={() => { editingToken = true; }}
+        >
+          修改
+        </button>
+      </div>
+    {/if}
+
     <input type="file" accept="image/*" multiple class="hidden" bind:this={fileInput} onchange={onFilesPicked} />
     <div class="flex items-center gap-2 flex-wrap">
       <button
         type="button"
-        class="btn-regular h-9 px-4 rounded-lg text-sm"
+        class="btn-regular h-9 px-4 rounded-lg text-sm flex items-center"
         onclick={() => fileInput?.click()}
       >
-        <i class="fa fa-image mr-2" aria-hidden="true"></i>选择图片
+        <Icon name="image" class="w-4 h-4 mr-2" />选择图片
         {#if selectedCount}<span class="ml-1 text-xs opacity-70">({selectedCount})</span>{/if}
       </button>
       <button
         type="button"
-        class="h-9 px-4 rounded-lg text-sm text-white bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-50"
+        class="h-9 px-4 rounded-lg text-sm text-white bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center"
         onclick={upload}
         disabled={uploading || !selectedCount}
       >
         {#if uploading}
-          <i class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></i>上传中...
+          <Icon name="loader" class="w-4 h-4 mr-2 animate-spin" />上传中...
         {:else}
-          <i class="fa fa-cloud-upload-alt mr-2" aria-hidden="true"></i>上传
+          <Icon name="upload" class="w-4 h-4 mr-2" />上传
         {/if}
       </button>
       <label class="flex items-center gap-2 text-xs text-50 cursor-pointer">

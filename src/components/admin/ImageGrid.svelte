@@ -4,6 +4,7 @@ import {
 	createDiaryHiddenMarker,
 	parseSingleDiaryHiddenMarker,
 } from "../../scripts/admin/markdown.js";
+import Icon from "./Icon.svelte";
 
 let {
 	items = $bindable([]),
@@ -115,26 +116,26 @@ function displayUrl(item) {
           </div>
 
           <!-- 操作按钮 -->
-          <div class="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div class="absolute top-1.5 right-1.5 flex gap-1 opacity-60 hover:opacity-100 transition-opacity">
             {#if allowHidden}
               <button
                 type="button"
                 title={item.hidden ? '取消隐藏标记' : '标记为隐藏内容'}
-                class="w-7 h-7 rounded-md flex items-center justify-center text-xs {item.hidden ? 'bg-amber-500 text-white' : 'bg-white/90 dark:bg-neutral-800/90 text-75'}"
+                class="w-7 h-7 rounded-md flex items-center justify-center {item.hidden ? 'bg-amber-500 text-white' : 'bg-white/90 dark:bg-neutral-800/90 text-75'}"
                 onclick={() => toggleHidden(index)}
                 aria-label="切换隐藏标记"
               >
-                <i class="fa {item.hidden ? 'fa-eye-slash' : 'fa-eye'}" aria-hidden="true"></i>
+                <Icon name={item.hidden ? 'eye-off' : 'eye'} class="w-3.5 h-3.5" />
               </button>
             {/if}
             <button
               type="button"
               title="删除图片"
-              class="w-7 h-7 rounded-md flex items-center justify-center text-xs bg-white/90 dark:bg-neutral-800/90 text-red-500 hover:bg-red-500 hover:text-white"
+              class="w-7 h-7 rounded-md flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 text-red-500 hover:bg-red-500 hover:text-white"
               onclick={() => remove(index)}
               aria-label="删除图片"
             >
-              <i class="fa fa-times" aria-hidden="true"></i>
+              <Icon name="x" class="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -142,7 +143,7 @@ function displayUrl(item) {
           <div class="absolute top-1.5 left-1.5 flex items-center gap-1">
             <button
               type="button"
-              class="drag-handle w-7 h-7 rounded-md flex items-center justify-center text-xs bg-white/90 dark:bg-neutral-800/90 text-50 cursor-grab active:cursor-grabbing"
+              class="drag-handle w-7 h-7 rounded-md flex items-center justify-center bg-white/90 dark:bg-neutral-800/90 text-50 cursor-grab active:cursor-grabbing"
               title="拖拽排序（或用箭头键移动）"
               aria-label="拖拽排序"
               onkeydown={(event) => {
@@ -155,7 +156,7 @@ function displayUrl(item) {
                 }
               }}
             >
-              <i class="fa fa-grip-vertical" aria-hidden="true"></i>
+              <Icon name="grip" class="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -169,7 +170,7 @@ function displayUrl(item) {
       class="text-sm bg-[var(--secondary)]/20 hover:bg-[var(--secondary)] text-[var(--secondary)] hover:text-white px-4 py-2 rounded-lg transition-colors flex items-center border border-[var(--secondary)]/30 hover:border-[var(--secondary)]"
       onclick={add}
     >
-      <i class="fa fa-plus mr-2" aria-hidden="true"></i> 添加图片
+      <Icon name="plus" class="w-4 h-4 mr-2" /> 添加图片
     </button>
   {/if}
 </div>

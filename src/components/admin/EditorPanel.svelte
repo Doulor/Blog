@@ -6,6 +6,7 @@ import {
 	getCurrentDateTime,
 	parseSingleDiaryHiddenMarker,
 } from "../../scripts/admin/markdown.js";
+import Icon from "./Icon.svelte";
 import ImageGrid from "./ImageGrid.svelte";
 import R2Panel from "./R2Panel.svelte";
 
@@ -262,6 +263,21 @@ function fillPhotos(urls, append) {
 	}
 }
 
+// 从 R2 图片 URL 反推目录名：https://img.doulor.cn/diary/xxx/1.webp → xxx
+function deriveDirectory(images) {
+	const first = images.find((item) => item.url);
+	if (!first) return "";
+	try {
+		const { pathname } = new URL(first.url);
+		const parts = pathname.split("/").filter(Boolean); // ['diary','xxx','1.webp']
+		if (parts.length < 2) return "";
+		// 去掉类型前缀和末尾文件名，中间若干段拼回（如 diary/2026/xx 也兼容）
+		return parts.slice(1, -1).join("/") || parts[1] || "";
+	} catch {
+		return "";
+	}
+}
+
 const TYPE_LABELS = {
 	post: "帖子",
 	diary: "日记",
@@ -275,8 +291,8 @@ const TYPE_LABELS = {
     <h2 class="text-xl font-semibold text-90">
       {mode === 'edit' ? '编辑' : '新建'}{TYPE_LABELS[type]}
     </h2>
-    <button type="button" class="btn-regular h-9 px-4 rounded-lg text-sm" onclick={onback}>
-      <i class="fa fa-arrow-left mr-2" aria-hidden="true"></i>返回列表
+    <button type="button" class="btn-regular h-9 px-4 rounded-lg text-sm flex items-center" onclick={onback}>
+      <Icon name="arrow-left" class="w-4 h-4 mr-2" />返回列表
     </button>
   </div>
 
@@ -429,7 +445,14 @@ const TYPE_LABELS = {
     </div>
 
     {#if form.imageType === 'r2'}
-      <R2Panel prefix="diary" title="R2 日记图片" onimages={(urls, append) => fillImages(urls, append)} />
+      <R2Panel
+        prefix="diary"
+        title="R2 日记图片"
+        contentTitle={form.title}
+        contentDate={form.date}
+        initialDirectory={mode === 'edit' ? deriveDirectory(form.images) : ''}
+        onimages={(urls, append) => fillImages(urls, append)}
+      />
     {/if}
 
     <div>
@@ -517,7 +540,14 @@ const TYPE_LABELS = {
     </div>
 
     {#if form.albumType === 'r2'}
-      <R2Panel prefix="album" title="R2 相册图片" onimages={(urls, append) => fillPhotos(urls, append)} />
+      <R2Panel
+        prefix="album"
+        title="R2 相册图片"
+        contentTitle={form.title}
+        contentDate={form.date}
+        initialDirectory={mode === 'edit' ? deriveDirectory(form.photos) : ''}
+        onimages={(urls, append) => fillPhotos(urls, append)}
+      />
     {/if}
 
     {#if form.albumType === 'external' || form.albumType === 'r2'}
@@ -557,10 +587,10 @@ const TYPE_LABELS = {
 
   <button
     type="button"
-    class="w-full h-12 rounded-lg text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all font-medium"
+    class="w-full h-12 rounded-lg text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all font-medium flex items-center justify-center"
     onclick={submit}
   >
-    <i class="fa fa-github mr-2" aria-hidden="true"></i>
+    <Icon name="github" class="w-4 h-4 mr-2" />
     {mode === 'edit' ? '提交更新到 GitHub' : '提交到 GitHub'}
   </button>
 </div>
