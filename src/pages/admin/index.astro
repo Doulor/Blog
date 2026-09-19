@@ -1,0 +1,64 @@
+---
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getCollection } from 'astro:content';
+import { scanAlbums } from "@utils/album-scanner";
+import AdminApp from "@components/admin/AdminApp.svelte";
+
+// 构建时收集所有内容，序列化为 props 传入（避免 SSR/客户端双源）
+const posts = await getCollection('posts');
+const diary = await getCollection('diary');
+const thoughts = await getCollection('thoughts');
+const albumsData = await scanAlbums();
+
+const byDateDesc = (a: { date: string }, b: { date: string }) =>
+  new Date(b.date).getTime() - new Date(a.date).getTime();
+
+const items = [
+  ...posts.map((p) => ({
+    type: 'post',
+    slug: p.id.replace(/\.md$/, ''),
+    title: p.data.title,
+    description: p.data.description ?? '',
+    date: p.data.published?.toString() ?? '',
+    tags: p.data.tags ?? [],
+    category: p.data.category ?? '',
+    draft: p.data.draft ?? false,
+    pinned: p.data.pinned ?? false,
+  })),
+  ...diary.map((d) => ({
+    type: 'diary',
+    slug: d.id.replace(/\.md$/, ''),
+    title: d.data.title ?? '日记条目',
+    description: d.data.description ?? '',
+    date: d.data.date?.toString() ?? '',
+    tags: [],
+  })),
+  ...albumsData.map((a) => ({
+    type: 'album',
+    slug: a.id.replace(/\.md$/, ''),
+    title: a.title,
+    description: a.description ?? '',
+    date: a.date?.toString() ?? '',
+    tags: a.tags ?? [],
+    cover: a.cover ?? '',
+    location: a.location ?? '',
+    photoCount: a.photos?.length ?? 0,
+  })),
+  ...thoughts.map((t) => ({
+    type: 'thought',
+    slug: t.id.replace(/\.md$/, ''),
+    title: t.data.content ?? '',
+    description: t.data.context ?? '',
+    date: t.data.date?.toString() ?? '',
+    tags: [],
+  })),
+].sort((a, b) => byDateDesc(a, b));
+---
+
+<MainGridLayout title="管理台" description="博客内容管理台">
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div id="admin-root" class="card-base z-10 px-6 md:px-9 pt-6 pb-10 relative w-full">
+      <AdminApp client:only="svelte" items={items} />
+    </div>
+  </div>
+</MainGridLayout>

@@ -16,6 +16,7 @@
 		"worker:login": "wrangler login",
 		"worker:secret": "wrangler secret put UPLOAD_TOKEN --config worker/wrangler.toml",
 		"worker:deploy": "wrangler deploy --config worker/wrangler.toml",
+		"pages:secret": "wrangler pages secret put GITHUB_CLIENT_SECRET --project-name blog",
 		"format": "biome format --write ./src",
 		"lint": "biome check --write ./src",
 		"preinstall": "npx only-allow pnpm"

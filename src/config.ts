@@ -229,21 +229,9 @@ export const navBarConfig: NavBarConfig = {
 			],
 		},
 		{
-			name: "内容管理器",
-			url: "/content-manager/",
+			name: "管理台",
+			url: "/admin/",
 			icon: "mdi:file-table-box-multiple",
-			children: [
-				{
-					name: "管理内容",
-					url: "/content-manager/",
-					icon: "mdi:file-document-edit",
-				},
-				{
-					name: "创建内容",
-					url: "/create-content/",
-					icon: "mdi:file-plus",
-				},
-			],
 		},
 		{
 			name: "关于",
