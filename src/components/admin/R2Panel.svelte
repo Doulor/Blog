@@ -8,9 +8,7 @@ import { onMount } from "svelte";
 import { slugifyTitle } from "../../scripts/admin/markdown.js";
 import {
 	fetchR2Media,
-	getR2Token,
 	normalizeR2Directory,
-	setR2Token,
 	uploadImagesToR2,
 } from "../../scripts/admin/r2.js";
 import Icon from "./Icon.svelte";
@@ -29,8 +27,6 @@ let workerUrl = $state("https://r2img.doulor.cn");
 let directory = $state(initialDirectory || "");
 // 手动改过目录名后就不再跟随标题自动生成（标准 slug 输入框交互）
 let dirTouched = $state(!!initialDirectory);
-let token = $state(getR2Token());
-let editingToken = $state(!token); // 已配置令牌则折叠
 let convertWebp = $state(true);
 
 let media = $state([]); // [{ name, url, key, size, uploaded }]
@@ -123,21 +119,14 @@ async function upload() {
 		error = "请填写 R2 目录名（上传目标目录）";
 		return;
 	}
-	if (!token.trim()) {
-		error = "请填写上传令牌";
-		return;
-	}
 
 	uploading = true;
 	error = "";
-	setR2Token(token.trim());
 	status = "正在上传...";
 
 	try {
 		const uploaded = await uploadImagesToR2({
-			workerUrl: workerUrl.trim(),
 			directory: resolvedDirectory(),
-			token: token.trim(),
 			files,
 			convertWebp,
 			onProgress: (msg) => {
@@ -152,7 +141,6 @@ async function upload() {
 		status = `已上传 ${uploaded.length} 张，目录共 ${media.length} 个媒体文件`;
 		if (fileInput) fileInput.value = "";
 		selectedCount = 0;
-		editingToken = false; // 令牌已存好，折叠起来
 	} catch (err) {
 		error = err.message || "上传失败";
 		status = "上传失败";
@@ -253,34 +241,8 @@ function toggleSelect(url) {
 
   <div class="border-t border-black/5 dark:border-white/10 pt-3 space-y-2">
     <div class="flex items-center gap-2 text-sm font-medium text-75">
-      <Icon name="upload" class="w-4 h-4 text-green-500" />直接上传图片到 R2
+      <Icon name="upload" class="w-4 h-4 text-green-500" />直接上传图片到 R2（用 GitHub 登录态鉴权）
     </div>
-
-    {#if editingToken}
-      <label class="block">
-        <span class="text-50 text-xs">上传令牌（Worker 的 UPLOAD_TOKEN，仅存本地，以后自动填充）</span>
-        <input
-          type="password"
-          bind:value={token}
-          placeholder="部署 Worker 时设置的令牌"
-          class="w-full mt-1 p-2 text-sm rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-800 text-90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-        />
-      </label>
-    {:else}
-      <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[var(--secondary)]/10 border border-[var(--secondary)]/20">
-        <span class="text-xs text-75 flex items-center gap-2">
-          <Icon name="check" class="w-3.5 h-3.5 text-green-500" />
-          上传令牌已配置（仅存本地）
-        </span>
-        <button
-          type="button"
-          class="text-xs text-[var(--primary)] hover:underline"
-          onclick={() => { editingToken = true; }}
-        >
-          修改
-        </button>
-      </div>
-    {/if}
 
     <input type="file" accept="image/*" multiple class="hidden" bind:this={fileInput} onchange={onFilesPicked} />
     <div class="flex items-center gap-2 flex-wrap">

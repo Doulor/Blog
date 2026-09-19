@@ -16,51 +16,51 @@
  * 请求体：{ client_id, code, code_verifier, redirect_uri }
  */
 
-const TOKEN_URL = 'https://github.com/login/oauth/access_token';
+const TOKEN_URL = "https://github.com/login/oauth/access_token";
 
 export async function onRequestPost(context) {
-  const { request, env } = context;
+	const { request, env } = context;
 
-  const clientSecret = env?.GITHUB_CLIENT_SECRET;
-  if (!clientSecret) {
-    return json({ error: '服务端未配置 GITHUB_CLIENT_SECRET' }, 500);
-  }
+	const clientSecret = env?.GITHUB_CLIENT_SECRET;
+	if (!clientSecret) {
+		return json({ error: "服务端未配置 GITHUB_CLIENT_SECRET" }, 500);
+	}
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: '请求体必须是 JSON' }, 400);
-  }
+	let body;
+	try {
+		body = await request.json();
+	} catch {
+		return json({ error: "请求体必须是 JSON" }, 400);
+	}
 
-  const { client_id, code, code_verifier, redirect_uri } = body || {};
-  if (!client_id || !code || !code_verifier) {
-    return json({ error: '缺少 client_id / code / code_verifier' }, 400);
-  }
+	const { client_id, code, code_verifier, redirect_uri } = body || {};
+	if (!client_id || !code || !code_verifier) {
+		return json({ error: "缺少 client_id / code / code_verifier" }, 400);
+	}
 
-  const response = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client_id,
-      client_secret: clientSecret,
-      code,
-      code_verifier,
-      redirect_uri,
-    }),
-  });
+	const response = await fetch(TOKEN_URL, {
+		method: "POST",
+		headers: { Accept: "application/json", "Content-Type": "application/json" },
+		body: JSON.stringify({
+			client_id,
+			client_secret: clientSecret,
+			code,
+			code_verifier,
+			redirect_uri,
+		}),
+	});
 
-  // 原样透回：GitHub 的错误体也带 error/error_description，客户端已有解析逻辑
-  const text = await response.text();
-  return new Response(text, {
-    status: response.status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+	// 原样透回：GitHub 的错误体也带 error/error_description，客户端已有解析逻辑
+	const text = await response.text();
+	return new Response(text, {
+		status: response.status,
+		headers: { "Content-Type": "application/json" },
+	});
 }
 
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+	return new Response(JSON.stringify(data), {
+		status,
+		headers: { "Content-Type": "application/json" },
+	});
 }

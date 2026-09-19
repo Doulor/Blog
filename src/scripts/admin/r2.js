@@ -4,18 +4,12 @@
  * 与 worker/r2-media.js 的接口契约对应：
  *   GET  /?dir=<dir>            → [{ name, url, key, size, uploaded }]
  *   POST /  multipart           → { uploaded: [{ url, key, size }], errors: [] }
+ *
+ * 上传不经 worker：走同源 Pages Function /api/r2-upload 中转，
+ * 令牌由服务端持有，浏览器只需带 GitHub 登录态。
  */
 
-const R2_TOKEN_KEY = "r2_upload_token";
-
-export function getR2Token() {
-	return localStorage.getItem(R2_TOKEN_KEY) || "";
-}
-
-export function setR2Token(token) {
-	if (token) localStorage.setItem(R2_TOKEN_KEY, token);
-	else localStorage.removeItem(R2_TOKEN_KEY);
-}
+import { getToken } from "./github-api.js";
 
 /**
  * 规范化目录名：已含 / 的按原样（视为完整路径），
@@ -73,28 +67,25 @@ export function convertImageToWebp(file, quality = 0.82) {
 }
 
 /**
- * 上传图片到 R2。
+ * 上传图片到 R2（经同源 Pages Function 中转，令牌在服务端）。
  *
  * @param {object} opts
- * @param {string} opts.workerUrl   Worker 地址
  * @param {string} opts.directory   已规范化的目标目录
- * @param {string} opts.token       上传令牌
  * @param {File[]} opts.files       待上传文件
  * @param {boolean} opts.convertWebp 是否转为 WebP
  * @param {(msg: string) => void} [opts.onProgress] 进度回调
  * @returns {Promise<Array<{url, key, size}>>} 上传成功的条目
  */
 export async function uploadImagesToR2({
-	workerUrl,
 	directory,
-	token,
 	files,
 	convertWebp,
 	onProgress,
 }) {
-	if (!workerUrl || !directory)
-		throw new Error("请先填写 Worker URL 和 R2 目录名");
-	if (!token) throw new Error("请填写上传令牌");
+	if (!directory) throw new Error("请先填写 R2 目录名");
+
+	const token = getToken();
+	if (!token) throw new Error("未登录，请先登录 GitHub");
 
 	const formData = new FormData();
 	formData.append("dir", directory);
@@ -110,9 +101,9 @@ export async function uploadImagesToR2({
 		if (onProgress) onProgress(`已准备 ${f.name}`);
 	}
 
-	const response = await fetch(workerUrl, {
+	const response = await fetch("/api/r2-upload", {
 		method: "POST",
-		headers: { "X-Upload-Token": token },
+		headers: { Authorization: `Bearer ${token}` },
 		body: formData,
 	});
 	if (!response.ok) {
@@ -123,6 +114,7 @@ export async function uploadImagesToR2({
 		} catch {
 			/* 非 JSON 错误体 */
 		}
+		if (response.status === 401) msg = "未登录或登录已过期，请重新登录 GitHub";
 		throw new Error(msg);
 	}
 	const data = await response.json();
