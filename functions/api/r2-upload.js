@@ -33,6 +33,7 @@ export async function onRequestPost(context) {
 		.filter(Boolean);
 
 	let login = null;
+	let ghStatus = "not-called";
 	try {
 		const resp = await fetch("https://api.github.com/user", {
 			headers: {
@@ -41,12 +42,18 @@ export async function onRequestPost(context) {
 				"User-Agent": "blog-admin-r2-upload",
 			},
 		});
+		ghStatus = resp.status;
 		console.log("github /user status:", resp.status, "auth header present:", !!authHeader);
 		if (resp.ok) login = (await resp.json()).login;
 	} catch (err) {
+		ghStatus = `error: ${err.message}`;
 		console.log("github /user error:", err.message);
 	}
-	if (!login) return json({ error: "GitHub 身份校验失败，请重新登录" }, 401);
+	if (!login)
+		return json(
+			{ error: `GitHub 身份校验失败 (debug: status=${ghStatus} authLen=${authHeader.length})` },
+			401,
+		);
 	if (!allowed.includes(login))
 		return json({ error: `用户 ${login} 无权上传` }, 403);
 
