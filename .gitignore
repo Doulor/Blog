@@ -29,3 +29,6 @@ yarn.lock
 # ide
 .idea
 *.iml
+
+# cloudflare wrangler 本地产物
+.wrangler/
