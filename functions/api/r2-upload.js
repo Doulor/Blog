@@ -38,11 +38,13 @@ export async function onRequestPost(context) {
 			headers: {
 				Authorization: `Bearer ${ghToken}`,
 				Accept: "application/vnd.github+json",
+				"User-Agent": "blog-admin-r2-upload",
 			},
 		});
+		console.log("github /user status:", resp.status, "auth header present:", !!authHeader);
 		if (resp.ok) login = (await resp.json()).login;
-	} catch {
-		/* 网络错误，按未登录处理 */
+	} catch (err) {
+		console.log("github /user error:", err.message);
 	}
 	if (!login) return json({ error: "GitHub 身份校验失败，请重新登录" }, 401);
 	if (!allowed.includes(login))
