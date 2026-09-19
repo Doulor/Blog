@@ -5,7 +5,7 @@
 // 存本地折叠起来，不用每次出现在主流程里。
 
 import { onMount } from "svelte";
-import { slugifyTitle } from "../../scripts/admin/markdown.js";
+import { slugifyR2Directory } from "../../scripts/admin/markdown.js";
 import {
 	fetchR2Media,
 	normalizeR2Directory,
@@ -46,10 +46,9 @@ function persistUrl() {
 	localStorage.setItem(WORKER_URL_KEY, workerUrl.trim());
 }
 
-// 建议目录名：标题 slug（允许中文），空标题回退日期串
+// 建议目录名：R2 自定义域名不提供非 ASCII key，目录名必须纯 ASCII
 const suggestedDirectory = $derived(
-	slugifyTitle(contentTitle) ||
-		(contentDate || "").replace(/[\s:T]/g, "-").slice(0, 16),
+	slugifyR2Directory(contentTitle, contentDate),
 );
 
 // 自动字段：用户没手动改过时跟随标题更新

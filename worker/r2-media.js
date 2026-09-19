@@ -14,16 +14,28 @@
  */
 
 const MEDIA_EXTENSIONS = [
-	".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".bmp", ".svg",
-	".mp4", ".webm", ".ogg", ".mov",
+	".jpg",
+	".jpeg",
+	".png",
+	".gif",
+	".webp",
+	".avif",
+	".bmp",
+	".svg",
+	".mp4",
+	".webm",
+	".ogg",
+	".mov",
 ];
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 /** 常量时间比较，避免计时攻击 */
 function tokensMatch(a, b) {
-	if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+	if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length)
+		return false;
 	let result = 0;
-	for (let i = 0; i < a.length; i++) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+	for (let i = 0; i < a.length; i++)
+		result |= a.charCodeAt(i) ^ b.charCodeAt(i);
 	return result === 0;
 }
 
@@ -39,13 +51,25 @@ function corsHeaders() {
 function json(data, status = 200) {
 	return new Response(JSON.stringify(data, null, 2), {
 		status,
-		headers: { "Content-Type": "application/json", Vary: "Origin", ...corsHeaders() },
+		headers: {
+			"Content-Type": "application/json",
+			Vary: "Origin",
+			...corsHeaders(),
+		},
 	});
 }
 
 function hasMediaExtension(key) {
 	const ext = key.toLowerCase().substring(key.lastIndexOf("."));
 	return MEDIA_EXTENSIONS.includes(ext);
+}
+
+/**
+ * R2 key 强制 ASCII：自定义域名（img.doulor.cn）不提供非 ASCII key，
+ * 实测含中文的 key 永远 404（百分号编码也 404）。非 ASCII 字符统一替换为 _。
+ */
+function toAsciiKey(value) {
+	return String(value || "").replace(/[^\w/.-]+/g, "_");
 }
 
 export default {
@@ -60,7 +84,10 @@ export default {
 		if (request.method === "GET") {
 			const directory = url.searchParams.get("dir") || "";
 			if (!directory) {
-				return json({ error: "请提供目录参数，例如 ?dir=photos 或 ?dir=reality" }, 400);
+				return json(
+					{ error: "请提供目录参数，例如 ?dir=photos 或 ?dir=reality" },
+					400,
+				);
 			}
 
 			try {
@@ -108,7 +135,12 @@ export default {
 				return json({ error: "请求体不是有效的 multipart 表单" }, 400);
 			}
 
-			const dir = (formData.get("dir") || "").trim().replace(/^\/+/, "").replace(/\/+$/, "");
+			const dir = toAsciiKey(
+				(formData.get("dir") || "")
+					.trim()
+					.replace(/^\/+/, "")
+					.replace(/\/+$/, ""),
+			);
 			if (!dir) return json({ error: "缺少 dir 字段" }, 400);
 
 			const files = formData.getAll("files").filter((f) => f instanceof File);
@@ -118,8 +150,10 @@ export default {
 			const errors = [];
 
 			for (const file of files) {
-				// 安全的文件名：去路径、去非法字符
-				const safeName = file.name.replace(/[\\/]+/g, "").replace(/[^\w.\-一-龥]+/gu, "_");
+				// 安全的文件名：去路径、去非法字符、强制 ASCII（自定义域名不提供非 ASCII key）
+				const safeName = toAsciiKey(
+					file.name.replace(/[\\/]+/g, "").replace(/[^\w.\-一-龥]+/gu, "_"),
+				);
 				if (!safeName || !hasMediaExtension(safeName)) {
 					errors.push({ name: file.name, error: "不支持的文件类型" });
 					continue;
@@ -132,15 +166,24 @@ export default {
 				const key = `${dir}/${safeName}`;
 				try {
 					await env.R2_BUCKET.put(key, file.stream(), {
-						httpMetadata: { contentType: file.type || "application/octet-stream" },
+						httpMetadata: {
+							contentType: file.type || "application/octet-stream",
+						},
 					});
-					results.push({ url: `${env.PUBLIC_BASE_URL}/${key}`, key, size: file.size });
+					results.push({
+						url: `${env.PUBLIC_BASE_URL}/${key}`,
+						key,
+						size: file.size,
+					});
 				} catch (error) {
 					errors.push({ name: file.name, error: error.message });
 				}
 			}
 
-			return json({ uploaded: results, errors }, errors.length && !results.length ? 500 : 200);
+			return json(
+				{ uploaded: results, errors },
+				errors.length && !results.length ? 500 : 200,
+			);
 		}
 
 		return json({ error: "Method Not Allowed" }, 405);

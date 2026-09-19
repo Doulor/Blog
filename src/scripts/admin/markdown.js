@@ -327,6 +327,26 @@ export function slugifyTitle(title) {
 		.replace(/\s+/g, "-");
 }
 
+/**
+ * 标题 → R2 目录名 slug（必须纯 ASCII）。
+ *
+ * R2 自定义域名不提供非 ASCII key：实测 "diary/test而比分/x.webp" 永远 404，
+ * 百分号编码也 404，只有 ASCII key 能取到。所以目录名只保留标题的 ASCII
+ * 部分；纯中文标题没有 ASCII 部分时，回退到日期串 + 随机后缀（可读且唯一）。
+ */
+export function slugifyR2Directory(title, date) {
+	const ascii = String(title || "")
+		.toLowerCase()
+		.replace(/[^\w\s-]/g, "")
+		.replace(/\s+/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-|-$/g, "");
+	if (ascii && !/^-+$/.test(ascii)) return ascii;
+
+	const stamp = (date || "").replace(/[\s:T]/g, "-").slice(0, 16);
+	return `${stamp || "untitled"}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
 /** 把 extraFields 追加为 frontmatter 行（字符串/布尔/数字/数组/对象） */
 function appendExtraFields(frontmatter, extraFields, skipKeys = []) {
 	let lines = frontmatter;

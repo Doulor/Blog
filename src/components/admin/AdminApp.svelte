@@ -227,6 +227,16 @@ const TYPE_LABELS = {
 function typeLabel(type) {
 	return TYPE_LABELS[type] || type;
 }
+
+// Toast 同样是 fixed 定位，挂到 body 避开布局的 transform 祖先（见 Modal.svelte）
+function portal(node) {
+	document.body.appendChild(node);
+	return {
+		destroy() {
+			node.remove();
+		},
+	};
+}
 </script>
 
 <div class="space-y-6">
@@ -283,6 +293,7 @@ function typeLabel(type) {
 
 {#if toast}
   <div
+    use:portal
     class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-xl shadow-2xl text-sm text-white {toast.type === 'error' ? 'bg-red-600' : toast.type === 'success' ? 'bg-green-600' : 'bg-neutral-800 dark:bg-neutral-700'}"
     role="status"
   >
