@@ -328,11 +328,17 @@ export function slugifyTitle(title) {
 }
 
 /**
- * 标题 → R2 目录名 slug（必须纯 ASCII）。
+ * 标题 → R2 目录名 slug（必须纯 ASCII，且带日期后缀防重名）。
  *
- * R2 自定义域名不提供非 ASCII key：实测 "diary/test而比分/x.webp" 永远 404，
- * 百分号编码也 404，只有 ASCII key 能取到。所以目录名只保留标题的 ASCII
- * 部分；纯中文标题没有 ASCII 部分时，回退到日期串 + 随机后缀（可读且唯一）。
+ * 两个约束：
+ * 1. R2 自定义域名不提供非 ASCII key（实测含中文的 key 永远 404，
+ *    百分号编码也 404），所以只保留标题的 ASCII 部分；
+ * 2. 只按标题归一容易重名（"test而比分" 与 "test哈哈" 都得到 test），
+ *    末尾拼接日期串（到分钟）来唯一化，同时对人类可读。
+ *
+ * @param {string} title 内容标题
+ * @param {string} date 内容日期（diary 为 datetime-local 原始值，其余为 YYYY-MM-DD）
+ * @returns {string} 纯 ASCII 目录名
  */
 export function slugifyR2Directory(title, date) {
 	const ascii = String(title || "")
@@ -341,10 +347,13 @@ export function slugifyR2Directory(title, date) {
 		.replace(/\s+/g, "-")
 		.replace(/-+/g, "-")
 		.replace(/^-|-$/g, "");
-	if (ascii && !/^-+$/.test(ascii)) return ascii;
 
-	const stamp = (date || "").replace(/[\s:T]/g, "-").slice(0, 16);
-	return `${stamp || "untitled"}-${Math.random().toString(36).slice(2, 6)}`;
+	const stamp = String(date || "")
+		.replace(/[^\d]/g, "")
+		.slice(0, 12); // YYYYMMDDHHmm
+
+	if (!ascii || /^-+$/.test(ascii)) return stamp || "untitled";
+	return stamp ? `${ascii}-${stamp}` : ascii;
 }
 
 /** 把 extraFields 追加为 frontmatter 行（字符串/布尔/数字/数组/对象） */

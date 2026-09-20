@@ -264,6 +264,8 @@ function fillPhotos(urls, append) {
 }
 
 // 从 R2 图片 URL 反推目录名：https://img.doulor.cn/diary/xxx/1.webp → xxx
+// 编辑模式回填后 R2Panel 会锁定该目录（dirTouched），不会再按新规则重新生成，
+// 所以老内容的图片仍回原来的目录，不会断链。
 function deriveDirectory(images) {
 	const first = images.find((item) => item.url);
 	if (!first) return "";
